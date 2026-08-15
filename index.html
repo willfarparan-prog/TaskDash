@@ -191,10 +191,81 @@
   .assist-input input:focus{border-color:var(--exos); box-shadow:0 0 0 3px var(--exos-soft);}
   .assist-input button{background:var(--adobe); border:none; color:#fff; border-radius:10px; padding:0 14px; font-weight:600; font-size:12.5px; cursor:pointer;}
   .assist-input button:hover{background:var(--adobe-deep);}
+
+  /* ---------- week strip (calendar) ---------- */
+  .week-card{margin-bottom:18px;}
+  .week-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .week-title{display:flex;align-items:center;gap:10px;}
+  .week-title h2{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;}
+  .week-range{font-size:11.5px;color:var(--faint);}
+  .week-actions{display:flex;align-items:center;gap:8px;}
+  .conn-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:5px 11px;border-radius:99px;cursor:pointer;border:1px solid var(--line-2);background:#fff;}
+  .conn-pill.on{color:var(--exos-deep);background:var(--exos-soft);border-color:#CFEEEA;}
+  .conn-pill.off{color:var(--adobe-deep);background:var(--adobe-soft);border-color:#FFD9D6;}
+  .conn-pill .cdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .week-grid{display:grid;grid-template-columns:44px repeat(7,1fr);gap:6px;}
+  .week-col-head{text-align:center;padding-bottom:6px;}
+  .week-col-head .dname{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:600;}
+  .week-col-head .dnum{font-size:15px;font-weight:600;color:var(--ink);margin-top:1px;}
+  .week-col-head.today .dnum{color:#fff;background:var(--adobe);width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-top:2px;}
+  .week-track{position:relative;height:120px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+  .week-track.today{border-color:var(--line-2);box-shadow:inset 0 0 0 1px rgba(250,15,0,.14);}
+  .week-hourlabel{position:absolute;left:0;top:0;bottom:0;display:flex;flex-direction:column;justify-content:space-between;padding:4px 0;}
+  .week-hourlabel span{font-size:8.5px;color:var(--faint);font-variant-numeric:tabular-nums;transform:translateY(-50%);}
+  .week-block{position:absolute;left:2px;right:2px;border-radius:5px;padding:2px 5px;font-size:9px;font-weight:600;line-height:1.25;overflow:hidden;cursor:pointer;color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);}
+  .week-block.personal{background:var(--exos);}
+  .week-block.adobe{background:var(--adobe);}
+  .week-block.exos{background:#5B4FBF;}
+  .week-block.allday{position:static;margin:2px 2px 0;border-radius:4px;padding:1px 5px;font-size:8.5px;}
+  .week-empty-note{grid-column:1 / -1;text-align:center;font-size:11px;color:var(--faint);padding:6px 0 0;}
+  .addblock-form{display:none;margin-top:12px;padding:12px;border:1px dashed var(--line-2);border-radius:11px;background:var(--surface-2);}
+  .addblock-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .addblock-row input, .addblock-row select{background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px;color:var(--ink);outline:none;}
+  .addblock-row input:focus, .addblock-row select:focus{border-color:var(--exos);}
+  .addblock-row .title-in{flex:1;min-width:140px;}
+
+  /* tooltip / popover for a clicked block */
+  .week-pop{position:fixed;z-index:60;background:var(--ink);color:#fff;font-size:11.5px;padding:8px 11px;border-radius:8px;box-shadow:0 12px 30px -8px rgba(0,0,0,.4);max-width:220px;pointer-events:none;}
+  .week-pop b{display:block;font-size:12.5px;margin-bottom:2px;}
 </style>
 </head>
 <body>
 <div class="shell">
+
+  <div class="card week-card">
+    <div class="week-head">
+      <div class="week-title">
+        <h2>This week</h2>
+        <span class="week-range" id="weekRange"></span>
+      </div>
+      <div class="week-actions">
+        <button class="conn-pill" id="connPill">
+          <span class="cdot"></span><span id="connPillTxt">Checking…</span>
+        </button>
+        <button class="btn ghost" id="addBlockBtn" style="padding:5px 10px;font-size:11px">+ Add block</button>
+      </div>
+    </div>
+
+    <div class="addblock-form" id="addBlockForm">
+      <div class="addblock-row">
+        <input class="title-in" id="blkTitle" placeholder="e.g. Q3 ERT Meeting"/>
+        <select id="blkSource">
+          <option value="adobe">Adobe</option>
+          <option value="exos">Exos</option>
+          <option value="personal">Personal</option>
+        </select>
+      </div>
+      <div class="addblock-row">
+        <input id="blkDate" type="date"/>
+        <input id="blkStart" type="time" value="09:00"/>
+        <input id="blkEnd" type="time" value="10:00"/>
+        <button class="btn primary" id="blkSave" style="padding:7px 14px;font-size:12px">Save</button>
+      </div>
+      <div class="hint">For calendars that can't connect directly \u2014 like an IT-managed Adobe work account. Shows on the strip right alongside your synced Google events.</div>
+    </div>
+
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
 
   <div class="bar">
     <div class="brand">
@@ -277,18 +348,18 @@
       <div class="card">
         <h2>Calendars</h2>
         <div class="connect">
-          <button class="conn-btn" onclick="soon(this)">
+          <button class="conn-btn" id="gcalBtn">
             <span class="ci">📅</span>
-            <span><span class="cn">Personal Google Calendar</span><br><span class="cs">Read-only · your events</span></span>
-            <span class="soon">Next</span>
+            <span><span class="cn">Personal Google Calendar</span><br><span class="cs" id="gcalStatus">Read-only · connect to sync</span></span>
+            <span class="soon" id="gcalBadge">Connect</span>
           </button>
-          <button class="conn-btn" onclick="soon(this)">
+          <button class="conn-btn" onclick="document.getElementById('addBlockForm').style.display='block'; document.getElementById('addBlockForm').scrollIntoView({behavior:'smooth'});">
             <span class="ci">🏢</span>
-            <span><span class="cn">Work Google Calendar</span><br><span class="cs">Read-only · shifts &amp; meetings</span></span>
-            <span class="soon">Next</span>
+            <span><span class="cn">Work (Adobe) Calendar</span><br><span class="cs">Add blocks manually — IT-managed accounts can't OAuth-connect</span></span>
+            <span class="soon" style="color:var(--exos-deep);border-color:#CFEEEA;background:var(--exos-soft)">Add</span>
           </button>
         </div>
-        <div class="hint">Both feeds are read-only — the console shows your day, never writes to your calendars.</div>
+        <div class="hint">Google Calendar is read-only — the console shows your events, never writes to your calendar. Work blocks you add stay local to this dashboard.</div>
       </div>
     </div>
   </div>
@@ -666,15 +737,206 @@ function runTrigger(kind){
     addMsg('user', 'Weekly Review');
     addMsg('bot', `<b>Weekly scorecard</b>
       <ul>
-        <li><b>Recurring cadence:</b> ${RECUR.length} SOP tasks tracked, ${state.recurCustom.length} custom recurring added this week</ni>
+        <li><b>Recurring cadence:</b> ${RECUR.length} SOP tasks tracked, ${state.recurCustom.length} custom recurring added this week</li>
         <li><b>Events in motion:</b> ${state.events.map(e=>esc(e.name)+(e.pillar?' ('+e.pillar+')':'')).join(', ')||'none'}</li>
         <li><b>Focus for next week:</b> keep the pipeline steps ahead of their due dates — nothing slipping past "now".</li>
       </ul>`);
   }
 }
 
+/* ============================================================
+   Week strip — visual calendar row, live Google Calendar + manual
+   (Adobe) blocks. Day window: 7am\u201310pm mapped to a fixed-height
+   track per day; each event becomes a positioned block.
+   ============================================================ */
+const WEEK_DAY_START = 7;   // 7am
+const WEEK_DAY_END   = 22;  // 10pm
+const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function weekMonday(d){
+  const day = d.getDay();
+  const diff = day===0 ? -6 : 1-day;
+  const m = new Date(d); m.setDate(d.getDate()+diff); m.setHours(0,0,0,0);
+  return m;
+}
+
+async function initWeekStrip(){
+  buildWeekSkeleton();
+  wireAddBlockForm();
+  wireGcalButton();
+  await loadWeekData();
+}
+
+function buildWeekSkeleton(){
+  const monday = weekMonday(now);
+  const days = [];
+  for(let i=0;i<7;i++){ const d=new Date(monday); d.setDate(monday.getDate()+i); days.push(d); }
+
+  const range = `${MONTH_ABBR[days[0].getMonth()]} ${days[0].getDate()}\u2013${MONTH_ABBR[days[6].getMonth()]} ${days[6].getDate()}`;
+  document.getElementById('weekRange').textContent = range;
+
+  const grid = document.getElementById('weekGrid');
+  grid.innerHTML = '';
+
+  // hour label column
+  const hourCol = document.createElement('div');
+  hourCol.innerHTML = '<div class="week-col-head">&nbsp;</div>';
+  const hourTrack = document.createElement('div');
+  hourTrack.className = 'week-track';
+  hourTrack.style.background = 'transparent';
+  hourTrack.style.border = 'none';
+  const hourLabel = document.createElement('div');
+  hourLabel.className = 'week-hourlabel';
+  [7,10,13,16,19,22].forEach(h=>{
+    const s = document.createElement('span');
+    s.textContent = h===12?'12p':(h>12?(h-12)+'p':h+'a');
+    hourLabel.appendChild(s);
+  });
+  hourTrack.appendChild(hourLabel);
+  hourCol.appendChild(hourTrack);
+  grid.appendChild(hourCol);
+
+  days.forEach((d,i)=>{
+    const isToday = ymd(d)===ymd(now);
+    const col = document.createElement('div');
+    col.dataset.date = ymd(d);
+
+    const head = document.createElement('div');
+    head.className = 'week-col-head'+(isToday?' today':'');
+    head.innerHTML = `<div class="dname">${DOW[d.getDay()]}</div><div class="dnum">${d.getDate()}</div>`;
+    col.appendChild(head);
+
+    const track = document.createElement('div');
+    track.className = 'week-track'+(isToday?' today':'');
+    track.id = 'wtrack-'+ymd(d);
+    col.appendChild(track);
+
+    grid.appendChild(col);
+  });
+}
+
+function timeToPct(dateObj){
+  const h = dateObj.getHours() + dateObj.getMinutes()/60;
+  const clamped = Math.min(Math.max(h, WEEK_DAY_START), WEEK_DAY_END);
+  return ((clamped - WEEK_DAY_START) / (WEEK_DAY_END - WEEK_DAY_START)) * 100;
+}
+
+function renderWeekEvents(events){
+  // clear existing blocks
+  document.querySelectorAll('.week-track').forEach(t=>{
+    t.querySelectorAll('.week-block').forEach(b=>b.remove());
+  });
+
+  events.forEach(ev=>{
+    const start = new Date(ev.start);
+    const dayKey = ymd(start);
+    const track = document.getElementById('wtrack-'+dayKey);
+    if(!track) return;
+
+    const block = document.createElement('div');
+    block.title = ev.title;
+
+    if(ev.allDay){
+      block.className = 'week-block allday '+ev.source;
+      block.textContent = ev.title;
+      track.parentElement.insertBefore(block, track);
+    } else {
+      const end = new Date(ev.end);
+      const topPct = timeToPct(start);
+      const botPct = timeToPct(end);
+      const heightPct = Math.max(botPct - topPct, 4);
+      block.className = 'week-block '+ev.source;
+      block.style.top = topPct+'%';
+      block.style.height = heightPct+'%';
+      block.textContent = ev.title;
+      block.addEventListener('click', (e)=>showWeekPop(e, ev));
+      track.appendChild(block);
+    }
+  });
+}
+
+function showWeekPop(e, ev){
+  document.querySelectorAll('.week-pop').forEach(p=>p.remove());
+  const pop = document.createElement('div');
+  pop.className = 'week-pop';
+  const start = new Date(ev.start), end = new Date(ev.end);
+  const fmt = d => d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  pop.innerHTML = `<b>${esc(ev.title)}</b>${ev.allDay?'All day':fmt(start)+' \u2013 '+fmt(end)}`;
+  document.body.appendChild(pop);
+  const r = e.target.getBoundingClientRect();
+  pop.style.left = Math.min(r.left, window.innerWidth-240)+'px';
+  pop.style.top = (r.bottom+6)+'px';
+  setTimeout(()=>pop.remove(), 2600);
+}
+
+async function loadWeekData(){
+  const pill = document.getElementById('connPill');
+  const pillTxt = document.getElementById('connPillTxt');
+  const gcalBtn = document.getElementById('gcalBtn');
+  const gcalStatus = document.getElementById('gcalStatus');
+  const gcalBadge = document.getElementById('gcalBadge');
+  try{
+    const res = await fetch('/api/calendar-week');
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    renderWeekEvents(data.events||[]);
+    if(data.connected){
+      pill.className = 'conn-pill on'; pillTxt.textContent = 'Google Calendar connected';
+      gcalStatus.textContent = 'Connected \u00b7 syncing automatically';
+      gcalBadge.textContent = 'Connected';
+      gcalBadge.style.color = 'var(--exos-deep)'; gcalBadge.style.background='var(--exos-soft)'; gcalBadge.style.borderColor='#CFEEEA';
+      gcalBtn.onclick = null;
+    } else {
+      pill.className = 'conn-pill off'; pillTxt.textContent = 'Google Calendar not connected';
+      gcalStatus.textContent = 'Read-only \u00b7 connect to sync';
+      gcalBadge.textContent = 'Connect';
+      gcalBtn.onclick = ()=>{ window.location.href = '/api/auth/start'; };
+    }
+  }catch(err){
+    document.getElementById('weekGrid').insertAdjacentHTML('beforeend',
+      '<div class="week-empty-note">Calendar couldn\u2019t load \u2014 check back after the API is deployed.</div>');
+    pill.className='conn-pill off'; pillTxt.textContent='Calendar unavailable';
+  }
+}
+
+function wireGcalButton(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('calendar')==='connected'){
+    // clean the URL so a refresh doesn't re-trigger anything
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}
+
+function wireAddBlockForm(){
+  document.getElementById('addBlockBtn').onclick = ()=>{
+    const f = document.getElementById('addBlockForm');
+    f.style.display = f.style.display==='none'?'block':'none';
+    if(f.style.display==='block' && !document.getElementById('blkDate').value){
+      document.getElementById('blkDate').value = ymd(now);
+    }
+  };
+  document.getElementById('blkSave').onclick = async ()=>{
+    const title = document.getElementById('blkTitle').value.trim();
+    const date = document.getElementById('blkDate').value;
+    const start = document.getElementById('blkStart').value;
+    const end = document.getElementById('blkEnd').value;
+    const source = document.getElementById('blkSource').value;
+    if(!title || !date || !start || !end) return;
+    try{
+      await fetch('/api/calendar-manual', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ title, date, start, end, source })
+      });
+    }catch(err){}
+    document.getElementById('blkTitle').value='';
+    document.getElementById('addBlockForm').style.display='none';
+    await loadWeekData();
+  };
+}
+
 render();
 syncFromDb();
+initWeekStrip();
 </script>
 </body>
 </html>
