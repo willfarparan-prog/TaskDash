@@ -5,10 +5,10 @@
 const { Pool } = require('pg');
 let pool;
 function getPool() {
-    if (!pool) {
+  if (!pool) {
     if (!process.env.neon) throw new Error('neon env var is not set');
     pool = new Pool({ connectionString: process.env.neon, ssl: { rejectUnauthorized: false } });
-}
+  }
   return pool;
 }
 
@@ -23,9 +23,9 @@ module.exports = async (req, res) => {
     return res.status(500).send('Google OAuth env vars are not set in this deployment.');
   }
 
-  const proto = req.headers['x-forwarded-proto'] || 'https';
-  const host = req.headers['x-forwarded-host'] || req.headers.host;
-  const redirectUri = `${proto}://${host}/api/auth/callback`;
+  // Fixed production origin — this app only ever runs at one URL, and trusting
+  // request headers here caused a broken redirect_uri (getaddrinfo ENOTFOUND).
+  const redirectUri = 'https://task-dash-umber.vercel.app/api/auth/callback';
 
   try {
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -37,12 +37,12 @@ module.exports = async (req, res) => {
         client_secret: clientSecret,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code',
-}),
-});
+      }),
+    });
     const tokens = await tokenRes.json();
     if (!tokenRes.ok) {
       return res.status(400).send(`Token exchange failed: ${tokens.error_description || tokens.error}`);
-}
+    }
 
     const expiresAt = new Date(Date.now() + (tokens.expires_in || 3600) * 1000);
     const db = getPool();
@@ -58,9 +58,10 @@ module.exports = async (req, res) => {
       [tokens.access_token, tokens.refresh_token || null, expiresAt, tokens.scope || null]
     );
 
+    // Redirect back to the dashboard so the week strip can load immediately.
     res.writeHead(302, { Location: '/?calendar=connected' });
     res.end();
-    } catch (err) {
+  } catch (err) {
     res.status(500).send(`Callback error: ${err.message}`);
-}
+  }
 };
