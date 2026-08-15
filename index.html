@@ -3,119 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Coach Dashboard · Exos @ Adobe SF</title>
+<title>TaskDash · Exos @ Adobe SF</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#0E131C; --panel:#171E2B; --panel-2:#1E2634; --line:#2A3446; --line-2:#354056;
-    --text:#EAEEF4; --muted:#8B96A9; --faint:#5B667A;
-    --exos:#2D6BFF; --exos-deep:#1B4DDB; --exos-soft:rgba(45,107,255,.14);
-    --adobe:#F4362B; --adobe-soft:rgba(244,54,43,.14);
-    --green:#35C88E; --amber:#F5A623;
-    --r:12px;
+    --bg:#F7F8FA; --surface:#FFFFFF; --surface-2:#FBFAF8; --line:#E4E7EC; --line-2:#D3D8E0;
+    --ink:#1B1F27; --muted:#6B7280; --faint:#9AA1AC;
+    --adobe:#FA0F00; --adobe-deep:#D80D00; --adobe-soft:#FFF1F0;
+    --exos:#00A99D; --exos-deep:#00867D; --exos-soft:#E6F7F5;
+    --amber:#B76E00; --amber-soft:#FFF4E0;
+    --green:#0E8A5F; --green-soft:#E7F7F0;
+    --shadow: 0 1px 2px rgba(20,24,32,.04), 0 8px 24px -12px rgba(20,24,32,.10);
+    --radius:14px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;}
   body{
     background:
-      radial-gradient(1000px 500px at 88% -8%, #17233f 0%, transparent 55%),
-      radial-gradient(900px 500px at 0% 0%, rgba(244,54,43,.05) 0%, transparent 45%),
-      var(--ink);
-    color:var(--text); font-family:'Inter',system-ui,sans-serif; min-height:100vh;
+      radial-gradient(900px 420px at 100% -6%, rgba(250,15,0,.05) 0%, transparent 55%),
+      radial-gradient(800px 420px at -4% 8%, rgba(0,169,157,.06) 0%, transparent 50%),
+      var(--bg);
+    color:var(--ink); font-family:'IBM Plex Sans',system-ui,sans-serif; min-height:100vh;
     -webkit-font-smoothing:antialiased;
   }
-  a{color:inherit;}
-  button{font-family:inherit;}
-  ::selection{background:rgba(45,107,255,.35);}
+  a{color:inherit;} button{font-family:inherit;}
+  ::selection{background:rgba(250,15,0,.14);}
+  code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
 
-  .wrap{max-width:1120px; margin:0 auto; padding:22px 20px 60px;}
+  .shell{max-width:1280px; margin:0 auto; padding:22px 26px 60px;}
 
-  .bar{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap;}
+  /* ---------- top bar ---------- */
+  .bar{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
   .brand{display:flex; align-items:center; gap:12px;}
-  .mark{display:flex; align-items:center; gap:0; font-family:'Barlow Semi Condensed'; font-weight:700; letter-spacing:.02em;}
-  .mark .e{color:var(--exos);} .mark .slash{color:var(--faint); margin:0 7px; font-weight:500;} .mark .a{color:var(--adobe);}
+  .mark{display:flex; align-items:baseline; font-weight:700; letter-spacing:-.01em;}
+  .mark .e{color:var(--exos-deep);} .mark .slash{color:var(--faint); margin:0 6px; font-weight:400;} .mark .a{color:var(--adobe);}
   .mark span{font-size:19px;}
-  .brand .sub{font-size:11.5px; color:var(--muted); letter-spacing:.02em;}
-  .status{display:flex; align-items:center; gap:16px;}
-  .shift{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted);}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(53,200,142,.16);}
-  .ring{--p:0; width:44px;height:44px;border-radius:50%;
-    background:conic-gradient(var(--exos) calc(var(--p)*1%), var(--line) 0);
-    display:grid;place-items:center;}
-  .ring i{width:34px;height:34px;border-radius:50%;background:var(--ink);display:grid;place-items:center;
-    font-family:'Barlow Semi Condensed';font-weight:700;font-size:12px;font-style:normal;color:var(--text);}
+  .brand .sub{font-size:11.5px; color:var(--muted); letter-spacing:.01em; margin-top:1px;}
+  .status{display:flex; align-items:center; gap:18px;}
+  .shift{display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--muted); background:var(--surface); border:1px solid var(--line); padding:6px 12px; border-radius:99px; box-shadow:var(--shadow);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-soft);}
+  .ring{--p:0; width:42px;height:42px;border-radius:50%;
+    background:conic-gradient(var(--adobe) calc(var(--p)*1%), var(--line) 0);
+    display:grid;place-items:center; box-shadow:var(--shadow);}
+  .ring i{width:33px;height:33px;border-radius:50%;background:var(--surface);display:grid;place-items:center;
+    font-weight:700;font-size:11.5px;font-style:normal;color:var(--ink);}
 
-  .date-h{font-family:'Barlow Semi Condensed'; font-weight:700; font-size:26px; letter-spacing:.01em; margin:0 0 2px;}
-  .date-sub{font-size:12.5px;color:var(--muted); margin-bottom:18px;}
+  .date-h{font-weight:700; font-size:25px; letter-spacing:-.01em; margin:0 0 2px;}
+  .date-sub{font-size:12.5px;color:var(--muted); margin-bottom:20px;}
 
-  .grid{display:grid; grid-template-columns: 1fr 340px; gap:18px; align-items:start;}
-  @media(max-width:820px){ .grid{grid-template-columns:1fr;} }
+  /* triggers row (Agent#3-style commands) */
+  .triggers{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
+  .trig{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:600; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); padding:7px 13px; border-radius:99px; cursor:pointer; box-shadow:var(--shadow);}
+  .trig:hover{border-color:var(--exos);}
+  .trig .k{color:var(--faint); font-weight:400;}
+  .trig.active{background:var(--adobe); border-color:var(--adobe); color:#fff;}
+  .trig.active .k{color:rgba(255,255,255,.75);}
 
-  .col{display:flex; flex-direction:column; gap:16px; min-width:0;}
+  /* ---------- grid ---------- */
+  .grid{display:grid; grid-template-columns: 1fr 380px; gap:20px; align-items:start;}
+  @media(max-width:980px){ .grid{grid-template-columns:1fr;} }
+  .col{display:flex; flex-direction:column; gap:18px; min-width:0;}
 
-  .card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px;}
-  .card > h2{font-family:'Barlow Semi Condensed'; text-transform:uppercase; letter-spacing:.1em;
-    font-size:12px; color:var(--faint); font-weight:600; margin:0 0 13px; display:flex; align-items:center; justify-content:space-between;}
-  .card > h2 .ct{color:var(--muted);}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow);}
+  .card > h2{font-size:11.5px; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--muted); font-weight:600; margin:0 0 14px; display:flex; align-items:center; justify-content:space-between;}
+  .card > h2 .ct{color:var(--faint); font-weight:500; text-transform:none; letter-spacing:0;}
 
-  .focus{position:relative; overflow:hidden; padding:18px;
-    background:linear-gradient(135deg, rgba(45,107,255,.16), rgba(244,54,43,.06)), var(--panel-2);
+  /* focus / up next */
+  .focus{position:relative; overflow:hidden; padding:20px;
+    background:linear-gradient(135deg, var(--adobe-soft), var(--exos-soft) 140%);
     border:1px solid var(--line-2);}
-  .focus:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--amber);}
-  .focus .lbl{font-family:'Barlow Semi Condensed';text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:600;color:var(--amber);}
-  .focus .t{font-size:19px;font-weight:600;margin:5px 0 3px;}
+  .focus:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--adobe);}
+  .focus .lbl{text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;font-weight:700;color:var(--adobe-deep);}
+  .focus .t{font-size:19px;font-weight:600;margin:6px 0 3px; color:var(--ink);}
   .focus .m{font-size:12.5px;color:var(--muted);}
-  .focus .actions{margin-top:12px;display:flex;gap:8px;}
+  .focus .actions{margin-top:13px;display:flex;gap:8px;}
 
+  /* task list */
   ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
-  .grp-label{font-family:'Barlow Semi Condensed';text-transform:uppercase;letter-spacing:.12em;font-size:10.5px;color:var(--faint);font-weight:600;margin:6px 0 2px;}
-  .item{display:flex;align-items:center;gap:12px;padding:11px 12px 11px 13px;background:var(--panel-2);
-    border:1px solid var(--line);border-radius:11px;position:relative;transition:border-color .15s;}
-  .item:hover{border-color:var(--line-2);}
+  .grp-label{text-transform:uppercase;letter-spacing:.09em;font-size:10.5px;color:var(--faint);font-weight:600;margin:8px 0 2px;}
+  .grp-label:first-child{margin-top:0;}
+  .item{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--surface-2);
+    border:1px solid var(--line);border-radius:11px;position:relative;transition:border-color .15s, background .15s;}
+  .item:hover{border-color:var(--line-2); background:#fff;}
   .item:before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--faint);}
   .item.due:before{background:var(--amber);}
-  .item.over:before{background:var(--adobe);box-shadow:0 0 12px rgba(244,54,43,.55);}
+  .item.over:before{background:var(--adobe);}
   .item.done:before{background:var(--green);}
-  .check{width:18px;height:18px;border-radius:6px;border:1.5px solid var(--faint);flex:none;cursor:pointer;transition:.12s;}
+  .check{width:18px;height:18px;border-radius:6px;border:1.5px solid var(--faint);flex:none;cursor:pointer;transition:.12s; background:#fff;}
   .check:hover{border-color:var(--exos);}
   .item.done .check{background:var(--green);border-color:var(--green);
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%230E131C' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M3 8.5l3 3 6.5-7'/%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M3 8.5l3 3 6.5-7'/%3E%3C/svg%3E");
     background-size:13px;background-repeat:no-repeat;background-position:center;}
   .item .body{flex:1;min-width:0;}
-  .item .name{font-size:13.5px;font-weight:500;line-height:1.3;}
-  .item.done .name{color:var(--muted);text-decoration:line-through;}
+  .item .name{font-size:13.5px;font-weight:500;line-height:1.3; color:var(--ink);}
+  .item.done .name{color:var(--faint);text-decoration:line-through;}
   .item .sub{font-size:11px;color:var(--muted);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-  .cad{font-family:'Barlow Semi Condensed';text-transform:uppercase;letter-spacing:.06em;font-size:9.5px;font-weight:600;
-    color:var(--muted);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px;}
+  .cad{text-transform:uppercase;letter-spacing:.05em;font-size:9.5px;font-weight:600;
+    color:var(--muted);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px; background:#fff;}
+  .pillar{text-transform:none;font-size:9.5px;font-weight:600;border-radius:5px;padding:1px 6px;}
+  .pillar.movement{color:var(--exos-deep); background:var(--exos-soft);}
+  .pillar.recovery{color:#5B4FBF; background:#EFEDFC;}
+  .pillar.nutrition{color:var(--green); background:var(--green-soft);}
+  .pillar.mindset{color:var(--amber); background:var(--amber-soft);}
   .time{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;}
   .item.over .time{color:var(--adobe);font-weight:600;}
-  .go{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#cdd8ff;
-    background:var(--exos-soft);border:1px solid rgba(45,107,255,.3);padding:2px 8px;border-radius:6px;text-decoration:none;}
-  .go:hover{background:rgba(45,107,255,.26);}
+  .go{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--exos-deep);
+    background:var(--exos-soft);border:1px solid #CFEEEA;padding:2px 8px;border-radius:6px;text-decoration:none;}
+  .go:hover{background:#D8F3F0;}
 
-  .btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;
-    border-radius:8px;padding:7px 12px;border:1px solid var(--line-2);background:var(--panel-2);color:var(--text);}
-  .btn:hover{border-color:var(--exos);}
-  .btn.primary{background:var(--exos);border-color:var(--exos);color:#08101f;}
-  .btn.primary:hover{background:var(--exos-deep);}
-  .btn.ghost{background:transparent;}
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;cursor:pointer;
+    border-radius:9px;padding:8px 13px;border:1px solid var(--line-2);background:#fff;color:var(--ink);}
+  .btn:hover{border-color:var(--adobe);}
+  .btn.primary{background:var(--adobe);border-color:var(--adobe);color:#fff;}
+  .btn.primary:hover{background:var(--adobe-deep);}
+  .btn.ghost{background:transparent; border-color:transparent;}
+  .btn.ghost:hover{background:var(--surface-2); border-color:var(--line);}
 
-  .addrow{display:flex;gap:8px;margin-top:12px;}
-  .addrow input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;
-    padding:8px 11px;color:var(--text);font-size:13px;outline:none;}
-  .addrow input:focus{border-color:var(--exos);}
+  /* add row */
+  .addrow{display:flex;gap:8px;margin-top:13px;}
+  .addrow input{flex:1;background:#fff;border:1px solid var(--line);border-radius:9px;
+    padding:9px 12px;color:var(--ink);font-size:13px;outline:none;}
+  .addrow input:focus{border-color:var(--exos); box-shadow:0 0 0 3px var(--exos-soft);}
   .addrow input::placeholder{color:var(--faint);}
 
-  .pipe-ev{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel-2);margin-bottom:10px;}
+  /* pipeline */
+  .pipe-ev{border:1px solid var(--line);border-radius:12px;padding:13px;background:var(--surface-2);margin-bottom:10px;}
   .pipe-ev .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
   .pipe-ev .h b{font-size:13.5px;font-weight:600;}
   .pipe-ev .h .d{font-size:11px;color:var(--muted);white-space:nowrap;}
-  .track{display:flex;gap:4px;margin:10px 0 8px;}
+  .pipe-ev .pill{font-size:10px;color:var(--exos-deep);background:var(--exos-soft);border-radius:5px;padding:1px 6px;margin-left:6px;}
+  .track{display:flex;gap:4px;margin:11px 0 8px;}
   .track .s{flex:1;height:6px;border-radius:3px;background:var(--line);}
-  .track .s.on{background:var(--exos);}
-  .track .s.now{background:var(--amber);box-shadow:0 0 8px rgba(245,166,35,.5);}
+  .track .s.on{background:var(--adobe);}
+  .track .s.now{background:var(--amber);}
   .pipe-steps{display:flex;flex-direction:column;gap:5px;margin-top:6px;}
   .ps{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);}
   .ps .pd{width:7px;height:7px;border-radius:50%;background:var(--line-2);flex:none;}
@@ -123,29 +148,53 @@
   .ps.done{color:var(--faint);text-decoration:line-through;}
   .ps .pt{margin-left:auto;font-variant-numeric:tabular-nums;font-size:10.5px;}
 
+  /* connect / KPI */
   .connect{display:flex;flex-direction:column;gap:8px;}
-  .conn-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);
-    border-radius:10px;background:var(--panel-2);cursor:pointer;text-align:left;}
-  .conn-btn:hover{border-color:var(--line-2);}
+  .conn-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);
+    border-radius:11px;background:var(--surface-2);cursor:pointer;text-align:left;}
+  .conn-btn:hover{border-color:var(--line-2); background:#fff;}
   .conn-btn .ci{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:14px;flex:none;
-    background:rgba(255,255,255,.06);}
+    background:#fff; border:1px solid var(--line);}
   .conn-btn .cn{font-size:12.5px;font-weight:600;}
   .conn-btn .cs{font-size:10.5px;color:var(--faint);}
-  .conn-btn .soon{margin-left:auto;font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-    color:var(--amber);border:1px solid rgba(245,166,35,.4);border-radius:5px;padding:2px 6px;}
+  .conn-btn .soon{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--amber);border:1px solid #F0D9AE;background:var(--amber-soft);border-radius:5px;padding:2px 6px;}
 
-  .assist{display:flex;gap:9px;align-items:center;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;padding:9px 11px;}
-  .assist .ai{width:22px;height:22px;border-radius:6px;flex:none;display:grid;place-items:center;font-weight:800;font-size:11px;color:#08101f;
-    font-family:'Barlow Semi Condensed';background:linear-gradient(135deg,var(--exos),#7aa2ff);}
-  .assist input{flex:1;background:none;border:none;color:var(--text);font-size:12.5px;outline:none;}
-  .assist input::placeholder{color:var(--faint);}
+  .kpi-row{display:flex; justify-content:space-between; align-items:baseline; padding:8px 0; border-top:1px solid var(--line);}
+  .kpi-row:first-child{border-top:none; padding-top:0;}
+  .kpi-name{font-size:12.5px; color:var(--ink); font-weight:500;}
+  .kpi-val{font-size:12.5px; color:var(--muted);}
+  .kpi-val b{color:var(--exos-deep); font-weight:700;}
 
-  .hint{font-size:11px;color:var(--faint);margin-top:10px;line-height:1.5;}
+  .hint{font-size:11px;color:var(--faint);margin-top:11px;line-height:1.55;}
   .empty{font-size:12px;color:var(--faint);padding:6px 2px;}
+
+  /* ---------- assistant panel (signature element) ---------- */
+  .assist-card{padding:0; overflow:hidden; display:flex; flex-direction:column; min-height:420px;}
+  .assist-head{padding:15px 16px 13px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px;
+    background:linear-gradient(135deg,#fff, var(--exos-soft) 220%);}
+  .assist-head .ai{width:28px;height:28px;border-radius:9px;flex:none;display:grid;place-items:center;font-weight:800;font-size:12px;color:#fff;
+    background:linear-gradient(135deg,var(--adobe),var(--exos));}
+  .assist-head .at{font-size:13px; font-weight:600;}
+  .assist-head .as{font-size:10.5px; color:var(--muted);}
+  .assist-msgs{flex:1; padding:14px 16px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; max-height:420px;}
+  .msg{max-width:88%; font-size:13px; line-height:1.5; padding:9px 12px; border-radius:12px;}
+  .msg.bot{background:var(--surface-2); border:1px solid var(--line); align-self:flex-start; border-bottom-left-radius:4px;}
+  .msg.user{background:var(--adobe); color:#fff; align-self:flex-end; border-bottom-right-radius:4px;}
+  .msg.bot ul{padding-left:16px; margin:6px 0 0; list-style:disc;}
+  .msg.bot li{font-size:12.5px; margin-bottom:2px;}
+  .msg-chip{display:inline-block; margin-top:7px; margin-right:5px; font-size:10.5px; font-weight:600; color:var(--exos-deep);
+    background:var(--exos-soft); border:1px solid #CFEEEA; padding:3px 9px; border-radius:99px; cursor:pointer;}
+  .msg-chip:hover{background:#D8F3F0;}
+  .assist-input{display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--line); background:var(--surface-2);}
+  .assist-input input{flex:1; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px; outline:none; background:#fff;}
+  .assist-input input:focus{border-color:var(--exos); box-shadow:0 0 0 3px var(--exos-soft);}
+  .assist-input button{background:var(--adobe); border:none; color:#fff; border-radius:10px; padding:0 14px; font-weight:600; font-size:12.5px; cursor:pointer;}
+  .assist-input button:hover{background:var(--adobe-deep);}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="shell">
 
   <div class="bar">
     <div class="brand">
@@ -161,7 +210,14 @@
   <h1 class="date-h" id="dateH">—</h1>
   <div class="date-sub" id="dateSub"></div>
 
+  <div class="triggers">
+    <button class="trig" data-t="brief"><span>☀️ Daily Briefing</span></button>
+    <button class="trig" data-t="debrief"><span>🌙 Daily Debrief</span></button>
+    <button class="trig" data-t="weekly"><span>📊 Weekly Review</span></button>
+  </div>
+
   <div class="grid">
+    <!-- MAIN COLUMN -->
     <div class="col">
       <div class="card focus" id="focus" style="display:none">
         <div class="lbl">Up next</div>
@@ -183,13 +239,35 @@
         <h2>This week</h2>
         <ul id="weekList"></ul>
       </div>
+
+      <div class="card" id="kpiCard">
+        <h2>Program measurement <span class="ct">Exos ROI / VOI</span></h2>
+        <div class="kpi-row"><span class="kpi-name">Participation target — Press Pause</span><span class="kpi-val"><b>18–24</b> / 3hr window</span></div>
+        <div class="kpi-row"><span class="kpi-name">NPS survey</span><span class="kpi-val">Send within <b>3 days</b>, follow-up in 7</span></div>
+        <div class="kpi-row"><span class="kpi-name">Reduced-burnout benchmark</span><span class="kpi-val"><b>87–88%</b> self-reported</span></div>
+        <div class="kpi-row"><span class="kpi-name">Benefit valuation</span><span class="kpi-val"><b>89%</b> cite Exos as high-value</span></div>
+        <div class="hint">From the Exos ROI/VOI model — pulled in for any executive talking points.</div>
+      </div>
     </div>
 
+    <!-- SIDE COLUMN -->
     <div class="col">
+      <div class="card assist-card">
+        <div class="assist-head">
+          <span class="ai">C</span>
+          <div><div class="at">Assistant</div><div class="as">Chat, or hand off a recurring task</div></div>
+        </div>
+        <div class="assist-msgs" id="chatMsgs"></div>
+        <div class="assist-input">
+          <input id="chatInput" placeholder="e.g. Remind me to restock towels every Tuesday" />
+          <button id="chatSend">Send</button>
+        </div>
+      </div>
+
       <div class="card">
-        <h2>Event pipeline <button class="btn ghost" id="newEvtBtn" style="padding:4px 9px;font-size:11px">+ New event</button></h2>
+        <h2>Event pipeline <button class="btn ghost" id="newEvtBtn" style="padding:5px 10px;font-size:11.5px">+ New event</button></h2>
         <div id="evtForm" style="display:none;margin-bottom:10px;">
-          <div class="addrow" style="margin-top:0"><input id="evtName" placeholder="Event name (e.g. Ladder Challenge)"/></div>
+          <div class="addrow" style="margin-top:0"><input id="evtName" placeholder="Event name (e.g. Press Pause)"/></div>
           <div class="addrow"><input id="evtDate" type="date"/><button class="btn primary" id="evtCreate">Build</button></div>
           <div class="hint">Sets all 8 steps back from your date — room (Sahar), flyer, catering (Josh), then the Slack posts.</div>
         </div>
@@ -206,26 +284,25 @@
           </button>
           <button class="conn-btn" onclick="soon(this)">
             <span class="ci">🏢</span>
-            <span><span class="cn">Work Google Calendar</span><br><span class="cs">Read-only · shifts & meetings</span></span>
+            <span><span class="cn">Work Google Calendar</span><br><span class="cs">Read-only · shifts &amp; meetings</span></span>
             <span class="soon">Next</span>
           </button>
         </div>
         <div class="hint">Both feeds are read-only — the console shows your day, never writes to your calendars.</div>
-      </div>
-
-      <div class="card">
-        <h2>Assistant</h2>
-        <div class="assist">
-          <span class="ai">C</span>
-          <input placeholder="Draft a Slack post, a task…" onfocus="soon(null,'The assistant lands in the next pass.')"/>
-        </div>
-        <div class="hint">Drafts newsletters, Slack posts, and tasks from your own content. Never touches work email.</div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+/* ============================================================
+   TaskDash v2 — light Adobe/Exos theme
+   Recurring engine (SOP) + assistant chat/task intake +
+   Agent#3-style Daily Briefing / Debrief / Weekly Review +
+   Agent#2-style KPI card and pillar tags on events.
+   Static, no build step. State persists in localStorage.
+   ============================================================ */
+
 const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const now = new Date();
 const todayKey = ymd(now);
@@ -255,13 +332,63 @@ function weekAhead(){
 }
 
 const store = {
-  get(){ try{ return JSON.parse(localStorage.getItem('coach_v1')||'{}'); }catch(e){ return {}; } },
-  set(s){ try{ localStorage.setItem('coach_v1', JSON.stringify(s)); }catch(e){} }
+  get(){ try{ return JSON.parse(localStorage.getItem('coach_v2')||'{}'); }catch(e){ return {}; } },
+  set(s){ try{ localStorage.setItem('coach_v2', JSON.stringify(s)); }catch(e){} }
 };
-let state = Object.assign({ done:{}, custom:{}, events:[] }, store.get());
+let state = Object.assign({ done:{}, custom:{}, events:[], recurCustom:[], chat:[] }, store.get());
 if(!state.done[todayKey]) state.done[todayKey]={};
 if(!state.custom[todayKey]) state.custom[todayKey]=[];
 function save(){ store.set(state); }
+
+/* ---- optional Postgres sync (Neon via /api routes) ----
+   Falls back to localStorage-only if /api isn't deployed yet or the
+   DATABASE_URL env var isn't set — nothing here blocks the app. */
+let dbAvailable = false;
+async function syncFromDb(){
+  try{
+    const [tRes, eRes] = await Promise.all([
+      fetch('/api/tasks?day='+todayKey),
+      fetch('/api/events')
+    ]);
+    if(!tRes.ok || !eRes.ok) return;
+    const t = await tRes.json();
+    const e = await eRes.json();
+    dbAvailable = true;
+
+    // merge recur checks into state.done[todayKey]
+    (t.checks||[]).forEach(c=>{ if(c.period_key===todayKey && c.done) state.done[todayKey][c.task_id]=true; });
+    // merge daily tasks
+    state.custom[todayKey] = (t.daily||[]).map(d=>({ name:d.name, dbId:d.id }));
+    (t.daily||[]).forEach(d=>{ if(d.done) state.done[todayKey]['c'+ (t.daily.indexOf(d)) ]=true; });
+    // merge custom recurring definitions from db (source='custom')
+    state.recurCustom = (t.recur||[]).filter(r=>r.source==='custom').map(r=>({
+      id:r.id.replace(/^rc-/,''), name:r.name, cad:r.cadence, day:r.weekday
+    }));
+    // events
+    if(e.events && e.events.length){
+      state.events = e.events.map(ev=>({ name:ev.name, date:ev.event_date, pillar:ev.pillar }));
+    }
+    render();
+  }catch(err){ /* offline / not deployed yet — silently keep localStorage */ }
+}
+function dbPost(path, body){
+  if(!dbAvailable) return;
+  fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }).catch(()=>{});
+}
+function dbPatch(path, body){
+  if(!dbAvailable) return;
+  fetch(path, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }).catch(()=>{});
+}
+
+/* recurring items the assistant creates land here, applied like RECUR */
+function customRecurToday(){
+  return state.recurCustom.filter(r=>{
+    if(r.cad==='Daily') return true;
+    if(r.cad==='Weekly') return r.day===now.getDay();
+    return false;
+  }).map(r=>({ id:'rc-'+r.id, name:r.name, cad:r.cad, time:r.cad==='Weekly'?DOW[r.day]:'Today', link:null,
+    done: !!state.done[todayKey]['rc-'+r.id] }));
+}
 
 function todaysTasks(){
   const rec = RECUR.filter(r=>r.when(now)).map(r=>({
@@ -272,7 +399,7 @@ function todaysTasks(){
     id:'c'+i, name:c.name, cad:'Today', time:'', link:null,
     done: !!state.done[todayKey]['c'+i]
   }));
-  return rec.concat(custom);
+  return rec.concat(customRecurToday()).concat(custom);
 }
 
 function statusOf(t){
@@ -349,8 +476,16 @@ function itemEl(t){
 }
 
 function toggle(id){
-  state.done[todayKey][id]=!state.done[todayKey][id];
+  const nowDone = !state.done[todayKey][id];
+  state.done[todayKey][id]=nowDone;
   render();
+  if(id.startsWith('c')){
+    const idx = parseInt(id.slice(1),10);
+    const item = state.custom[todayKey][idx];
+    if(item && item.dbId!=null) dbPatch('/api/tasks', { kind:'daily_task', id:item.dbId, done:nowDone });
+  } else {
+    dbPatch('/api/tasks', { kind:'recur_check', taskId:id, periodKey:todayKey, done:nowDone });
+  }
 }
 
 document.getElementById('addBtn').onclick=addTask;
@@ -358,8 +493,10 @@ document.getElementById('addInput').addEventListener('keydown',e=>{ if(e.key==='
 function addTask(){
   const inp=document.getElementById('addInput'); const v=inp.value.trim(); if(!v) return;
   state.custom[todayKey].push({name:v}); inp.value=''; render();
+  dbPost('/api/tasks', { type:'daily_task', dayKey:todayKey, name:v });
 }
 
+/* ---- event pipeline (Agent#2 8-step SOP), with pillar tag support ---- */
 const PIPE=[
   {k:'Set date',            off:35},
   {k:'Book room · Sahar',   off:28},
@@ -371,8 +508,8 @@ const PIPE=[
   {k:'Day-of Slack post',   off:0},
 ];
 if(!state.events.length){
-  const d=new Date(now); d.setDate(d.getDate()+16);
-  state.events=[{name:'Ladder Challenge', date:ymd(d)}];
+  const d=new Date('2026-08-18T12:00:00');
+  state.events=[{name:'Press Pause', date:ymd(d), pillar:'Recovery'}];
 }
 document.getElementById('newEvtBtn').onclick=()=>{
   const f=document.getElementById('evtForm'); f.style.display=f.style.display==='none'?'block':'none';
@@ -385,6 +522,7 @@ document.getElementById('evtCreate').onclick=()=>{
   document.getElementById('evtName').value=''; document.getElementById('evtDate').value='';
   document.getElementById('evtForm').style.display='none';
   render();
+  dbPost('/api/events', { name:n, date:dt });
 };
 function renderPipe(){
   const w=document.getElementById('pipeWrap'); w.innerHTML='';
@@ -399,7 +537,7 @@ function renderPipe(){
     });
     const nowIdx = steps.findIndex(s=>!s.done);
     const el=document.createElement('div'); el.className='pipe-ev';
-    el.innerHTML=`<div class="h"><b>${esc(ev.name)}</b><span class="d">${daysOut>=0?'in '+daysOut+'d':'past'}</span></div>
+    el.innerHTML=`<div class="h"><b>${esc(ev.name)}${ev.pillar?`<span class="pill">${ev.pillar}</span>`:''}</b><span class="d">${daysOut>=0?'in '+daysOut+'d':'past'}</span></div>
       <div class="track">${steps.map((s,i)=>`<div class="s ${s.done?'on':''} ${i===nowIdx?'now':''}"></div>`).join('')}</div>
       <div class="pipe-steps">${steps.map((s,i)=>`
         <div class="ps ${s.done?'done':''} ${i===nowIdx?'now':''}">
@@ -410,6 +548,7 @@ function renderPipe(){
   });
 }
 
+/* ---- helpers ---- */
 function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function lastWeekStart(d){ const days=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); return days-6; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -418,7 +557,124 @@ function soon(btn,msg){
   alert(m);
 }
 
+/* ============================================================
+   Assistant: chat + task intake + Agent#3 trigger commands
+   ============================================================ */
+const chatMsgs = document.getElementById('chatMsgs');
+function addMsg(role, html){
+  const d=document.createElement('div'); d.className='msg '+role; d.innerHTML=html;
+  chatMsgs.appendChild(d); chatMsgs.scrollTop = chatMsgs.scrollHeight;
+}
+
+function greet(){
+  addMsg('bot', "Hi — I'm your task assistant. Tell me something to remember (\"remind me to check the AED every Monday\") or tap a briefing above.");
+}
+greet();
+
+document.getElementById('chatSend').onclick=sendChat;
+document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+
+function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const v=inp.value.trim(); if(!v) return;
+  addMsg('user', esc(v));
+  inp.value='';
+  handleIntent(v);
+}
+
+/* very small local intent parser — recognizes recurring-task asks,
+   one-off task asks, and falls back to a helpful pointer. This is a
+   stand-in for a real Claude API call (see hint below). */
+function handleIntent(text){
+  const t = text.toLowerCase();
+  const isRecurring = /every (day|daily|monday|tuesday|wednesday|thursday|friday|saturday|sunday|week|weekday)/.test(t)
+    || /\bdaily\b/.test(t) || /\bweekly\b/.test(t);
+
+  if(isRecurring){
+    let cad='Daily', day=null;
+    const dayMatch = t.match(/every (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/);
+    if(dayMatch){ cad='Weekly'; day = DOW.findIndex(d=>d.toLowerCase().startsWith(dayMatch[1].slice(0,3))); }
+    const name = text.replace(/remind me to|please|i need to|every (day|daily|monday|tuesday|wednesday|thursday|friday|saturday|sunday|week|weekday)/gi,'').trim()
+      .replace(/^to\s+/i,'').replace(/\.$/,'');
+    const clean = name.charAt(0).toUpperCase()+name.slice(1);
+    const id = 'x'+Date.now();
+    const dayVal = day===-1?null:day;
+    state.recurCustom.push({ id, name: clean, cad, day: dayVal });
+    save(); render();
+    dbPost('/api/tasks', { type:'recur_task', id:'rc-'+id, name:clean, cadence:cad, weekday:dayVal });
+    addMsg('bot', `Added <b>${esc(clean)}</b> as a ${cad.toLowerCase()} task${day!==null?' on '+DOW[day]+'s':''}. It'll show up under Today going forward.`);
+    return;
+  }
+
+  if(/^(add|task|todo)/.test(t) || t.split(' ').length<=6){
+    state.custom[todayKey].push({name: text});
+    save(); render();
+    dbPost('/api/tasks', { type:'daily_task', dayKey:todayKey, name:text });
+    addMsg('bot', `Added to today's list: <b>${esc(text)}</b>.`);
+    return;
+  }
+
+  addMsg('bot', `Got it — I don't have a live Claude connection wired in yet, so I can't draft that for you here. I can still log it as a task, or you can use one of the briefings above.
+    <div><span class="msg-chip" data-add="${esc(text)}">Add as today's task</span></div>`);
+}
+
+chatMsgs.addEventListener('click', e=>{
+  const chip = e.target.closest('.msg-chip[data-add]');
+  if(chip){
+    state.custom[todayKey].push({name: chip.dataset.add});
+    save(); render();
+    dbPost('/api/tasks', { type:'daily_task', dayKey:todayKey, name:chip.dataset.add });
+    addMsg('bot', 'Added.');
+  }
+});
+
+/* ---- trigger buttons: Agent#3 Daily Briefing / Debrief / Weekly Review ---- */
+document.querySelectorAll('.trig').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.trig').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    runTrigger(btn.dataset.t);
+    setTimeout(()=>btn.classList.remove('active'), 600);
+  });
+});
+
+function runTrigger(kind){
+  const tasks = todaysTasks();
+  const overdue = tasks.filter(t=>!t.done && statusOf(t)==='over');
+  const remaining = tasks.filter(t=>!t.done);
+  const wk = weekAhead();
+
+  if(kind==='brief'){
+    addMsg('user', 'Daily Briefing');
+    addMsg('bot', `<b>Daily dashboard</b>
+      <ul>
+        <li><b>Top priorities:</b> ${remaining.slice(0,3).map(t=>esc(t.name)).join(', ')||'nothing outstanding'}</li>
+        <li><b>Overdue:</b> ${overdue.length? overdue.map(t=>esc(t.name)).join(', ') : 'none'}</li>
+        <li><b>This week ahead:</b> ${wk.slice(0,3).map(t=>esc(t.name)).join(', ')||'nothing scheduled'}</li>
+        <li><b>Event pipeline:</b> ${state.events.map(e=>esc(e.name)).join(', ')||'no live events'}</li>
+      </ul>`);
+  } else if(kind==='debrief'){
+    const done = tasks.filter(t=>t.done);
+    addMsg('user', 'Daily Debrief');
+    addMsg('bot', `<b>Daily debrief</b>
+      <ul>
+        <li><b>Completed today:</b> ${done.length? done.map(t=>esc(t.name)).join(', ') : 'nothing marked done yet'}</li>
+        <li><b>Unfinished:</b> ${remaining.length? remaining.map(t=>esc(t.name)).join(', ') : 'all clear'}</li>
+        <li><b>Carries to tomorrow:</b> ${overdue.length? overdue.map(t=>esc(t.name)).join(', '):'nothing overdue'}</li>
+      </ul>`);
+  } else {
+    addMsg('user', 'Weekly Review');
+    addMsg('bot', `<b>Weekly scorecard</b>
+      <ul>
+        <li><b>Recurring cadence:</b> ${RECUR.length} SOP tasks tracked, ${state.recurCustom.length} custom recurring added this week</ni>
+        <li><b>Events in motion:</b> ${state.events.map(e=>esc(e.name)+(e.pillar?' ('+e.pillar+')':'')).join(', ')||'none'}</li>
+        <li><b>Focus for next week:</b> keep the pipeline steps ahead of their due dates — nothing slipping past "now".</li>
+      </ul>`);
+  }
+}
+
 render();
+syncFromDb();
 </script>
 </body>
 </html>
