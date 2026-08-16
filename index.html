@@ -227,6 +227,38 @@
   /* tooltip / popover for a clicked block */
   .week-pop{position:fixed;z-index:60;background:var(--ink);color:#fff;font-size:11.5px;padding:8px 11px;border-radius:8px;box-shadow:0 12px 30px -8px rgba(0,0,0,.4);max-width:220px;pointer-events:none;}
   .week-pop b{display:block;font-size:12.5px;margin-bottom:2px;}
+
+  /* current-time line on today's column */
+  .now-line{position:absolute;left:0;right:0;height:2px;background:var(--adobe);z-index:5;pointer-events:none;
+    box-shadow:0 0 6px rgba(250,15,0,.5);}
+  .now-line:before{content:"";position:absolute;left:-1px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--adobe);}
+
+  /* events that extend beyond the visible 6am\u201311pm window */
+  .week-block.clipped{background-image:linear-gradient(180deg, rgba(255,255,255,.35), transparent 22%, transparent 78%, rgba(255,255,255,.35));}
+
+  /* delete control on today's one-off tasks */
+  .item .del{opacity:0;margin-left:2px;border:none;background:transparent;color:var(--faint);
+    font-size:17px;line-height:1;cursor:pointer;padding:0 4px;border-radius:6px;transition:.12s;flex:none;}
+  .item:hover .del, .item .del:focus{opacity:1;}
+  .item .del:hover{color:var(--adobe);background:var(--adobe-soft);}
+
+  /* pipeline steps are clickable */
+  .ps[data-step]{cursor:pointer;border-radius:6px;padding:2px 4px;margin:-2px -4px;transition:background .12s;}
+  .ps[data-step]:hover{background:rgba(0,0,0,.04);}
+  .ps[data-step]:focus-visible{outline:2px solid var(--exos);outline-offset:1px;}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
+    background:var(--ink);color:#fff;font-size:12.5px;font-weight:500;padding:10px 16px;border-radius:10px;
+    box-shadow:0 14px 34px -10px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:80;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* narrow windows (half-screen use) keep the week readable */
+  @media(max-width:900px){
+    .week-grid{grid-template-columns:36px repeat(7,minmax(64px,1fr));overflow-x:auto;}
+    .week-track{height:100px;}
+    .shell{padding:16px 14px 48px;}
+  }
 </style>
 </head>
 <body>
@@ -375,8 +407,8 @@
    ============================================================ */
 
 const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const now = new Date();
-const todayKey = ymd(now);
+let now = new Date();
+let todayKey = ymd(now);
 
 const RECUR = [
   { id:'wr-am',  name:'Reset weight room — AM',        cad:'Daily',   time:'AM',   when:()=>true },
@@ -406,7 +438,7 @@ const store = {
   get(){ try{ return JSON.parse(localStorage.getItem('coach_v2')||'{}'); }catch(e){ return {}; } },
   set(s){ try{ localStorage.setItem('coach_v2', JSON.stringify(s)); }catch(e){} }
 };
-let state = Object.assign({ done:{}, custom:{}, events:[], recurCustom:[], chat:[] }, store.get());
+let state = Object.assign({ done:{}, custom:{}, events:[], recurCustom:[], chat:[], pipeDone:{} }, store.get());
 if(!state.done[todayKey]) state.done[todayKey]={};
 if(!state.custom[todayKey]) state.custom[todayKey]=[];
 function save(){ store.set(state); }
@@ -415,22 +447,32 @@ function save(){ store.set(state); }
    Falls back to localStorage-only if /api isn't deployed yet or the
    DATABASE_URL env var isn't set — nothing here blocks the app. */
 let dbAvailable = false;
+let dbSynced = false;
+const pendingWrites = [];
+function flushPending(){
+  while(pendingWrites.length){
+    const [method, path, body] = pendingWrites.shift();
+    fetch(path, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }).catch(()=>{});
+  }
+}
 async function syncFromDb(){
   try{
     const [tRes, eRes] = await Promise.all([
       fetch('/api/tasks?day='+todayKey),
       fetch('/api/events')
     ]);
-    if(!tRes.ok || !eRes.ok) return;
+    if(!tRes.ok || !eRes.ok){ dbSynced = true; return; }
     const t = await tRes.json();
     const e = await eRes.json();
     dbAvailable = true;
+    dbSynced = true;
+    flushPending();
 
     // merge recur checks into state.done[todayKey]
     (t.checks||[]).forEach(c=>{ if(c.period_key===todayKey && c.done) state.done[todayKey][c.task_id]=true; });
     // merge daily tasks
     state.custom[todayKey] = (t.daily||[]).map(d=>({ name:d.name, dbId:d.id }));
-    (t.daily||[]).forEach(d=>{ if(d.done) state.done[todayKey]['c'+ (t.daily.indexOf(d)) ]=true; });
+    (t.daily||[]).forEach((d,i)=>{ if(d.done) state.done[todayKey]['cd-'+i]=true; });
     // merge custom recurring definitions from db (source='custom')
     state.recurCustom = (t.recur||[]).filter(r=>r.source==='custom').map(r=>({
       id:r.id.replace(/^rc-/,''), name:r.name, cad:r.cadence, day:r.weekday
@@ -443,10 +485,18 @@ async function syncFromDb(){
   }catch(err){ /* offline / not deployed yet — silently keep localStorage */ }
 }
 function dbPost(path, body){
+  if(!dbSynced){ pendingWrites.push(['POST', path, body]); return; }
   if(!dbAvailable) return;
   fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }).catch(()=>{});
 }
+function dbSend(method, path, body){
+  if(!dbSynced){ pendingWrites.push([method, path, body||{}]); return; }
+  if(!dbAvailable) return;
+  fetch(path, { method, headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):undefined })
+    .catch(()=>toast('Could not reach the server \u2014 change saved locally only'));
+}
 function dbPatch(path, body){
+  if(!dbSynced){ pendingWrites.push(['PATCH', path, body]); return; }
   if(!dbAvailable) return;
   fetch(path, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }).catch(()=>{});
 }
@@ -467,8 +517,8 @@ function todaysTasks(){
     done: !!state.done[todayKey][r.id]
   }));
   const custom = state.custom[todayKey].map((c,i)=>({
-    id:'c'+i, name:c.name, cad:'Today', time:'', link:null,
-    done: !!state.done[todayKey]['c'+i]
+    id:'cd-'+i, name:c.name, cad:'Today', time:'', link:null,
+    done: !!state.done[todayKey]['cd-'+i]
   }));
   return rec.concat(customRecurToday()).concat(custom);
 }
@@ -543,15 +593,32 @@ function itemEl(t){
     <div class="sub"><span class="cad">${t.cad}</span>${t.link?`<a class="go" href="${t.link.url}">${t.link.label} →</a>`:''}</div>`;
   const time=document.createElement('span'); time.className='time'; time.textContent = st==='over'?'overdue':(t.time||'');
   li.append(chk,body,time);
+  if(t.cad==='Today'){
+    const del=document.createElement('button'); del.className='del'; del.type='button';
+    del.title='Delete task'; del.setAttribute('aria-label','Delete task'); del.textContent='\u00d7';
+    del.onclick=(e)=>{ e.stopPropagation(); deleteCustomTask(t.id); };
+    li.appendChild(del);
+  }
   return li;
+}
+
+function deleteCustomTask(id){
+  const idx = parseInt(id.slice(3),10);
+  const item = state.custom[todayKey][idx];
+  if(!item) return;
+  state.custom[todayKey].splice(idx,1);
+  delete state.done[todayKey][id];
+  save(); render();
+  if(item.dbId!=null) dbSend('DELETE','/api/tasks?id='+encodeURIComponent(item.dbId));
+  toast('Task deleted');
 }
 
 function toggle(id){
   const nowDone = !state.done[todayKey][id];
   state.done[todayKey][id]=nowDone;
   render();
-  if(id.startsWith('c')){
-    const idx = parseInt(id.slice(1),10);
+  if(id.startsWith('cd-')){
+    const idx = parseInt(id.slice(3),10);
     const item = state.custom[todayKey][idx];
     if(item && item.dbId!=null) dbPatch('/api/tasks', { kind:'daily_task', id:item.dbId, done:nowDone });
   } else {
@@ -603,7 +670,8 @@ function renderPipe(){
     const daysOut=Math.round((evd-now)/86400000);
     const steps=PIPE.map(p=>{
       const due=new Date(evd); due.setDate(due.getDate()-p.off);
-      const done = now > due;
+      const manual = state.pipeDone && state.pipeDone[ev.name+'|'+p.k];
+      const done = manual!==undefined ? manual : (now > due);
       return {k:p.k, due, done, dueOut:Math.round((due-now)/86400000)};
     });
     const nowIdx = steps.findIndex(s=>!s.done);
@@ -611,11 +679,22 @@ function renderPipe(){
     el.innerHTML=`<div class="h"><b>${esc(ev.name)}${ev.pillar?`<span class="pill">${ev.pillar}</span>`:''}</b><span class="d">${daysOut>=0?'in '+daysOut+'d':'past'}</span></div>
       <div class="track">${steps.map((s,i)=>`<div class="s ${s.done?'on':''} ${i===nowIdx?'now':''}"></div>`).join('')}</div>
       <div class="pipe-steps">${steps.map((s,i)=>`
-        <div class="ps ${s.done?'done':''} ${i===nowIdx?'now':''}">
+        <div class="ps ${s.done?'done':''} ${i===nowIdx?'now':''}" data-ev="${esc(ev.name)}" data-step="${esc(s.k)}" role="button" tabindex="0" title="Click to toggle">
           <span class="pd"></span>${esc(s.k)}
           <span class="pt">${s.done?'✓':(s.dueOut>=0?s.dueOut+'d':'due')}</span>
         </div>`).join('')}</div>`;
     w.appendChild(el);
+  });
+  w.querySelectorAll('.ps[data-step]').forEach(row=>{
+    const handler = ()=>{
+      if(!state.pipeDone) state.pipeDone = {};
+      const key = row.dataset.ev+'|'+row.dataset.step;
+      const currentlyDone = row.classList.contains('done');
+      state.pipeDone[key] = !currentlyDone;
+      save(); renderPipe();
+    };
+    row.addEventListener('click', handler);
+    row.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); handler(); } });
   });
 }
 
@@ -623,6 +702,19 @@ function renderPipe(){
 function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function lastWeekStart(d){ const days=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); return days-6; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+let toastTimer;
+function toast(msg){
+  let el = document.getElementById('toast');
+  if(!el){
+    el = document.createElement('div'); el.id='toast'; el.className='toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
 function soon(btn,msg){
   const m=msg||'Connecting here lands in the next build — read-only, no data leaves your session.';
   alert(m);
@@ -749,8 +841,8 @@ function runTrigger(kind){
    (Adobe) blocks. Day window: 7am\u201310pm mapped to a fixed-height
    track per day; each event becomes a positioned block.
    ============================================================ */
-const WEEK_DAY_START = 7;   // 7am
-const WEEK_DAY_END   = 22;  // 10pm
+const WEEK_DAY_START = 6;   // 6am
+const WEEK_DAY_END   = 23;  // 11pm
 const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function weekMonday(d){
@@ -787,7 +879,7 @@ function buildWeekSkeleton(){
   hourTrack.style.border = 'none';
   const hourLabel = document.createElement('div');
   hourLabel.className = 'week-hourlabel';
-  [7,10,13,16,19,22].forEach(h=>{
+  [6,9,12,15,18,21,23].forEach(h=>{
     const s = document.createElement('span');
     s.textContent = h===12?'12p':(h>12?(h-12)+'p':h+'a');
     hourLabel.appendChild(s);
@@ -823,9 +915,7 @@ function timeToPct(dateObj){
 
 function renderWeekEvents(events){
   // clear existing blocks
-  document.querySelectorAll('.week-track').forEach(t=>{
-    t.querySelectorAll('.week-block').forEach(b=>b.remove());
-  });
+  document.querySelectorAll('.week-block').forEach(b=>b.remove());
 
   events.forEach(ev=>{
     const start = new Date(ev.start);
@@ -845,7 +935,8 @@ function renderWeekEvents(events){
       const topPct = timeToPct(start);
       const botPct = timeToPct(end);
       const heightPct = Math.max(botPct - topPct, 4);
-      block.className = 'week-block '+ev.source;
+      const outside = start.getHours() < WEEK_DAY_START || end.getHours() > WEEK_DAY_END;
+      block.className = 'week-block '+ev.source+(outside?' clipped':'');
       block.style.top = topPct+'%';
       block.style.height = heightPct+'%';
       block.textContent = ev.title;
@@ -879,7 +970,8 @@ async function loadWeekData(){
     const res = await fetch('/api/calendar-week');
     if(!res.ok) throw new Error('bad response');
     const data = await res.json();
-    renderWeekEvents(data.events||[]);
+      renderWeekEvents(data.events||[]);
+    updateNowLine();
     if(data.connected){
       pill.className = 'conn-pill on'; pillTxt.textContent = 'Google Calendar connected';
       gcalStatus.textContent = 'Connected \u00b7 syncing automatically';
@@ -934,9 +1026,45 @@ function wireAddBlockForm(){
   };
 }
 
+/* ---- keep the dashboard honest while it sits open all day ---- */
+function tick(){
+  const prevKey = todayKey;
+  now = new Date();
+  todayKey = ymd(now);
+  if(todayKey !== prevKey){
+    if(!state.done[todayKey]) state.done[todayKey]={};
+    if(!state.custom[todayKey]) state.custom[todayKey]=[];
+    save();
+    buildWeekSkeleton();
+    loadWeekData();
+    syncFromDb();
+  }
+  render();
+  updateNowLine();
+}
+setInterval(tick, 60000);
+
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible'){ tick(); loadWeekData(); }
+});
+setInterval(()=>{ if(document.visibilityState==='visible') loadWeekData(); }, 300000);
+
+/* current-time line across today's column */
+function updateNowLine(){
+  document.querySelectorAll('.now-line').forEach(n=>n.remove());
+  const track = document.getElementById('wtrack-'+ymd(now));
+  if(!track) return;
+  const h = now.getHours() + now.getMinutes()/60;
+  if(h < WEEK_DAY_START || h > WEEK_DAY_END) return;
+  const line = document.createElement('div');
+  line.className = 'now-line';
+  line.style.top = timeToPct(now)+'%';
+  track.appendChild(line);
+}
+
 render();
 syncFromDb();
-initWeekStrip();
+initWeekStrip().then(updateNowLine);
 </script>
 </body>
 </html>
