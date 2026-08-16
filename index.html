@@ -410,11 +410,13 @@ const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let now = new Date();
 let todayKey = ymd(now);
 
+function isWeekday(d){ const n=d.getDay(); return n>=1 && n<=5; }
+
 const RECUR = [
-  { id:'wr-am',  name:'Reset weight room — AM',        cad:'Daily',   time:'AM',   when:()=>true },
-  { id:'inbox',  name:'Check inboxes — Exos · Adobe · Wellness', cad:'Daily', time:'Shift start', when:()=>true },
-  { id:'wr-pm',  name:'Reset weight room — PM',        cad:'Daily',   time:'PM',   when:()=>true },
-  { id:'workday',name:'Log hours — Workday',           cad:'Daily',   time:'EOD',  when:()=>true, link:{label:'Workday', url:'#'} },
+  { id:'wr-am',  name:'Reset weight room — AM',        cad:'Daily',   time:'AM',   when:isWeekday },
+  { id:'inbox',  name:'Check inboxes — Exos · Adobe · Wellness', cad:'Daily', time:'Shift start', when:isWeekday },
+  { id:'wr-pm',  name:'Reset weight room — PM',        cad:'Daily',   time:'PM',   when:isWeekday },
+  { id:'workday',name:'Log hours — Workday',           cad:'Daily',   time:'EOD',  when:isWeekday, link:{label:'Workday', url:'#'} },
   { id:'board',  name:'Write workout on board (Hooper/Townsend)', cad:'Weekly', time:'Mon', when:d=>d.getDay()===1 },
   { id:'lab',    name:'Strength Lab programming',      cad:'Weekly',  time:'Wed–Fri', when:d=>[3,4,5].includes(d.getDay()) },
   { id:'glove',  name:'White Glove Walkthrough',       cad:'Weekly',  time:'By 2:00p', when:d=>[4,5].includes(d.getDay()), link:{label:'Walkthrough', url:'#'} },
@@ -560,6 +562,7 @@ function render(){
   } else fc.style.display='none';
 
   const list=document.getElementById('todayList'); list.innerHTML='';
+  if(!tasks.length){ list.innerHTML='<div class="empty">Nothing scheduled today \u2014 enjoy the day off.</div>'; }
   const order=['Daily','Weekly','Monthly','Today'];
   order.forEach(cad=>{
     const group=tasks.filter(t=>t.cad===cad);
@@ -872,7 +875,7 @@ function buildWeekSkeleton(){
 
   // hour label column
   const hourCol = document.createElement('div');
-  hourCol.innerHTML = '<div class="week-col-head">&nbsp;</div>';
+  hourCol.innerHTML = '<div class="week-col-head"><div class="dname">&nbsp;</div><div class="dnum">&nbsp;</div></div>';
   const hourTrack = document.createElement('div');
   hourTrack.className = 'week-track';
   hourTrack.style.background = 'transparent';
