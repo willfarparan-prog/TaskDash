@@ -247,6 +247,18 @@
   .ps[data-step]:hover{background:rgba(0,0,0,.04);}
   .ps[data-step]:focus-visible{outline:2px solid var(--exos);outline-offset:1px;}
 
+  /* compressed-timeline callout + step states */
+  .compressed-note{font-size:11px;line-height:1.5;color:var(--amber);background:var(--amber-soft);
+    border:1px solid #F0D9AE;border-radius:8px;padding:7px 9px;margin:10px 0 2px;}
+  .compressed-note b{color:#8A5200;}
+  .track .s.late{background:var(--adobe);}
+  .ps.late{color:var(--adobe);}
+  .ps.late .pd{background:var(--adobe);}
+  .ps.now{color:var(--amber);font-weight:600;}
+  .ps.now .pt{background:var(--amber);color:#fff;border-radius:4px;padding:1px 5px;font-size:9px;letter-spacing:.04em;}
+  .vendor-check{display:flex;align-items:flex-start;gap:7px;font-size:11px;color:var(--muted);line-height:1.4;margin-top:2px;cursor:pointer;}
+  .vendor-check input{margin-top:1px;accent-color:var(--adobe);}
+
   /* toast */
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
     background:var(--ink);color:#fff;font-size:12.5px;font-weight:500;padding:10px 16px;border-radius:10px;
@@ -372,6 +384,7 @@
         <div id="evtForm" style="display:none;margin-bottom:10px;">
           <div class="addrow" style="margin-top:0"><input id="evtName" placeholder="Event name (e.g. Press Pause)"/></div>
           <div class="addrow"><input id="evtDate" type="date"/><button class="btn primary" id="evtCreate">Build</button></div>
+          <label class="vendor-check"><input type="checkbox" id="evtVendor"/> Needs a vendor with no existing SOP (routes through Michelle first)</label>
           <div class="hint">Sets all 8 steps back from your date — room (Sahar), flyer, catering (Josh), then the Slack posts.</div>
         </div>
         <div id="pipeWrap"></div>
@@ -638,19 +651,25 @@ function addTask(){
 }
 
 /* ---- event pipeline (Agent#2 8-step SOP), with pillar tag support ---- */
+/* Steps flagged `par` are the ones the SOP says to run IN PARALLEL when an
+   event is under two weeks out (compressed-timeline protocol). Steps flagged
+   `vendor` only apply when the event needs a vendor with no existing SOP —
+   those must clear Michelle before anything else moves. */
 const PIPE=[
-  {k:'Set date',            off:35},
-  {k:'Book room · Sahar',   off:28},
-  {k:'Flyer / poster',      off:21},
+  {k:'Escalate to Michelle · vendor + budget', off:35, vendor:true, par:true},
+  {k:'Pin down date',       off:35},
+  {k:'Book room · Sahar',   off:28, par:true},
+  {k:'Flyer / poster',      off:21, par:true},
   {k:'Catering · Josh',     off:21},
-  {k:'Initial Slack post',  off:18},
+  {k:'Initial Slack post',  off:18, par:true},
   {k:'Secondary Slack post',off:10},
   {k:'Third Slack post',    off:3},
   {k:'Day-of Slack post',   off:0},
 ];
+const COMPRESSED_DAYS = 14;
 if(!state.events.length){
   const d=new Date('2026-08-18T12:00:00');
-  state.events=[{name:'Press Pause', date:ymd(d), pillar:'Recovery'}];
+  state.events=[{name:'Press Pause', date:ymd(d), pillar:'Recovery', needsVendor:true}];
 }
 document.getElementById('newEvtBtn').onclick=()=>{
   const f=document.getElementById('evtForm'); f.style.display=f.style.display==='none'?'block':'none';
@@ -659,7 +678,7 @@ document.getElementById('evtCreate').onclick=()=>{
   const n=document.getElementById('evtName').value.trim();
   const dt=document.getElementById('evtDate').value;
   if(!n||!dt) return;
-  state.events.push({name:n, date:dt});
+  state.events.push({name:n, date:dt, needsVendor: !!document.getElementById('evtVendor').checked});
   document.getElementById('evtName').value=''; document.getElementById('evtDate').value='';
   document.getElementById('evtForm').style.display='none';
   render();
@@ -667,24 +686,32 @@ document.getElementById('evtCreate').onclick=()=>{
 };
 function renderPipe(){
   const w=document.getElementById('pipeWrap'); w.innerHTML='';
-  if(!state.events.length){ w.innerHTML='<div class="empty">No events yet. Set a date and the 8 steps build themselves.</div>'; return; }
+  if(!state.events.length){ w.innerHTML='<div class="empty">No events yet. Set a date and the steps build themselves.</div>'; return; }
   state.events.forEach(ev=>{
     const evd=new Date(ev.date+'T12:00:00');
     const daysOut=Math.round((evd-now)/86400000);
-    const steps=PIPE.map(p=>{
+    const compressed = daysOut >= 0 && daysOut < COMPRESSED_DAYS;
+    const steps=PIPE.filter(p=>!p.vendor || ev.needsVendor).map(p=>{
       const due=new Date(evd); due.setDate(due.getDate()-p.off);
-      const manual = state.pipeDone && state.pipeDone[ev.name+'|'+p.k];
-      const done = manual!==undefined ? manual : (now > due);
-      return {k:p.k, due, done, dueOut:Math.round((due-now)/86400000)};
+      /* A passed due date means OVERDUE, never "done". Only an explicit
+         check-off marks a step complete. */
+      const done = !!(state.pipeDone && state.pipeDone[ev.name+'|'+p.k]);
+      const dueOut = Math.round((due-now)/86400000);
+      let state_ = 'ahead';
+      if(done) state_='done';
+      else if(compressed && p.par) state_='act';
+      else if(dueOut < 0) state_='late';
+      return {k:p.k, due, done, dueOut, st:state_};
     });
-    const nowIdx = steps.findIndex(s=>!s.done);
+    const actCount = steps.filter(s=>s.st==='act').length;
     const el=document.createElement('div'); el.className='pipe-ev';
     el.innerHTML=`<div class="h"><b>${esc(ev.name)}${ev.pillar?`<span class="pill">${ev.pillar}</span>`:''}</b><span class="d">${daysOut>=0?'in '+daysOut+'d':'past'}</span></div>
-      <div class="track">${steps.map((s,i)=>`<div class="s ${s.done?'on':''} ${i===nowIdx?'now':''}"></div>`).join('')}</div>
-      <div class="pipe-steps">${steps.map((s,i)=>`
-        <div class="ps ${s.done?'done':''} ${i===nowIdx?'now':''}" data-ev="${esc(ev.name)}" data-step="${esc(s.k)}" role="button" tabindex="0" title="Click to toggle">
+      ${compressed?`<div class="compressed-note"><b>${daysOut===0?'Today':daysOut+' day'+(daysOut===1?'':'s')+' out'} · compressed timeline.</b> Run the marked steps in parallel — don't wait for one to finish before starting the next.</div>`:''}
+      <div class="track">${steps.map(s=>`<div class="s ${s.st==='done'?'on':''} ${s.st==='act'?'now':''} ${s.st==='late'?'late':''}"></div>`).join('')}</div>
+      <div class="pipe-steps">${steps.map(s=>`
+        <div class="ps ${s.st==='done'?'done':''} ${s.st==='act'?'now':''} ${s.st==='late'?'late':''}" data-ev="${esc(ev.name)}" data-step="${esc(s.k)}" role="button" tabindex="0" title="Click to toggle">
           <span class="pd"></span>${esc(s.k)}
-          <span class="pt">${s.done?'✓':(s.dueOut>=0?s.dueOut+'d':'due')}</span>
+          <span class="pt">${s.st==='done'?'✓':s.st==='act'?'DO NOW':s.st==='late'?'overdue':s.dueOut+'d'}</span>
         </div>`).join('')}</div>`;
     w.appendChild(el);
   });
