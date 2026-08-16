@@ -72,7 +72,14 @@ module.exports = async (req, res) => {
                   return res.status(400).json({ error: 'unknown kind' });
         }
 
-        res.setHeader('Allow', 'GET, POST, PATCH');
+        if (req.method === 'DELETE') {
+      const { id } = req.query;
+      if (!id) return res.status(400).json({ error: 'id required' });
+      await db.query('delete from daily_tasks where id=$1', [id]);
+      return res.status(200).json({ ok: true });
+    }
+
+    res.setHeader('Allow', 'GET, POST, PATCH, DELETE');
               return res.status(405).json({ error: 'method not allowed' });
       } catch (err) {
               return res.status(500).json({ error: err.message });
