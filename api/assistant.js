@@ -1,7 +1,85 @@
-// /api/assistant — the dashboard's chat box, backed by the real Claude API.
+// /api/assistant - the dashboard's chat box, backed by the real Claude API.
 // The API key is read from ANTHROPIC_API_KEY server-side and never reaches the browser.
+// Claude can call tools to actually create tasks/events - not just talk about them.
+
+const { Pool } = require('pg');
+let pool;
+function getPool() {
+  if (!pool) {
+    if (!process.env.neon) throw new Error('neon env var is not set');
+    pool = new Pool({ connectionString: process.env.neon, ssl: { rejectUnauthorized: false } });
+  }
+  return pool;
+}
 
 const MODEL = 'claude-sonnet-5';
+
+const TOOLS = [
+  {
+    name: 'add_recurring_task',
+    description: "Create a recurring task that shows up on the dashboard's Today list going forward, on the given cadence. Use this for anything the user wants remembered on a repeating basis (daily, or a specific weekday every week). For a task tied to a specific week of the month (e.g. 'second week of every month'), still use Weekly cadence on a representative weekday and mention the monthly timing in the task name itself, since the dashboard's recurring engine only supports Daily/Weekly natively.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Short task name, e.g. "Storage room inventory check"' },
+        cadence: { type: 'string', enum: ['Daily', 'Weekly'] },
+        weekday: { type: 'integer', description: '0=Sunday..6=Saturday. Required if cadence is Weekly, omit for Daily.' },
+      },
+      required: ['name', 'cadence'],
+    },
+  },
+  {
+    name: 'add_daily_task',
+    description: "Add a one-off task to today's list only (not recurring).",
+    input_schema: {
+      type: 'object',
+      properties: { name: { type: 'string' } },
+      required: ['name'],
+    },
+  },
+  {
+    name: 'add_event',
+    description: 'Add a new event to the event pipeline (e.g. a wellness event, workshop, or challenge). This seeds the 8-step (or 9-step, if it needs a vendor) event pipeline on the given date.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        date: { type: 'string', description: 'YYYY-MM-DD' },
+        pillar: { type: 'string', enum: ['Mindset', 'Nutrition', 'Movement', 'Recovery'] },
+        needsVendor: { type: 'boolean', description: 'True if this event needs a vendor or service with no existing SOP, which routes through Michelle first.' },
+      },
+      required: ['name', 'date'],
+    },
+  },
+];
+
+async function runTool(name, input) {
+  const db = getPool();
+  if (name === 'add_recurring_task') {
+    const id = 'rc-x' + Date.now();
+    await db.query(
+      `insert into recur_tasks (id, name, cadence, weekday, source) values ($1,$2,$3,$4,'custom')`,
+      [id, input.name, input.cadence, input.cadence === 'Weekly' ? (input.weekday ?? null) : null]
+    );
+    return { ok: true, id };
+  }
+  if (name === 'add_daily_task') {
+    const today = new Date().toISOString().slice(0, 10);
+    const r = await db.query(
+      `insert into daily_tasks (day_key, name) values ($1,$2) returning id`,
+      [today, input.name]
+    );
+    return { ok: true, id: r.rows[0].id };
+  }
+  if (name === 'add_event') {
+    const r = await db.query(
+      `insert into events (name, event_date, pillar) values ($1,$2,$3) returning id`,
+      [input.name, input.date, input.pillar || null]
+    );
+    return { ok: true, id: r.rows[0].id, needsVendor: !!input.needsVendor };
+  }
+  return { ok: false, error: 'unknown tool' };
+}
 
 function buildSystem(ctx = {}) {
   const today = ctx.today || '(unknown)';
@@ -23,6 +101,9 @@ ${tasks}
 
 Events in the pipeline:
 ${events}
+
+YOU CAN TAKE REAL ACTION
+You have tools to create a recurring task, a one-off task for today, or a new event. When the user asks you to remember something, add a task, or set a reminder - ANY phrasing, not just "remind me to X every Y" - actually call the appropriate tool. Do not just describe what you would add; add it. After calling a tool, confirm briefly what you created. If a detail is ambiguous (e.g. which weekday, or "second week of the month"), make a reasonable choice, create it, and say what you chose rather than asking first - he can always ask you to change it.
 
 WHO HE WORKS WITH
 - Michelle Bariao (exo30631) - Account Manager. All escalations and anything without an existing SOP.
@@ -82,37 +163,69 @@ module.exports = async (req, res) => {
     const trimmed = messages.slice(-12).filter(m => m && m.content);
     if (!trimmed.length) return res.status(400).json({ error: 'no messages' });
 
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 1200,
-        system: buildSystem(context),
-        messages: trimmed.map(m => ({
-          role: m.role === 'bot' ? 'assistant' : 'user',
-          content: String(m.content),
-        })),
-      }),
-    });
+    let convo = trimmed.map(m => ({
+      role: m.role === 'bot' ? 'assistant' : 'user',
+      content: String(m.content),
+    }));
 
-    const data = await r.json();
-    if (!r.ok) {
-      const detail = (data && data.error && data.error.message) || 'unknown error';
-      return res.status(200).json({ text: `Claude returned an error: ${detail}` });
+    let changed = false;
+    let finalText = '';
+    const system = buildSystem(context);
+
+    // Tool-use loop: Claude may call a tool, we run it, feed the result back,
+    // and let it continue - up to a few rounds so it can't loop forever.
+    for (let round = 0; round < 4; round++) {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 1200,
+          system,
+          tools: TOOLS,
+          messages: convo,
+        }),
+      });
+
+      const data = await r.json();
+      if (!r.ok) {
+        const detail = (data && data.error && data.error.message) || 'unknown error';
+        return res.status(200).json({ text: `Claude returned an error: ${detail}`, changed });
+      }
+
+      const textParts = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+      if (textParts) finalText = textParts;
+
+      const toolUses = (data.content || []).filter(b => b.type === 'tool_use');
+      if (!toolUses.length) break;
+
+      convo.push({ role: 'assistant', content: data.content });
+
+      const toolResults = [];
+      for (const call of toolUses) {
+        let result;
+        try {
+          result = await runTool(call.name, call.input || {});
+          if (result.ok) changed = true;
+        } catch (err) {
+          result = { ok: false, error: err.message };
+        }
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: call.id,
+          content: JSON.stringify(result),
+        });
+      }
+      convo.push({ role: 'user', content: toolResults });
+
+      if (data.stop_reason !== 'tool_use') break;
     }
 
-    const text = (data.content || [])
-      .filter(b => b.type === 'text')
-      .map(b => b.text)
-      .join('\n')
-      .trim();
-
-    return res.status(200).json({ text: text || '(empty response)' });
+    return res.status(200).json({ text: finalText || '(empty response)', changed });
   } catch (err) {
     return res.status(200).json({ text: `Couldn't reach Claude: ${err.message}` });
   }
