@@ -259,6 +259,8 @@
   .vendor-check{display:flex;align-items:flex-start;gap:7px;font-size:11px;color:var(--muted);line-height:1.4;margin-top:2px;cursor:pointer;}
   .vendor-check input{margin-top:1px;accent-color:var(--adobe);}
 
+  .msg.thinking{color:var(--faint);font-style:italic;}
+
   /* toast */
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
     background:var(--ink);color:#fff;font-size:12.5px;font-weight:500;padding:10px 16px;border-radius:10px;
@@ -760,12 +762,33 @@ function addMsg(role, html){
 }
 
 function greet(){
-  addMsg('bot', "Hi — I'm your task assistant. Tell me something to remember (\"remind me to check the AED every Monday\") or tap a briefing above.");
+  addMsg('bot', "Hi — ask me anything about your day, or say <i>add: restock towels</i> to log a task. I can draft Slack posts, newsletter sections, and emails to Sahar, Josh, or Michelle.");
 }
 greet();
 
 document.getElementById('chatSend').onclick=sendChat;
 document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+
+const chatHistory = [];
+
+function chatContext(){
+  const tasks = todaysTasks().map(t=>({ name:t.name, cad:t.cad, done:t.done, status:statusOf(t) }));
+  const events = state.events.map(ev=>{
+    const evd=new Date(ev.date+'T12:00:00');
+    const daysOut=Math.round((evd-now)/86400000);
+    const compressed = daysOut>=0 && daysOut<COMPRESSED_DAYS;
+    const steps=PIPE.filter(p=>!p.vendor||ev.needsVendor).map(p=>{
+      const due=new Date(evd); due.setDate(due.getDate()-p.off);
+      const done=!!(state.pipeDone&&state.pipeDone[ev.name+'|'+p.k]);
+      const dueOut=Math.round((due-now)/86400000);
+      let st='ahead';
+      if(done) st='done'; else if(compressed&&p.par) st='do now'; else if(dueOut<0) st='overdue';
+      return {k:p.k, st};
+    });
+    return { name:ev.name, date:ev.date, pillar:ev.pillar, daysOut, compressed, steps };
+  });
+  return { today: now.toDateString(), tasks, events };
+}
 
 function sendChat(){
   const inp=document.getElementById('chatInput');
@@ -773,6 +796,36 @@ function sendChat(){
   addMsg('user', esc(v));
   inp.value='';
   handleIntent(v);
+}
+
+async function askClaude(text){
+  chatHistory.push({role:'user', content:text});
+  const thinking=document.createElement('div');
+  thinking.className='msg bot thinking';
+  thinking.textContent='Thinking\u2026';
+  chatMsgs.appendChild(thinking); chatMsgs.scrollTop=chatMsgs.scrollHeight;
+  try{
+    const res = await fetch('/api/assistant', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ messages: chatHistory, context: chatContext() })
+    });
+    const data = await res.json();
+    thinking.remove();
+    const reply = data.text || 'No response.';
+    chatHistory.push({role:'assistant', content:reply});
+    addMsg('bot', mdToHtml(reply));
+  }catch(err){
+    thinking.remove();
+    addMsg('bot', "Couldn't reach the assistant just now. Your tasks are unaffected.");
+  }
+}
+
+function mdToHtml(t){
+  let h = esc(t);
+  h = h.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  h = h.replace(/^### (.+)$/gm,'<b>$1</b>');
+  h = h.replace(/^[-*] (.+)$/gm,'\u2022 $1');
+  return h.replace(/\n/g,'<br>');
 }
 
 /* very small local intent parser — recognizes recurring-task asks,
@@ -799,7 +852,7 @@ function handleIntent(text){
     return;
   }
 
-  if(/^(add|task|todo)/.test(t) || t.split(' ').length<=6){
+  if(/^(add|task|todo)\b/.test(t)){
     state.custom[todayKey].push({name: text});
     save(); render();
     dbPost('/api/tasks', { type:'daily_task', dayKey:todayKey, name:text });
@@ -807,8 +860,8 @@ function handleIntent(text){
     return;
   }
 
-  addMsg('bot', `Got it — I don't have a live Claude connection wired in yet, so I can't draft that for you here. I can still log it as a task, or you can use one of the briefings above.
-    <div><span class="msg-chip" data-add="${esc(text)}">Add as today's task</span></div>`);
+  askClaude(text);
+}
 }
 
 chatMsgs.addEventListener('click', e=>{
