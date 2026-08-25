@@ -814,6 +814,11 @@ async function askClaude(text){
     const reply = data.text || 'No response.';
     chatHistory.push({role:'assistant', content:reply});
     addMsg('bot', mdToHtml(reply));
+    if(data.changed){
+      await syncFromDb();
+      await loadWeekData();
+      toast('Dashboard updated');
+    }
   }catch(err){
     thinking.remove();
     addMsg('bot', "Couldn't reach the assistant just now. Your tasks are unaffected.");
