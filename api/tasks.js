@@ -73,9 +73,13 @@ module.exports = async (req, res) => {
         }
 
         if (req.method === 'DELETE') {
-      const { id } = req.query;
+      const { id, kind } = req.query;
       if (!id) return res.status(400).json({ error: 'id required' });
-      await db.query('delete from daily_tasks where id=$1', [id]);
+      if (kind === 'recur') {
+        await db.query('delete from recur_tasks where id=$1', [id]);
+      } else {
+        await db.query('delete from daily_tasks where id=$1', [id]);
+      }
       return res.status(200).json({ ok: true });
     }
 
