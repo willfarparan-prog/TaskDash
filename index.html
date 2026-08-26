@@ -242,6 +242,12 @@
   .item:hover .del, .item .del:focus{opacity:1;}
   .item .del:hover{color:var(--adobe);background:var(--adobe-soft);}
 
+  /* delete control on event pipeline cards */
+  .pipe-del{opacity:0;margin-left:2px;border:none;background:transparent;color:var(--faint);
+    font-size:17px;line-height:1;cursor:pointer;padding:0 4px;border-radius:6px;transition:.12s;flex:none;}
+  .pipe-ev:hover .pipe-del, .pipe-del:focus{opacity:1;}
+  .pipe-del:hover{color:var(--adobe);background:var(--adobe-soft);}
+
   /* pipeline steps are clickable */
   .ps[data-step]{cursor:pointer;border-radius:6px;padding:2px 4px;margin:-2px -4px;transition:background .12s;}
   .ps[data-step]:hover{background:rgba(0,0,0,.04);}
@@ -495,11 +501,22 @@ async function syncFromDb(){
       id:r.id.replace(/^rc-/,''), name:r.name, cad:r.cadence, day:r.weekday
     }));
     // events
-    if(e.events && e.events.length){
-      state.events = e.events.map(ev=>({ name:ev.name, date:ev.event_date, pillar:ev.pillar }));
+    if(e.events){
+      state.events = e.events.map(ev=>({
+        id:ev.id, name:ev.name, date:String(ev.event_date).slice(0,10), pillar:ev.pillar,
+        needsVendor: !!ev.needs_vendor
+      }));
     }
     render();
   }catch(err){ /* offline / not deployed yet — silently keep localStorage */ }
+}
+function deleteEvent(id){
+  const idx = state.events.findIndex(ev=>ev.id===id);
+  if(idx===-1) return;
+  state.events.splice(idx,1);
+  render();
+  dbSend('DELETE','/api/events?id='+encodeURIComponent(id));
+  toast('Event deleted');
 }
 function dbPost(path, body){
   if(!dbSynced){ pendingWrites.push(['POST', path, body]); return; }
@@ -616,6 +633,11 @@ function itemEl(t){
     del.title='Delete task'; del.setAttribute('aria-label','Delete task'); del.textContent='\u00d7';
     del.onclick=(e)=>{ e.stopPropagation(); deleteCustomTask(t.id); };
     li.appendChild(del);
+  } else if(t.id.startsWith('rc-')){
+    const del=document.createElement('button'); del.className='del'; del.type='button';
+    del.title='Delete recurring task'; del.setAttribute('aria-label','Delete recurring task'); del.textContent='\u00d7';
+    del.onclick=(e)=>{ e.stopPropagation(); deleteCustomRecurTask(t.id); };
+    li.appendChild(del);
   }
   return li;
 }
@@ -629,6 +651,17 @@ function deleteCustomTask(id){
   save(); render();
   if(item.dbId!=null) dbSend('DELETE','/api/tasks?id='+encodeURIComponent(item.dbId));
   toast('Task deleted');
+}
+
+function deleteCustomRecurTask(taskId){
+  const rawId = taskId.replace(/^rc-/,'');
+  const idx = state.recurCustom.findIndex(r=>r.id===rawId);
+  if(idx===-1) return;
+  state.recurCustom.splice(idx,1);
+  delete state.done[todayKey][taskId];
+  save(); render();
+  dbSend('DELETE','/api/tasks?id='+encodeURIComponent('rc-'+rawId)+'&kind=recur');
+  toast('Recurring task deleted');
 }
 
 function toggle(id){
@@ -669,22 +702,35 @@ const PIPE=[
   {k:'Day-of Slack post',   off:0},
 ];
 const COMPRESSED_DAYS = 14;
-if(!state.events.length){
-  const d=new Date('2026-08-18T12:00:00');
-  state.events=[{name:'Press Pause', date:ymd(d), pillar:'Recovery', needsVendor:true}];
-}
 document.getElementById('newEvtBtn').onclick=()=>{
   const f=document.getElementById('evtForm'); f.style.display=f.style.display==='none'?'block':'none';
 };
-document.getElementById('evtCreate').onclick=()=>{
+document.getElementById('evtCreate').onclick=async()=>{
   const n=document.getElementById('evtName').value.trim();
   const dt=document.getElementById('evtDate').value;
   if(!n||!dt) return;
-  state.events.push({name:n, date:dt, needsVendor: !!document.getElementById('evtVendor').checked});
+  const needsVendor = !!document.getElementById('evtVendor').checked;
   document.getElementById('evtName').value=''; document.getElementById('evtDate').value='';
+  document.getElementById('evtVendor').checked=false;
   document.getElementById('evtForm').style.display='none';
-  render();
-  dbPost('/api/events', { name:n, date:dt });
+  try{
+    const res = await fetch('/api/events', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name:n, date:dt, needsVendor })
+    });
+    if(res.ok){
+      await syncFromDb();
+      toast('Event added');
+    } else {
+      state.events.push({name:n, date:dt, needsVendor});
+      render();
+      toast('Could not reach the server — event saved locally only');
+    }
+  }catch(err){
+    state.events.push({name:n, date:dt, needsVendor});
+    render();
+    toast('Could not reach the server — event saved locally only');
+  }
 };
 function renderPipe(){
   const w=document.getElementById('pipeWrap'); w.innerHTML='';
@@ -707,7 +753,7 @@ function renderPipe(){
     });
     const actCount = steps.filter(s=>s.st==='act').length;
     const el=document.createElement('div'); el.className='pipe-ev';
-    el.innerHTML=`<div class="h"><b>${esc(ev.name)}${ev.pillar?`<span class="pill">${ev.pillar}</span>`:''}</b><span class="d">${daysOut>=0?'in '+daysOut+'d':'past'}</span></div>
+    el.innerHTML=`<div class="h"><b>${esc(ev.name)}${ev.pillar?`<span class="pill">${ev.pillar}</span>`:''}</b><span class="d">${daysOut>=0?'in '+daysOut+'d':'past'}</span>${ev.id!=null?`<button class="pipe-del" type="button" data-del-event="${esc(ev.id)}" title="Delete event" aria-label="Delete event">×</button>`:''}</div>
       ${compressed?`<div class="compressed-note"><b>${daysOut===0?'Today':daysOut+' day'+(daysOut===1?'':'s')+' out'} · compressed timeline.</b> Run the marked steps in parallel — don't wait for one to finish before starting the next.</div>`:''}
       <div class="track">${steps.map(s=>`<div class="s ${s.st==='done'?'on':''} ${s.st==='act'?'now':''} ${s.st==='late'?'late':''}"></div>`).join('')}</div>
       <div class="pipe-steps">${steps.map(s=>`
@@ -727,6 +773,12 @@ function renderPipe(){
     };
     row.addEventListener('click', handler);
     row.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); handler(); } });
+  });
+  w.querySelectorAll('[data-del-event]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      deleteEvent(btn.dataset.delEvent);
+    });
   });
 }
 
