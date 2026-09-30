@@ -69,3 +69,15 @@ create table if not exists manual_blocks (
     );
 
 create index if not exists idx_manual_blocks_date on manual_blocks(block_date);
+
+-- v4: playbook link registry (URLs live here, not in the repo)
+create table if not exists links (
+      id          text primary key,
+      title       text not null,
+      short       text,
+      category    text not null check (category in ('daily','reporting','forms','hr_sop','marketing')),
+      url         text,
+      description text,
+      pinned      boolean not null default false,
+      sort        int not null default 0
+    );
