@@ -75,6 +75,30 @@ create table if not exists manual_blocks (
 
 create index if not exists idx_manual_blocks_date on manual_blocks(block_date);
 
+create table if not exists booking_settings (
+      id          int primary key default 1 check (id = 1),
+      settings    jsonb not null default '{}'::jsonb,
+      updated_at  timestamptz not null default now()
+    );
+
+create table if not exists booking_requests (
+      id                   bigserial primary key,
+      booking_code         text unique not null,
+      visitor_name         text not null,
+      visitor_email        text,
+      reason               text not null,
+      notes                text,
+      starts_at            timestamptz not null,
+      ends_at              timestamptz not null,
+      status               text not null default 'confirmed',
+      google_event_id      text,
+      calendar_sync_status text not null default 'pending',
+      created_at           timestamptz not null default now()
+    );
+
+create unique index if not exists idx_booking_active_slot on booking_requests(starts_at) where status in ('pending','confirmed');
+create index if not exists idx_booking_upcoming on booking_requests(starts_at, status);
+
 -- v4: playbook link registry (URLs live here, not in the repo)
 create table if not exists links (
       id          text primary key,

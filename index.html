@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <style>.cal-event.booking{background:#fff0cb;border-color:#b47b00}.agenda-line.booking{background:#b47b00}.scheduler-save{position:static}</style>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Cpath d='M14 44 31 13l19 31h-9L31 28 23 44z' fill='%23ef3123'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -23,6 +24,7 @@
       <nav class="side-nav" id="sideNav">
         <button class="nav-item active" data-view="dashboard"><span class="nav-icon">▦</span><span>Dashboard</span></button>
         <button class="nav-item" data-view="calendar"><span class="nav-icon">▣</span><span>Calendar</span></button>
+        <button class="nav-item" data-view="scheduler"><span class="nav-icon">◷</span><span>Scheduler</span><i class="status-pin" id="schedulerPin"></i></button>
         <button class="nav-item" data-view="programs"><span class="nav-icon">⌁</span><span>Training programs</span></button>
         <button class="nav-item" data-view="clients"><span class="nav-icon">◎</span><span>Clients</span></button>
         <button class="nav-item" data-view="inbox"><span class="nav-icon">▱</span><span>Inbox</span><b class="nav-badge" id="inboxBadge" hidden>0</b></button>
@@ -86,6 +88,24 @@
           <div class="page-intro split-intro"><div><div class="eyebrow"><i></i>TIME & SESSIONS</div><h1>Calendar</h1><p>One week across client work, Adobe blocks, events, and your approved Google calendar.</p></div><button class="primary-btn" id="addBlockOpen">＋ Add work block</button></div>
           <div class="connection-banner" id="calendarBanner"><div><strong>Google calendar</strong><span>Checking the approved account…</span></div><button class="secondary-btn" id="calendarConnect">Connect</button></div>
           <article class="panel calendar-panel"><div class="calendar-head"><button class="icon-btn" id="prevWeek">‹</button><div><span class="kicker">WEEK VIEW</span><h2 id="calendarRange">This week</h2></div><button class="icon-btn" id="nextWeek">›</button></div><div class="week-calendar" id="weekCalendar"></div></article>
+        </section>
+
+        <section class="view" id="view-scheduler" data-title="Scheduler">
+          <div class="page-intro split-intro"><div><div class="eyebrow"><i></i>PUBLIC BOOKING</div><h1>Scheduler</h1><p>Set the times people can request, protect busy calendar blocks, and keep one permanent link pinned in Slack.</p></div><div class="intro-actions"><button class="secondary-btn" id="openBookingPage">Open booking page</button><button class="primary-btn" id="copyBookingLink">Copy booking link</button></div></div>
+          <div class="booking-link-bar"><div><span>YOUR PERMANENT LINK</span><strong id="bookingUrl">https://task-dash-umber.vercel.app/book.html</strong></div><button class="secondary-btn" id="copyBookingLinkInline">Copy</button></div>
+          <div class="connection-banner" id="workCalendarBanner"><div><strong>Work Google Calendar</strong><span>Connect William.farparan@teamexos.com to hide busy times and add confirmed bookings automatically.</span></div><button class="secondary-btn" id="workCalendarConnect">Connect work calendar</button></div>
+          <div class="scheduler-layout">
+            <div class="scheduler-main">
+              <article class="panel"><div class="section-heading"><div><span class="kicker">BOOKING RULES</span><h2>How scheduling works</h2><p>These settings shape every time people can choose.</p></div></div><div class="booking-rules-grid"><label>Time between starts<input id="scheduleSlot" type="number" min="15" max="120" step="15"></label><label>Session length<input id="scheduleDuration" type="number" min="15" max="240" step="15"></label><label>Minimum notice<select id="scheduleNotice"><option value="0">No notice</option><option value="60">1 hour</option><option value="120">2 hours</option><option value="240">4 hours</option><option value="720">12 hours</option><option value="1440">1 day</option></select></label><label>Book ahead<input id="scheduleAhead" type="number" min="1" max="90"></label></div></article>
+              <article class="panel"><div class="section-heading"><div><span class="kicker">WEEKLY AVAILABILITY</span><h2>Your work schedule</h2><p>Turn days on or off and set when visits may start.</p></div></div><div class="schedule-hours" id="scheduleHours"></div></article>
+              <article class="panel"><div class="section-heading"><div><span class="kicker">VISITOR DETAILS</span><h2>Booking page information</h2></div></div><div class="booking-copy-fields"><label>Location<input id="scheduleLocation" maxlength="160"></label><label>Note shown to visitors<textarea id="scheduleNote" maxlength="400"></textarea></label></div></article>
+              <div class="scheduler-save"><span id="schedulerSaved">Changes update the public booking page.</span><button class="primary-btn" id="saveSchedule">Save availability</button></div>
+            </div>
+            <aside class="scheduler-side">
+              <article class="panel"><div class="section-heading"><div><span class="kicker">NEXT OPENINGS</span><h2>Visitor preview</h2></div></div><div id="schedulePreview" class="schedule-preview"><div class="empty-state compact">Loading availability…</div></div></article>
+              <article class="panel"><div class="section-heading"><div><span class="kicker">UPCOMING</span><h2>Booked visits</h2></div></div><div id="bookingList" class="booking-list"><div class="empty-state compact">No bookings yet.</div></div></article>
+            </aside>
+          </div>
         </section>
 
         <section class="view" id="view-programs" data-title="Training programs">

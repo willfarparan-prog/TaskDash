@@ -68,11 +68,24 @@ module.exports = async (req, res) => {
         source: row.source,
       };
     });
+    const bookingResult = await db.query(
+      `select id, visitor_name, reason, starts_at, ends_at from booking_requests
+       where status in ('pending','confirmed') and starts_at >= $1 and starts_at < $2 order by starts_at`,
+      [weekStart, weekEnd]
+    );
+    const bookings = bookingResult.rows.map(row => ({
+      id: `b${row.id}`,
+      title: `${row.reason} · ${row.visitor_name}`,
+      start: row.starts_at,
+      end: row.ends_at,
+      allDay: false,
+      source: 'booking',
+    }));
     return res.status(200).json({
       connected: !!token,
       accountEmail: token ? OWNER_EMAIL : null,
       weekStart: weekStart.toISOString().slice(0, 10),
-      events: [...googleEvents, ...manual],
+      events: [...googleEvents, ...manual, ...bookings],
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });

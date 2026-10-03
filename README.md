@@ -6,6 +6,7 @@ Task Dash is William Farparan's private Exos at Adobe SF operating dashboard. It
 
 - **Dashboard:** daily overview, operating queue, week agenda, event progress, connection readiness, and a searchable work-resource hub.
 - **Calendar:** read-only Google Calendar plus manual Adobe/Exos work blocks.
+- **Scheduler:** a permanent, no-sign-in public booking link with live availability, configurable work hours, visit reasons, booking tracking, and work-calendar conflict protection.
 - **Training programs:** client-linked, multi-day program editor with print-ready day sheets.
 - **Clients:** PT consult, InBody, and personal-training roster with session history and follow-ups.
 - **Inbox:** unread important/starred Google mail, with an Adobe Microsoft connection held as a separate future authorization.
@@ -17,12 +18,18 @@ The resource hub keeps URLs in the private `links` database table, not in the pu
 
 ## Account and privacy rules
 
-Google OAuth is currently restricted in code to `willfarparan@gmail.com`. The callback verifies the returned Google identity before saving tokens. A signed, HTTP-only session cookie protects client records, programs, calendar data, inbox data, private work links, and every data-changing API request. When ownership is formally transferred, the allowlist can be migrated to `William.farparan@teamexos.com` together with a company-approved OAuth client.
+Dashboard ownership remains restricted to `willfarparan@gmail.com`. The callback verifies the returned Google identity before saving tokens. A signed, HTTP-only session cookie protects client records, programs, calendar data, inbox data, private work links, scheduler settings, and every private data-changing API request.
 
-Google scopes are read-only:
+The Scheduler has a second, purpose-limited Google connection restricted to `William.farparan@teamexos.com`. It is used only to read busy work-calendar events and create or remove Task Dash booking events. Visitors never sign in and never receive dashboard access.
+
+Personal Google scopes are read-only:
 
 - `calendar.readonly`
 - `gmail.readonly`
+
+The work calendar connection uses:
+
+- `calendar.events`
 
 Microsoft is not connected automatically. It remains a separate, visible connection until the Adobe work account and an approved Microsoft OAuth application are available.
 

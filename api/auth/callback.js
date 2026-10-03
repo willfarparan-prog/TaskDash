@@ -3,8 +3,8 @@
 // Never logs or returns the tokens to the browser.
 
 const { Pool } = require('pg');
-const OWNER_EMAIL = 'willfarparan@gmail.com';
-const { sessionCookie } = require('../../lib/session');
+const { OWNER_EMAIL, WORK_EMAIL } = require('../../lib/google');
+const { sessionCookie, isOwnerSession } = require('../../lib/session');
 let pool;
 function getPool() {
   if (!pool) {
@@ -15,9 +15,16 @@ function getPool() {
 }
 
 module.exports = async (req, res) => {
-  const { code, error } = req.query;
+  const { code, error, state } = req.query;
   if (error) return res.status(400).send(`Google denied access: ${error}`);
   if (!code) return res.status(400).send('Missing ?code from Google.');
+  const stateCookie = String(req.headers.cookie || '').split(';').map(v => v.trim()).find(v => v.startsWith('taskdash_oauth_state='));
+  const expectedState = stateCookie ? decodeURIComponent(stateCookie.slice('taskdash_oauth_state='.length)) : '';
+  if (!state || state !== expectedState) return res.status(400).send('Google connection expired or could not be verified. Start again from Task Dash.');
+  const account = String(state).split('.')[0] === 'work' ? 'work' : 'owner';
+  if (account === 'work' && !isOwnerSession(req)) return res.status(401).send(`Connect ${OWNER_EMAIL} first, then connect the work calendar.`);
+  const expectedEmail = account === 'work' ? WORK_EMAIL : OWNER_EMAIL;
+  const tokenId = account === 'work' ? 'google-work' : 'google';
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -50,8 +57,8 @@ module.exports = async (req, res) => {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
     const profile = await profileRes.json();
-    if (!profileRes.ok || !profile.email_verified || String(profile.email).toLowerCase() !== OWNER_EMAIL) {
-      return res.status(403).send(`Task Dash only accepts ${OWNER_EMAIL}. No tokens were saved.`);
+    if (!profileRes.ok || !profile.email_verified || String(profile.email).toLowerCase() !== expectedEmail) {
+      return res.status(403).send(`This connection only accepts ${expectedEmail}. No tokens were saved.`);
     }
 
     const expiresAt = new Date(Date.now() + (tokens.expires_in || 3600) * 1000);
@@ -59,7 +66,7 @@ module.exports = async (req, res) => {
     await db.query(`alter table oauth_tokens add column if not exists account_email text`);
     await db.query(
       `insert into oauth_tokens (id, access_token, refresh_token, expires_at, scope, account_email, updated_at)
-       values ('google', $1, $2, $3, $4, $5, now())
+       values ($1, $2, $3, $4, $5, $6, now())
        on conflict (id) do update set
          access_token = excluded.access_token,
          refresh_token = coalesce(excluded.refresh_token, oauth_tokens.refresh_token),
@@ -67,12 +74,13 @@ module.exports = async (req, res) => {
          scope = excluded.scope,
          account_email = excluded.account_email,
          updated_at = now()`,
-      [tokens.access_token, tokens.refresh_token || null, expiresAt, tokens.scope || null, OWNER_EMAIL]
+      [tokenId, tokens.access_token, tokens.refresh_token || null, expiresAt, tokens.scope || null, expectedEmail]
     );
 
-    // The signed, HTTP-only cookie protects private client, program, and inbox routes.
-    res.setHeader('Set-Cookie', sessionCookie());
-    res.writeHead(302, { Location: '/?calendar=connected' });
+    const cookies = ['taskdash_oauth_state=; Path=/api/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=0'];
+    if (account === 'owner') cookies.push(sessionCookie());
+    res.setHeader('Set-Cookie', cookies);
+    res.writeHead(302, { Location: account === 'work' ? '/#scheduler' : '/?calendar=connected' });
     res.end();
   } catch (err) {
     res.status(500).send(`Callback error: ${err.message}`);

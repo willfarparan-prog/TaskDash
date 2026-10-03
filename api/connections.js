@@ -1,5 +1,5 @@
 const { getPool, ensureWorkspaceSchema, trackUsage } = require('../lib/db');
-const { OWNER_EMAIL } = require('../lib/google');
+const { OWNER_EMAIL, WORK_EMAIL } = require('../lib/google');
 
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
@@ -8,13 +8,16 @@ module.exports = async (req, res) => {
   try {
     await ensureWorkspaceSchema();
     const db = getPool();
-    const token = await db.query(`select account_email, scope, updated_at from oauth_tokens where id='google'`);
-    const google = token.rows[0];
+    const token = await db.query(`select id, account_email, scope, updated_at from oauth_tokens where id in ('google','google-work')`);
+    const google = token.rows.find(row => row.id === 'google');
+    const workGoogle = token.rows.find(row => row.id === 'google-work');
     const verified = (google?.account_email || '').toLowerCase() === OWNER_EMAIL;
+    const workVerified = (workGoogle?.account_email || '').toLowerCase() === WORK_EMAIL;
     const scope = google?.scope || '';
     const connections = [
       { name: 'Neon database', initials: 'N', status: 'connected', detail: 'Tasks, clients, programs, and events' },
       { name: 'Google Calendar', initials: 'GC', status: verified && scope.includes('calendar.readonly') ? 'connected' : 'attention', detail: verified ? `${OWNER_EMAIL} · read only` : `Reconnect as ${OWNER_EMAIL}` },
+      { name: 'Work Scheduler Calendar', initials: 'WC', status: workVerified && String(workGoogle?.scope || '').includes('calendar.events') ? 'connected' : 'attention', detail: workVerified ? `${WORK_EMAIL} · booking sync` : `Connect ${WORK_EMAIL} from Scheduler` },
       { name: 'Google Inbox', initials: 'GM', status: verified && scope.includes('gmail.readonly') ? 'connected' : 'attention', detail: 'Important and starred unread messages only' },
       { name: 'Adobe Microsoft', initials: 'MS', status: process.env.MICROSOFT_CLIENT_ID ? 'attention' : 'queued', detail: 'Work inbox · authorization has not been completed' },
       { name: 'Claude assistant', initials: 'C', status: process.env.ANTHROPIC_API_KEY ? 'connected' : 'queued', detail: 'Daily overview and drafting assistant' },
