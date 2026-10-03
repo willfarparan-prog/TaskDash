@@ -4,7 +4,7 @@ Task Dash is William Farparan's private Exos at Adobe SF operating dashboard. It
 
 ## Product areas
 
-- **Dashboard:** daily overview, operating queue, week agenda, event progress, and connection readiness.
+- **Dashboard:** daily overview, operating queue, week agenda, event progress, connection readiness, and a searchable work-resource hub.
 - **Calendar:** read-only Google Calendar plus manual Adobe/Exos work blocks.
 - **Training programs:** client-linked, multi-day program editor with print-ready day sheets.
 - **Clients:** PT consult, InBody, and personal-training roster with session history and follow-ups.
@@ -13,9 +13,11 @@ Task Dash is William Farparan's private Exos at Adobe SF operating dashboard. It
 - **Connections:** live integration status, API runs, token totals, and reported credits.
 - **Settings:** local daily-overview and print preferences.
 
+The resource hub keeps URLs in the private `links` database table, not in the public frontend bundle. It includes task-based filters, frequent shortcuts, source descriptions, usage frequency, and contextual links on matching recurring tasks.
+
 ## Account and privacy rules
 
-Google OAuth is restricted in code to `willfarparan@gmail.com`. The callback verifies the returned Google identity before saving tokens. A signed, HTTP-only session cookie protects client records, programs, calendar data, inbox data, and every data-changing API request.
+Google OAuth is currently restricted in code to `willfarparan@gmail.com`. The callback verifies the returned Google identity before saving tokens. A signed, HTTP-only session cookie protects client records, programs, calendar data, inbox data, private work links, and every data-changing API request. When ownership is formally transferred, the allowlist can be migrated to `William.farparan@teamexos.com` together with a company-approved OAuth client.
 
 Google scopes are read-only:
 

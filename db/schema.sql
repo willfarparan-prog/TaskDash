@@ -80,9 +80,10 @@ create table if not exists links (
       id          text primary key,
       title       text not null,
       short       text,
-      category    text not null check (category in ('daily','reporting','forms','hr_sop','marketing')),
+      category    text not null,
       url         text,
       description text,
+      frequency   text,
       pinned      boolean not null default false,
       sort        int not null default 0
     );
