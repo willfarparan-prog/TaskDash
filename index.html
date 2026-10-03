@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
-  <style>.cal-event.booking{background:#fff0cb;border-color:#b47b00}.agenda-line.booking{background:#b47b00}.scheduler-save{position:static}</style>
+  <style>.cal-event.booking{background:#fff0cb;border-color:#b47b00}.agenda-line.booking{background:#b47b00}.scheduler-save{position:static}.resource-hub-full{margin-top:0}.resource-locked strong,.resource-locked span{display:block}.resource-locked strong{color:var(--ink);font-size:15px}.resource-locked span{margin:5px auto 13px;max-width:620px}.resource-connect{display:inline-flex;align-items:center;text-decoration:none}</style>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Cpath d='M14 44 31 13l19 31h-9L31 28 23 44z' fill='%23ef3123'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -23,6 +23,7 @@
       <div class="rail-label">EXOS · ADOBE SF</div>
       <nav class="side-nav" id="sideNav">
         <button class="nav-item active" data-view="dashboard"><span class="nav-icon">▦</span><span>Dashboard</span></button>
+        <button class="nav-item" data-view="resources"><span class="nav-icon">↗</span><span>Resource hub</span></button>
         <button class="nav-item" data-view="calendar"><span class="nav-icon">▣</span><span>Calendar</span></button>
         <button class="nav-item" data-view="scheduler"><span class="nav-icon">◷</span><span>Scheduler</span><i class="status-pin" id="schedulerPin"></i></button>
         <button class="nav-item" data-view="programs"><span class="nav-icon">⌁</span><span>Training programs</span></button>
@@ -53,7 +54,7 @@
         <section class="view active" id="view-dashboard" data-title="Dashboard">
           <div class="page-intro split-intro">
             <div><div class="eyebrow"><i></i><span id="todayStamp">TODAY</span></div><h1 id="greeting">Good morning, Will.</h1><p>Here is what needs your attention across coaching, operations, and events.</p></div>
-            <div class="intro-actions"><button class="secondary-btn" data-go="inbox">Inbox</button><button class="secondary-btn" data-go="calendar">Calendar</button><button class="secondary-btn" data-go="events">New event</button></div>
+            <div class="intro-actions"><button class="secondary-btn" data-go="resources">Resource hub</button><button class="secondary-btn" data-go="inbox">Inbox</button><button class="secondary-btn" data-go="calendar">Calendar</button><button class="secondary-btn" data-go="events">New event</button></div>
           </div>
           <article class="brief-card">
             <div class="section-heading inverse"><div><span class="kicker">YOUR DAILY SNAPSHOT</span><h2>Daily overview</h2><p>Live from Task Dash · updates as work is completed</p></div><button class="dark-outline" id="briefRefresh">Refresh overview</button></div>
@@ -76,11 +77,21 @@
             <article class="panel events-preview"><div class="section-heading"><div><span class="kicker">SOP TIMELINE</span><h2>Events in motion</h2></div><button class="text-btn" data-go="events">Manage events</button></div><div id="eventPreview" class="event-preview-list"></div></article>
             <article class="panel readiness-panel"><div class="section-heading"><div><span class="kicker">SYSTEM STATUS</span><h2>Connections</h2></div><button class="text-btn" data-go="connections">Configure</button></div><div class="readiness-list" id="readinessList"></div></article>
           </div>
-          <article class="panel quick-links-panel" id="quickLinksPanel">
-            <div class="section-heading quick-links-heading"><div><span class="kicker">WORK RESOURCE HUB</span><h2>Quick links by task</h2><p>Private shortcuts from your work source sheet. Links open in a new tab.</p></div><label class="table-search"><span>⌕</span><input id="linkSearch" placeholder="Find a tracker, SOP, form…"></label></div>
-            <div class="context-links" id="contextLinks"></div>
-            <div class="link-filters" id="linkFilters"></div>
-            <div class="quick-link-grid" id="quickLinkGrid"><div class="empty-state compact">Connect the approved Google account to unlock private work links.</div></div>
+          <article class="panel quick-links-panel resource-hub">
+            <div class="section-heading quick-links-heading"><div><span class="kicker">WORK RESOURCE HUB</span><h2>Quick links by task</h2><p>Private shortcuts from your work source sheet. Links open in a new tab.</p></div><label class="table-search"><span>⌕</span><input class="link-search" placeholder="Find a tracker, SOP, form…"></label></div>
+            <div class="context-links resource-context"></div>
+            <div class="link-filters resource-filters"></div>
+            <div class="quick-link-grid resource-grid"><div class="empty-state compact">Connect the approved Google account to unlock private work links.</div></div>
+          </article>
+        </section>
+
+        <section class="view" id="view-resources" data-title="Resource hub">
+          <div class="page-intro"><div class="eyebrow"><i></i>WORK SHORTCUTS</div><h1>Resource hub</h1><p>Every tracker, SOP, form, inbox, and recurring work link from your source sheet—organized by task and easy to find.</p></div>
+          <article class="panel quick-links-panel resource-hub resource-hub-full">
+            <div class="section-heading quick-links-heading"><div><span class="kicker">ALL SAVED LINKS</span><h2>Find the tool you need</h2><p>Frequently used links appear first. Search or filter by work category.</p></div><label class="table-search"><span>⌕</span><input class="link-search" placeholder="Find a tracker, SOP, form…"></label></div>
+            <div class="context-links resource-context"></div>
+            <div class="link-filters resource-filters"></div>
+            <div class="quick-link-grid resource-grid"><div class="empty-state compact">Loading your private work links…</div></div>
           </article>
         </section>
 

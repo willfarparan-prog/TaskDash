@@ -4,7 +4,8 @@ Task Dash is William Farparan's private Exos at Adobe SF operating dashboard. It
 
 ## Product areas
 
-- **Dashboard:** daily overview, operating queue, week agenda, event progress, connection readiness, and a searchable work-resource hub.
+- **Dashboard:** daily overview, operating queue, week agenda, event progress, connection readiness, and a quick-link preview.
+- **Resource hub:** a dedicated sidebar destination for every private tracker, SOP, form, inbox, and recurring work link from the source sheet, with search and task-based filters.
 - **Calendar:** read-only Google Calendar plus manual Adobe/Exos work blocks.
 - **Scheduler:** a permanent, no-sign-in public booking link with live availability, configurable work hours, visit reasons, booking tracking, and work-calendar conflict protection.
 - **Training programs:** client-linked, multi-day program editor with print-ready day sheets.
