@@ -2,6 +2,7 @@
 // that render on the week strip alongside live Google Calendar events.
 
 const { Pool } = require('pg');
+const { requireOwnerSession } = require('../lib/session');
 let pool;
 function getPool() {
     if (!pool) {
@@ -13,6 +14,7 @@ function getPool() {
 
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
+  if (!requireOwnerSession(req, res)) return;
   try {
     const db = getPool();
 

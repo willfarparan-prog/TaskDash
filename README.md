@@ -1,20 +1,52 @@
-# TaskDash — Coach Dashboard (Exos @ Adobe SF)
+# Task Dash — Coach Command Center
 
-A personal task console for the SF wellness-center coach role. Static single-file app (no build step) so it deploys to Vercel as-is and opens instantly on a work computer.
+Task Dash is William Farparan's private Exos at Adobe SF operating dashboard. It uses an Apex Coach–inspired left rail and a focused daily command center for tasks, client sessions, training programs, calendars, priority inbox items, events, and integration health.
 
-## What's in v1
-- Recurring engine seeded from the Exos/Adobe SOP cadence (daily / weekly / monthly / quarterly).
-- Today panel with a color status rail (amber = due, red = overdue, green = done) as a peripheral-glance reminder.
-- Event pipeline — set a date and all 8 steps back-fill (room, flyer, catering, Slack posts).
-- Add task inline; state persists in the browser (localStorage).
-- Placeholders wired for the next pass: read-only Google Calendar feeds (personal + work) and the Claude drafting assistant.
+## Product areas
 
-## Deploy to Vercel (no CLI needed)
-1. Vercel: Add New, Project, Import this repo.
-2. Framework preset: Other. No build command; output = repo root.
-3. Deploy, then bookmark the .vercel.app URL on your work computer.
+- **Dashboard:** daily overview, operating queue, week agenda, event progress, and connection readiness.
+- **Calendar:** read-only Google Calendar plus manual Adobe/Exos work blocks.
+- **Training programs:** client-linked, multi-day program editor with print-ready day sheets.
+- **Clients:** PT consult, InBody, and personal-training roster with session history and follow-ups.
+- **Inbox:** unread important/starred Google mail, with an Adobe Microsoft connection held as a separate future authorization.
+- **Events:** the Exos event SOP with exact due dates, compressed-timeline rules, vendor escalation, attendance capture, and post-event survey follow-up.
+- **Connections:** live integration status, API runs, token totals, and reported credits.
+- **Settings:** local daily-overview and print preferences.
 
-## Next
-- Neon Postgres for multi-device sync + server-side recurring generation.
-- Google Calendar read-only feeds (personal + work).
-- Claude API assistant for newsletter / Slack-post drafting.
+## Account and privacy rules
+
+Google OAuth is restricted in code to `willfarparan@gmail.com`. The callback verifies the returned Google identity before saving tokens. A signed, HTTP-only session cookie protects client records, programs, calendar data, inbox data, and every data-changing API request.
+
+Google scopes are read-only:
+
+- `calendar.readonly`
+- `gmail.readonly`
+
+Microsoft is not connected automatically. It remains a separate, visible connection until the Adobe work account and an approved Microsoft OAuth application are available.
+
+## Runtime
+
+The frontend is a buildless static app (`index.html`, `styles.css`, `app.js`) deployed on Vercel. Node serverless functions in `api/` use Postgres through the `neon` or `DATABASE_URL` environment variable.
+
+Required environment variables:
+
+- `neon` or `DATABASE_URL`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `DASHBOARD_SESSION_SECRET` (recommended; falls back to `GOOGLE_CLIENT_SECRET`)
+- `ANTHROPIC_API_KEY` (optional)
+
+The production Google OAuth redirect URI must remain:
+
+`https://task-dash-umber.vercel.app/api/auth/callback`
+
+## Local checks
+
+```bash
+npm install
+node --check app.js
+for f in api/*.js api/auth/*.js lib/*.js; do node --check "$f"; done
+python3 -m http.server 4173
+```
+
+The static preview intentionally falls back to browser-local demo data when serverless APIs are unavailable. Production writes require the signed owner session.

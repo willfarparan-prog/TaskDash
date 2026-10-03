@@ -15,9 +15,17 @@ module.exports = async (req, res) => {
     client_id: clientId,
     redirect_uri: redirectUri,
     response_type: 'code',
-    access_type: 'offline',       // needed to receive a refresh_token
-    prompt: 'consent',            // force refresh_token on repeat auths too
-    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    access_type: 'offline',
+    prompt: 'consent select_account',
+    include_granted_scopes: 'true',
+    login_hint: 'willfarparan@gmail.com',
+    scope: [
+      'openid',
+      'email',
+      'profile',
+      'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/gmail.readonly',
+    ].join(' '),
   });
 
   res.writeHead(302, { Location: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` });

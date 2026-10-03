@@ -3,6 +3,8 @@
 // Claude can call tools to actually create tasks/events - not just talk about them.
 
 const { Pool } = require('pg');
+const { requireOwnerSession } = require('../lib/session');
+const { trackUsage } = require('../lib/db');
 let pool;
 function getPool() {
   if (!pool) {
@@ -39,7 +41,7 @@ const TOOLS = [
   },
   {
     name: 'add_event',
-    description: 'Add a new event to the event pipeline (e.g. a wellness event, workshop, or challenge). This seeds the 8-step (or 9-step, if it needs a vendor) event pipeline on the given date.',
+    description: 'Add a new event to the event pipeline. This seeds the complete pre-event, day-of, and post-event SOP timeline on the given date.',
     input_schema: {
       type: 'object',
       properties: {
@@ -73,8 +75,8 @@ async function runTool(name, input) {
   }
   if (name === 'add_event') {
     const r = await db.query(
-      `insert into events (name, event_date, pillar) values ($1,$2,$3) returning id`,
-      [input.name, input.date, input.pillar || null]
+      `insert into events (name, event_date, pillar, needs_vendor) values ($1,$2,$3,$4) returning id`,
+      [input.name, input.date, input.pillar || null, !!input.needsVendor]
     );
     return { ok: true, id: r.rows[0].id, needsVendor: !!input.needsVendor };
   }
@@ -125,8 +127,10 @@ HARD RULES
 - Post-event survey goes out within 3 days via Microsoft Forms, NPS is always question 1, follow up if response rate is under 20% by day 7, always BCC attendees.
 - Attendance is tracked with the badge reader into the Tabling Event Tracker, a new tab per event.
 
-EVENT PIPELINE (normal spacing, days before the event)
-Pin down date (~35), book room with Sahar (~28), flyer or poster (~21), catering with Josh (~21), initial Slack post (~18), secondary Slack post (~10), third Slack post (~3), day-of post.
+EVENT PIPELINE (normal spacing)
+Before: pin down date (~35 days), book room with Sahar (~28), flyer or poster (~21), catering with Josh (~21), initial Slack post (~18), secondary Slack post (~10), third Slack post (~3).
+Day of: final Slack post and attendance through the badge reader into a new Tabling Event Tracker tab.
+After: send the Microsoft Forms survey within 3 days with NPS as question 1 and attendees BCC'd; follow up by day 7 if response is under 20%.
 
 RECURRING CADENCE
 Daily on weekdays: reset weight room AM and PM, check three inboxes (Exos Gmail, Adobe, Wellness), log Workday hours.
@@ -158,6 +162,8 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'method not allowed' });
   }
 
+  if (!requireOwnerSession(req, res)) return;
+
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
     return res.status(200).json({
@@ -177,6 +183,8 @@ module.exports = async (req, res) => {
 
     let changed = false;
     let finalText = '';
+    let inputTokens = 0;
+    let outputTokens = 0;
     const system = buildSystem(context);
 
     // Tool-use loop: Claude may call a tool, we run it, feed the result back,
@@ -203,6 +211,9 @@ module.exports = async (req, res) => {
         const detail = (data && data.error && data.error.message) || 'unknown error';
         return res.status(200).json({ text: `Claude returned an error: ${detail}`, changed });
       }
+
+      inputTokens += data.usage?.input_tokens || 0;
+      outputTokens += data.usage?.output_tokens || 0;
 
       const textParts = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
       if (textParts) finalText = textParts;
@@ -232,8 +243,10 @@ module.exports = async (req, res) => {
       if (data.stop_reason !== 'tool_use') break;
     }
 
+    trackUsage('Claude', 'Dashboard assistant', 'ok', { inputTokens, outputTokens });
     return res.status(200).json({ text: finalText || '(empty response)', changed });
   } catch (err) {
+    trackUsage('Claude', 'Dashboard assistant', 'error');
     return res.status(200).json({ text: `Couldn't reach Claude: ${err.message}` });
   }
 };

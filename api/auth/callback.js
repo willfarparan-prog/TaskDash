@@ -3,6 +3,8 @@
 // Never logs or returns the tokens to the browser.
 
 const { Pool } = require('pg');
+const OWNER_EMAIL = 'willfarparan@gmail.com';
+const { sessionCookie } = require('../../lib/session');
 let pool;
 function getPool() {
   if (!pool) {
@@ -44,21 +46,32 @@ module.exports = async (req, res) => {
       return res.status(400).send(`Token exchange failed: ${tokens.error_description || tokens.error}`);
     }
 
+    const profileRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+    const profile = await profileRes.json();
+    if (!profileRes.ok || !profile.email_verified || String(profile.email).toLowerCase() !== OWNER_EMAIL) {
+      return res.status(403).send(`Task Dash only accepts ${OWNER_EMAIL}. No tokens were saved.`);
+    }
+
     const expiresAt = new Date(Date.now() + (tokens.expires_in || 3600) * 1000);
     const db = getPool();
+    await db.query(`alter table oauth_tokens add column if not exists account_email text`);
     await db.query(
-      `insert into oauth_tokens (id, access_token, refresh_token, expires_at, scope, updated_at)
-       values ('google', $1, $2, $3, $4, now())
+      `insert into oauth_tokens (id, access_token, refresh_token, expires_at, scope, account_email, updated_at)
+       values ('google', $1, $2, $3, $4, $5, now())
        on conflict (id) do update set
          access_token = excluded.access_token,
          refresh_token = coalesce(excluded.refresh_token, oauth_tokens.refresh_token),
          expires_at = excluded.expires_at,
          scope = excluded.scope,
+         account_email = excluded.account_email,
          updated_at = now()`,
-      [tokens.access_token, tokens.refresh_token || null, expiresAt, tokens.scope || null]
+      [tokens.access_token, tokens.refresh_token || null, expiresAt, tokens.scope || null, OWNER_EMAIL]
     );
 
-    // Redirect back to the dashboard so the week strip can load immediately.
+    // The signed, HTTP-only cookie protects private client, program, and inbox routes.
+    res.setHeader('Set-Cookie', sessionCookie());
     res.writeHead(302, { Location: '/?calendar=connected' });
     res.end();
   } catch (err) {

@@ -3,6 +3,7 @@
 // Never hardcode the connection string here — Vercel injects it at runtime.
 
 const { Pool } = require('pg');
+const { requireOwnerSession } = require('../lib/session');
 let pool;
 function getPool() {
       if (!pool) {
@@ -16,6 +17,8 @@ module.exports = async (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       try {
               const db = getPool();
+
+        if (req.method !== 'GET' && !requireOwnerSession(req, res)) return;
 
         if (req.method === 'GET') {
                   const dayKey = req.query.day;
