@@ -1,167 +1,878 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0a0a0a">
-  <meta name="description" content="The Exos at Adobe coach command center for tasks, clients, training programs, events, calendars, and communications.">
-  <title>Task Dash · Coach Command Center</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
-  <style>.cal-event.booking{background:#fff0cb;border-color:#b47b00}.agenda-line.booking{background:#b47b00}.scheduler-save{position:static}.resource-hub-full{margin-top:0}.resource-locked strong,.resource-locked span{display:block}.resource-locked strong{color:var(--ink);font-size:15px}.resource-locked span{margin:5px auto 13px;max-width:620px}.resource-connect{display:inline-flex;align-items:center;text-decoration:none}</style>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Cpath d='M14 44 31 13l19 31h-9L31 28 23 44z' fill='%23ef3123'/%3E%3C/svg%3E">
-</head>
-<body>
-  <div class="app-shell">
-    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
-      <div class="brand-lockup">
-        <div class="brand-mark" aria-hidden="true"><span></span><span></span></div>
-        <div><strong>TASK DASH</strong><small>COACH COMMAND</small></div>
-      </div>
-      <div class="rail-label">EXOS · ADOBE SF</div>
-      <nav class="side-nav" id="sideNav">
-        <button class="nav-item active" data-view="dashboard"><span class="nav-icon">▦</span><span>Dashboard</span></button>
-        <button class="nav-item" data-view="resources"><span class="nav-icon">↗</span><span>Resource hub</span></button>
-        <button class="nav-item" data-view="calendar"><span class="nav-icon">▣</span><span>Calendar</span></button>
-        <button class="nav-item" data-view="scheduler"><span class="nav-icon">◷</span><span>Scheduler</span><i class="status-pin" id="schedulerPin"></i></button>
-        <button class="nav-item" data-view="programs"><span class="nav-icon">⌁</span><span>Training programs</span></button>
-        <button class="nav-item" data-view="clients"><span class="nav-icon">◎</span><span>Clients</span></button>
-        <button class="nav-item" data-view="inbox"><span class="nav-icon">▱</span><span>Inbox</span><b class="nav-badge" id="inboxBadge" hidden>0</b></button>
-        <button class="nav-item" data-view="events"><span class="nav-icon">◇</span><span>Events</span></button>
-        <button class="nav-item" data-view="connections"><span class="nav-icon">⌘</span><span>Connections</span><i class="status-pin" id="connectionPin"></i></button>
-        <button class="nav-item" data-view="settings"><span class="nav-icon">≡</span><span>Settings</span></button>
-      </nav>
-      <div class="sidebar-footer">
-        <div class="avatar">WF</div>
-        <div><strong>William Farparan</strong><small>Coach · Owner</small></div>
-      </div>
-    </aside>
-
-    <main class="main-shell">
-      <header class="topbar">
-        <button class="mobile-menu" id="mobileMenu" aria-label="Open navigation">☰</button>
-        <div class="breadcrumb"><span>Task Dash</span><b>/</b><strong id="crumbTitle">Dashboard</strong></div>
-        <label class="search"><span>⌕</span><input id="globalSearch" type="search" placeholder="Search tasks, clients, programs…" autocomplete="off"><kbd>⌘ K</kbd></label>
-        <div class="top-actions">
-          <button class="icon-btn" id="refreshBtn" aria-label="Refresh dashboard">↻</button>
-          <button class="primary-btn" id="quickAddBtn"><span>＋</span> Quick add</button>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta
+      name="description"
+      content="The Exos at Adobe coach command center for tasks, clients, training programs, events, calendars, and communications."
+    />
+    <title>Task Dash · Coach Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .cal-event.booking {
+        background: #fff0cb;
+        border-color: #b47b00;
+      }
+      .agenda-line.booking {
+        background: #b47b00;
+      }
+      .scheduler-save {
+        position: static;
+      }
+      .resource-hub-full {
+        margin-top: 0;
+      }
+      .resource-locked strong,
+      .resource-locked span {
+        display: block;
+      }
+      .resource-locked strong {
+        color: var(--ink);
+        font-size: 15px;
+      }
+      .resource-locked span {
+        margin: 5px auto 13px;
+        max-width: 620px;
+      }
+      .resource-connect {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+      }
+    </style>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Cpath d='M14 44 31 13l19 31h-9L31 28 23 44z' fill='%23ef3123'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span>
+          </div>
+          <div><strong>TASK DASH</strong><small>COACH COMMAND</small></div>
         </div>
-      </header>
-
-      <div class="content-shell">
-        <section class="view active" id="view-dashboard" data-title="Dashboard">
-          <div class="page-intro split-intro">
-            <div><div class="eyebrow"><i></i><span id="todayStamp">TODAY</span></div><h1 id="greeting">Good morning, Will.</h1><p>Here is what needs your attention across coaching, operations, and events.</p></div>
-            <div class="intro-actions"><button class="secondary-btn" data-go="resources">Resource hub</button><button class="secondary-btn" data-go="inbox">Inbox</button><button class="secondary-btn" data-go="calendar">Calendar</button><button class="secondary-btn" data-go="events">New event</button></div>
+        <div class="rail-label">EXOS · ADOBE SF</div>
+        <nav class="side-nav" id="sideNav">
+          <button class="nav-item active" data-view="dashboard">
+            <span class="nav-icon">▦</span><span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-view="resources">
+            <span class="nav-icon">↗</span><span>Resource hub</span>
+          </button>
+          <button class="nav-item" data-view="calendar">
+            <span class="nav-icon">▣</span><span>Calendar</span>
+          </button>
+          <button class="nav-item" data-view="scheduler">
+            <span class="nav-icon">◷</span><span>Scheduler</span
+            ><i class="status-pin" id="schedulerPin"></i>
+          </button>
+          <button class="nav-item" data-view="programs">
+            <span class="nav-icon">⌁</span><span>Training programs</span>
+          </button>
+          <button class="nav-item" data-view="clients">
+            <span class="nav-icon">◎</span><span>Clients</span>
+          </button>
+          <button class="nav-item" data-view="inbox">
+            <span class="nav-icon">▱</span><span>Inbox</span
+            ><b class="nav-badge" id="inboxBadge" hidden>0</b>
+          </button>
+          <button class="nav-item" data-view="events">
+            <span class="nav-icon">◇</span><span>Events</span>
+          </button>
+          <button class="nav-item" data-view="connections">
+            <span class="nav-icon">⌘</span><span>Connections</span
+            ><i class="status-pin" id="connectionPin"></i>
+          </button>
+          <button class="nav-item" data-view="settings">
+            <span class="nav-icon">≡</span><span>Settings</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="avatar">WF</div>
+          <div>
+            <strong>William Farparan</strong><small>Coach · Owner</small>
           </div>
-          <article class="brief-card">
-            <div class="section-heading inverse"><div><span class="kicker">YOUR DAILY SNAPSHOT</span><h2>Daily overview</h2><p>Live from Task Dash · updates as work is completed</p></div><button class="dark-outline" id="briefRefresh">Refresh overview</button></div>
-            <div class="brief-grid">
-              <div class="brief-copy" id="dailyBrief"><span class="skeleton wide"></span><span class="skeleton"></span><span class="skeleton short"></span></div>
-              <div class="brief-stat attention"><span>NEEDS ATTENTION</span><strong id="attentionCount">—</strong><small id="attentionLabel">Loading tasks</small></div>
-              <div class="brief-stat today"><span>TODAY</span><strong id="sessionCount">—</strong><small>client sessions logged</small></div>
-              <div class="brief-stat upcoming"><span>UPCOMING</span><strong id="eventCount">—</strong><small>active events</small></div>
+        </div>
+      </aside>
+
+      <main class="main-shell">
+        <header class="topbar">
+          <button
+            class="mobile-menu"
+            id="mobileMenu"
+            aria-label="Open navigation"
+          >
+            ☰
+          </button>
+          <div class="breadcrumb">
+            <span>Task Dash</span><b>/</b
+            ><strong id="crumbTitle">Dashboard</strong>
+          </div>
+          <label class="search"
+            ><span>⌕</span
+            ><input
+              id="globalSearch"
+              type="search"
+              placeholder="Search tasks, clients, programs…"
+              autocomplete="off"
+            /><kbd>⌘ K</kbd></label
+          >
+          <div class="top-actions">
+            <button
+              class="icon-btn"
+              id="refreshBtn"
+              aria-label="Refresh dashboard"
+            >
+              ↻
+            </button>
+            <button class="primary-btn" id="quickAddBtn">
+              <span>＋</span> Quick add
+            </button>
+          </div>
+        </header>
+
+        <div class="content-shell">
+          <section
+            class="view active"
+            id="view-dashboard"
+            data-title="Dashboard"
+          >
+            <div class="page-intro split-intro">
+              <div>
+                <div class="eyebrow">
+                  <i></i><span id="todayStamp">TODAY</span>
+                </div>
+                <h1 id="greeting">Good morning, Will.</h1>
+                <p>
+                  Here is what needs your attention across coaching, operations,
+                  and events.
+                </p>
+              </div>
+              <div class="intro-actions">
+                <button class="secondary-btn" data-go="resources">
+                  Resource hub</button
+                ><button class="secondary-btn" data-go="inbox">Inbox</button
+                ><button class="secondary-btn" data-go="calendar">
+                  Calendar</button
+                ><button class="secondary-btn" data-go="events">
+                  New event
+                </button>
+              </div>
             </div>
-          </article>
-          <div class="metric-grid">
-            <article class="metric-card"><span>Tasks completed</span><strong id="metricTasks">0 / 0</strong><div class="mini-progress"><i id="taskProgress"></i></div><small id="metricTaskHint">Today</small></article>
-            <article class="metric-card"><span>Clients tracked</span><strong id="metricClients">0</strong><em class="metric-chip">LIVE ROSTER</em><small>consults, scans, and PT</small></article>
-            <article class="metric-card"><span>Programs ready</span><strong id="metricPrograms">0</strong><em class="metric-chip red">PRINTABLE</em><small>active training plans</small></article>
-            <article class="metric-card"><span>System readiness</span><strong id="metricReadiness">0%</strong><div class="mini-progress"><i id="readyProgress"></i></div><small>connections online</small></article>
-          </div>
-          <div class="dashboard-grid">
-            <article class="panel task-panel"><div class="section-heading"><div><span class="kicker">OPERATING QUEUE</span><h2>Tasks needed today</h2></div><span class="count-label" id="todayTaskCount">0 items</span></div><div class="quick-task"><input id="taskInput" placeholder="Add a task for today"><button id="taskAdd">Add task</button></div><div class="task-list" id="taskList"></div></article>
-            <article class="panel schedule-panel"><div class="section-heading"><div><span class="kicker">NEXT 7 DAYS</span><h2>Daily schedule</h2></div><button class="text-btn" data-go="calendar">Open calendar</button></div><div class="agenda" id="agendaList"><div class="empty-state compact">Loading schedule…</div></div></article>
-            <article class="panel events-preview"><div class="section-heading"><div><span class="kicker">SOP TIMELINE</span><h2>Events in motion</h2></div><button class="text-btn" data-go="events">Manage events</button></div><div id="eventPreview" class="event-preview-list"></div></article>
-            <article class="panel readiness-panel"><div class="section-heading"><div><span class="kicker">SYSTEM STATUS</span><h2>Connections</h2></div><button class="text-btn" data-go="connections">Configure</button></div><div class="readiness-list" id="readinessList"></div></article>
-          </div>
-          <article class="panel quick-links-panel resource-hub">
-            <div class="section-heading quick-links-heading"><div><span class="kicker">WORK RESOURCE HUB</span><h2>Quick links by task</h2><p>Private shortcuts from your work source sheet. Links open in a new tab.</p></div><label class="table-search"><span>⌕</span><input class="link-search" placeholder="Find a tracker, SOP, form…"></label></div>
-            <div class="context-links resource-context"></div>
-            <div class="link-filters resource-filters"></div>
-            <div class="quick-link-grid resource-grid"><div class="empty-state compact">Connect the approved Google account to unlock private work links.</div></div>
-          </article>
-        </section>
-
-        <section class="view" id="view-resources" data-title="Resource hub">
-          <div class="page-intro"><div class="eyebrow"><i></i>WORK SHORTCUTS</div><h1>Resource hub</h1><p>Every tracker, SOP, form, inbox, and recurring work link from your source sheet—organized by task and easy to find.</p></div>
-          <article class="panel quick-links-panel resource-hub resource-hub-full">
-            <div class="section-heading quick-links-heading"><div><span class="kicker">ALL SAVED LINKS</span><h2>Find the tool you need</h2><p>Frequently used links appear first. Search or filter by work category.</p></div><label class="table-search"><span>⌕</span><input class="link-search" placeholder="Find a tracker, SOP, form…"></label></div>
-            <div class="context-links resource-context"></div>
-            <div class="link-filters resource-filters"></div>
-            <div class="quick-link-grid resource-grid"><div class="empty-state compact">Loading your private work links…</div></div>
-          </article>
-        </section>
-
-        <section class="view" id="view-calendar" data-title="Calendar">
-          <div class="page-intro split-intro"><div><div class="eyebrow"><i></i>TIME & SESSIONS</div><h1>Calendar</h1><p>One week across client work, Adobe blocks, events, and your approved Google calendar.</p></div><button class="primary-btn" id="addBlockOpen">＋ Add work block</button></div>
-          <div class="connection-banner" id="calendarBanner"><div><strong>Google calendar</strong><span>Checking the approved account…</span></div><button class="secondary-btn" id="calendarConnect">Connect</button></div>
-          <article class="panel calendar-panel"><div class="calendar-head"><button class="icon-btn" id="prevWeek">‹</button><div><span class="kicker">WEEK VIEW</span><h2 id="calendarRange">This week</h2></div><button class="icon-btn" id="nextWeek">›</button></div><div class="week-calendar" id="weekCalendar"></div></article>
-        </section>
-
-        <section class="view" id="view-scheduler" data-title="Scheduler">
-          <div class="page-intro split-intro"><div><div class="eyebrow"><i></i>PUBLIC BOOKING</div><h1>Scheduler</h1><p>Set the times people can request, protect busy calendar blocks, and keep one permanent link pinned in Slack.</p></div><div class="intro-actions"><button class="secondary-btn" id="openBookingPage">Open booking page</button><button class="primary-btn" id="copyBookingLink">Copy booking link</button></div></div>
-          <div class="booking-link-bar"><div><span>YOUR PERMANENT LINK</span><strong id="bookingUrl">https://task-dash-umber.vercel.app/book.html</strong></div><button class="secondary-btn" id="copyBookingLinkInline">Copy</button></div>
-          <div class="connection-banner" id="workCalendarBanner"><div><strong>Work Google Calendar</strong><span>Connect William.farparan@teamexos.com to hide busy times and add confirmed bookings automatically.</span></div><button class="secondary-btn" id="workCalendarConnect">Connect work calendar</button></div>
-          <div class="scheduler-layout">
-            <div class="scheduler-main">
-              <article class="panel"><div class="section-heading"><div><span class="kicker">BOOKING RULES</span><h2>How scheduling works</h2><p>These settings shape every time people can choose.</p></div></div><div class="booking-rules-grid"><label>Time between starts<input id="scheduleSlot" type="number" min="15" max="120" step="15"></label><label>Session length<input id="scheduleDuration" type="number" min="15" max="240" step="15"></label><label>Minimum notice<select id="scheduleNotice"><option value="0">No notice</option><option value="60">1 hour</option><option value="120">2 hours</option><option value="240">4 hours</option><option value="720">12 hours</option><option value="1440">1 day</option></select></label><label>Book ahead<input id="scheduleAhead" type="number" min="1" max="90"></label></div></article>
-              <article class="panel"><div class="section-heading"><div><span class="kicker">WEEKLY AVAILABILITY</span><h2>Your work schedule</h2><p>Turn days on or off and set when visits may start.</p></div></div><div class="schedule-hours" id="scheduleHours"></div></article>
-              <article class="panel"><div class="section-heading"><div><span class="kicker">VISITOR DETAILS</span><h2>Booking page information</h2></div></div><div class="booking-copy-fields"><label>Location<input id="scheduleLocation" maxlength="160"></label><label>Note shown to visitors<textarea id="scheduleNote" maxlength="400"></textarea></label></div></article>
-              <div class="scheduler-save"><span id="schedulerSaved">Changes update the public booking page.</span><button class="primary-btn" id="saveSchedule">Save availability</button></div>
+            <article class="brief-card">
+              <div class="section-heading inverse">
+                <div>
+                  <span class="kicker">YOUR DAILY SNAPSHOT</span>
+                  <h2>Daily overview</h2>
+                  <p>Live from Task Dash · updates as work is completed</p>
+                </div>
+                <button class="dark-outline" id="briefRefresh">
+                  Refresh overview
+                </button>
+              </div>
+              <div class="brief-grid">
+                <div class="brief-copy" id="dailyBrief">
+                  <span class="skeleton wide"></span
+                  ><span class="skeleton"></span
+                  ><span class="skeleton short"></span>
+                </div>
+                <div class="brief-stat attention">
+                  <span>NEEDS ATTENTION</span
+                  ><strong id="attentionCount">—</strong
+                  ><small id="attentionLabel">Loading tasks</small>
+                </div>
+                <div class="brief-stat today">
+                  <span>TODAY</span><strong id="sessionCount">—</strong
+                  ><small>client sessions logged</small>
+                </div>
+                <div class="brief-stat upcoming">
+                  <span>UPCOMING</span><strong id="eventCount">—</strong
+                  ><small>active events</small>
+                </div>
+              </div>
+            </article>
+            <div class="metric-grid">
+              <article class="metric-card">
+                <span>Tasks completed</span
+                ><strong id="metricTasks">0 / 0</strong>
+                <div class="mini-progress"><i id="taskProgress"></i></div>
+                <small id="metricTaskHint">Today</small>
+              </article>
+              <article class="metric-card">
+                <span>Clients tracked</span><strong id="metricClients">0</strong
+                ><em class="metric-chip">LIVE ROSTER</em
+                ><small>consults, scans, and PT</small>
+              </article>
+              <article class="metric-card">
+                <span>Programs ready</span><strong id="metricPrograms">0</strong
+                ><em class="metric-chip red">PRINTABLE</em
+                ><small>active training plans</small>
+              </article>
+              <article class="metric-card">
+                <span>System readiness</span
+                ><strong id="metricReadiness">0%</strong>
+                <div class="mini-progress"><i id="readyProgress"></i></div>
+                <small>connections online</small>
+              </article>
             </div>
-            <aside class="scheduler-side">
-              <article class="panel"><div class="section-heading"><div><span class="kicker">NEXT OPENINGS</span><h2>Visitor preview</h2></div></div><div id="schedulePreview" class="schedule-preview"><div class="empty-state compact">Loading availability…</div></div></article>
-              <article class="panel"><div class="section-heading"><div><span class="kicker">UPCOMING</span><h2>Booked visits</h2></div></div><div id="bookingList" class="booking-list"><div class="empty-state compact">No bookings yet.</div></div></article>
-            </aside>
+            <div class="dashboard-grid">
+              <article class="panel task-panel">
+                <div class="section-heading">
+                  <div>
+                    <span class="kicker">OPERATING QUEUE</span>
+                    <h2>Tasks needed today</h2>
+                  </div>
+                  <span class="count-label" id="todayTaskCount">0 items</span>
+                </div>
+                <div class="quick-task">
+                  <input
+                    id="taskInput"
+                    placeholder="Add a task for today"
+                  /><button id="taskAdd">Add task</button>
+                </div>
+                <div class="task-list" id="taskList"></div>
+              </article>
+              <article class="panel schedule-panel">
+                <div class="section-heading">
+                  <div>
+                    <span class="kicker">NEXT 7 DAYS</span>
+                    <h2>Daily schedule</h2>
+                  </div>
+                  <button class="text-btn" data-go="calendar">
+                    Open calendar
+                  </button>
+                </div>
+                <div class="agenda" id="agendaList">
+                  <div class="empty-state compact">Loading schedule…</div>
+                </div>
+              </article>
+              <article class="panel events-preview">
+                <div class="section-heading">
+                  <div>
+                    <span class="kicker">SOP TIMELINE</span>
+                    <h2>Events in motion</h2>
+                  </div>
+                  <button class="text-btn" data-go="events">
+                    Manage events
+                  </button>
+                </div>
+                <div id="eventPreview" class="event-preview-list"></div>
+              </article>
+              <article class="panel readiness-panel">
+                <div class="section-heading">
+                  <div>
+                    <span class="kicker">SYSTEM STATUS</span>
+                    <h2>Connections</h2>
+                  </div>
+                  <button class="text-btn" data-go="connections">
+                    Configure
+                  </button>
+                </div>
+                <div class="readiness-list" id="readinessList"></div>
+              </article>
+            </div>
+            <article class="panel quick-links-panel resource-hub">
+              <div class="section-heading quick-links-heading">
+                <div>
+                  <span class="kicker">WORK RESOURCE HUB</span>
+                  <h2>Quick links by task</h2>
+                  <p>
+                    Private shortcuts from your work source sheet. Links open in
+                    a new tab.
+                  </p>
+                </div>
+                <label class="table-search"
+                  ><span>⌕</span
+                  ><input
+                    class="link-search"
+                    placeholder="Find a tracker, SOP, form…"
+                /></label>
+              </div>
+              <div class="context-links resource-context"></div>
+              <div class="link-filters resource-filters"></div>
+              <div class="quick-link-grid resource-grid">
+                <div class="empty-state compact">
+                  Connect the approved Google account to unlock private work
+                  links.
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="view" id="view-resources" data-title="Resource hub">
+            <div class="page-intro">
+              <div class="eyebrow"><i></i>WORK SHORTCUTS</div>
+              <h1>Resource hub</h1>
+              <p>
+                Every tracker, SOP, form, inbox, and recurring work link from
+                your source sheet—organized by task and easy to find.
+              </p>
+            </div>
+            <article
+              class="panel quick-links-panel resource-hub resource-hub-full"
+            >
+              <div class="section-heading quick-links-heading">
+                <div>
+                  <span class="kicker">ALL SAVED LINKS</span>
+                  <h2>Find the tool you need</h2>
+                  <p>
+                    Frequently used links appear first. Search or filter by work
+                    category.
+                  </p>
+                </div>
+                <label class="table-search"
+                  ><span>⌕</span
+                  ><input
+                    class="link-search"
+                    placeholder="Find a tracker, SOP, form…"
+                /></label>
+              </div>
+              <div class="context-links resource-context"></div>
+              <div class="link-filters resource-filters"></div>
+              <div class="quick-link-grid resource-grid">
+                <div class="empty-state compact">
+                  Loading your private work links…
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="view" id="view-calendar" data-title="Calendar">
+            <div class="page-intro split-intro">
+              <div>
+                <div class="eyebrow"><i></i>TIME & SESSIONS</div>
+                <h1>Calendar</h1>
+                <p>
+                  One week across client work, Adobe blocks, events, and your
+                  approved Google calendar.
+                </p>
+              </div>
+              <button class="primary-btn" id="addBlockOpen">
+                ＋ Add work block
+              </button>
+            </div>
+            <div class="connection-banner" id="calendarBanner">
+              <div>
+                <strong>Google calendar</strong
+                ><span>Checking the approved account…</span>
+              </div>
+              <button class="secondary-btn" id="calendarConnect">
+                Connect
+              </button>
+            </div>
+            <article class="panel calendar-panel">
+              <div class="calendar-head">
+                <button class="icon-btn" id="prevWeek">‹</button>
+                <div>
+                  <span class="kicker">WEEK VIEW</span>
+                  <h2 id="calendarRange">This week</h2>
+                </div>
+                <button class="icon-btn" id="nextWeek">›</button>
+              </div>
+              <div class="week-calendar" id="weekCalendar"></div>
+            </article>
+          </section>
+
+          <section class="view" id="view-scheduler" data-title="Scheduler">
+            <div class="page-intro split-intro">
+              <div>
+                <div class="eyebrow"><i></i>PUBLIC BOOKING</div>
+                <h1>Scheduler</h1>
+                <p>
+                  Set the times people can request, protect busy calendar
+                  blocks, and keep one permanent link pinned in Slack.
+                </p>
+              </div>
+              <div class="intro-actions">
+                <button class="secondary-btn" id="openBookingPage">
+                  Open booking page</button
+                ><button class="primary-btn" id="copyBookingLink">
+                  Copy booking link
+                </button>
+              </div>
+            </div>
+            <div class="booking-link-bar">
+              <div>
+                <span>YOUR PERMANENT LINK</span
+                ><strong id="bookingUrl"
+                  >https://task-dash-umber.vercel.app/book.html</strong
+                >
+              </div>
+              <button class="secondary-btn" id="copyBookingLinkInline">
+                Copy
+              </button>
+            </div>
+            <div class="connection-banner" id="workCalendarBanner">
+              <div>
+                <strong>Work Google Calendar</strong
+                ><span
+                  >Connect William.farparan@teamexos.com to hide busy times and
+                  add confirmed bookings automatically.</span
+                >
+              </div>
+              <button class="secondary-btn" id="workCalendarConnect">
+                Connect work calendar
+              </button>
+            </div>
+            <div class="scheduler-layout">
+              <div class="scheduler-main">
+                <article class="panel">
+                  <div class="section-heading">
+                    <div>
+                      <span class="kicker">BOOKING RULES</span>
+                      <h2>How scheduling works</h2>
+                      <p>These settings shape every time people can choose.</p>
+                    </div>
+                  </div>
+                  <div class="booking-rules-grid">
+                    <label
+                      >Time between starts<input
+                        id="scheduleSlot"
+                        type="number"
+                        min="15"
+                        max="120"
+                        step="15" /></label
+                    ><label
+                      >Session length<input
+                        id="scheduleDuration"
+                        type="number"
+                        min="15"
+                        max="240"
+                        step="15" /></label
+                    ><label
+                      >Minimum notice<select id="scheduleNotice">
+                        <option value="0">No notice</option>
+                        <option value="60">1 hour</option>
+                        <option value="120">2 hours</option>
+                        <option value="240">4 hours</option>
+                        <option value="720">12 hours</option>
+                        <option value="1440">1 day</option>
+                      </select></label
+                    ><label
+                      >Book ahead<input
+                        id="scheduleAhead"
+                        type="number"
+                        min="1"
+                        max="90"
+                    /></label>
+                  </div>
+                </article>
+                <article class="panel">
+                  <div class="section-heading">
+                    <div>
+                      <span class="kicker">WEEKLY AVAILABILITY</span>
+                      <h2>Your work schedule</h2>
+                      <p>Turn days on or off and set when visits may start.</p>
+                    </div>
+                  </div>
+                  <div class="schedule-hours" id="scheduleHours"></div>
+                </article>
+                <article class="panel">
+                  <div class="section-heading">
+                    <div>
+                      <span class="kicker">VISITOR DETAILS</span>
+                      <h2>Booking page information</h2>
+                    </div>
+                  </div>
+                  <div class="booking-copy-fields">
+                    <label
+                      >Location<input
+                        id="scheduleLocation"
+                        maxlength="160" /></label
+                    ><label
+                      >Note shown to visitors<textarea
+                        id="scheduleNote"
+                        maxlength="400"
+                      ></textarea>
+                    </label>
+                  </div>
+                </article>
+                <div class="scheduler-save">
+                  <span id="schedulerSaved"
+                    >Changes update the public booking page.</span
+                  ><button class="primary-btn" id="saveSchedule">
+                    Save availability
+                  </button>
+                </div>
+              </div>
+              <aside class="scheduler-side">
+                <article class="panel">
+                  <div class="section-heading">
+                    <div>
+                      <span class="kicker">NEXT OPENINGS</span>
+                      <h2>Visitor preview</h2>
+                    </div>
+                  </div>
+                  <div id="schedulePreview" class="schedule-preview">
+                    <div class="empty-state compact">Loading availability…</div>
+                  </div>
+                </article>
+                <article class="panel">
+                  <div class="section-heading">
+                    <div>
+                      <span class="kicker">UPCOMING</span>
+                      <h2>Booked visits</h2>
+                    </div>
+                  </div>
+                  <div id="bookingList" class="booking-list">
+                    <div class="empty-state compact">No bookings yet.</div>
+                  </div>
+                </article>
+              </aside>
+            </div>
+          </section>
+
+          <section
+            class="view"
+            id="view-programs"
+            data-title="Training programs"
+          >
+            <div class="page-intro split-intro">
+              <div>
+                <div class="eyebrow"><i></i>COACHING TOOLS</div>
+                <h1>Training programs</h1>
+                <p>
+                  Write client programs, print polished coaching sheets, and
+                  turn your best work into reusable stock templates.
+                </p>
+              </div>
+              <button class="primary-btn" id="newProgramBtn">
+                ＋ New program
+              </button>
+            </div>
+            <div class="program-summary">
+              <article>
+                <span>CLIENT PROGRAMS</span
+                ><strong id="programClientCount">0</strong
+                ><small>linked and unlinked plans</small>
+              </article>
+              <article>
+                <span>STOCK TEMPLATES</span
+                ><strong id="programTemplateCount">0</strong
+                ><small>ready to reuse</small>
+              </article>
+              <article>
+                <span>ACTIVE</span><strong id="programActiveCount">0</strong
+                ><small>current client plans</small>
+              </article>
+            </div>
+            <div class="toolbar program-toolbar">
+              <div class="segmented" id="programFilters">
+                <button class="active" data-filter="clients">
+                  Client programs</button
+                ><button data-filter="stock">Stock templates</button
+                ><button data-filter="draft">Drafts</button
+                ><button data-filter="active">Active</button>
+              </div>
+              <label class="table-search"
+                ><span>⌕</span
+                ><input
+                  id="programSearch"
+                  placeholder="Search programs or clients"
+              /></label>
+            </div>
+            <div class="program-grid" id="programGrid"></div>
+            <article
+              class="panel editor-panel"
+              id="programEditor"
+              hidden
+            ></article>
+          </section>
+
+          <section class="view" id="view-clients" data-title="Clients">
+            <div class="page-intro split-intro">
+              <div>
+                <div class="eyebrow"><i></i>CLIENT ROSTER</div>
+                <h1>Clients</h1>
+                <p>
+                  Track every consult, InBody scan, and personal training
+                  session in one running record.
+                </p>
+              </div>
+              <button class="primary-btn" id="newClientBtn">
+                ＋ Add client
+              </button>
+            </div>
+            <div class="metric-grid client-metrics">
+              <article class="metric-card">
+                <span>Total clients</span><strong id="clientTotal">0</strong
+                ><small>all service types</small>
+              </article>
+              <article class="metric-card">
+                <span>PT clients</span><strong id="clientPt">0</strong
+                ><small>personal training</small>
+              </article>
+              <article class="metric-card">
+                <span>Sessions this month</span
+                ><strong id="clientSessions">0</strong
+                ><small>completed records</small>
+              </article>
+              <article class="metric-card">
+                <span>Follow-ups due</span
+                ><strong id="clientFollowups">0</strong
+                ><small>next action set</small>
+              </article>
+            </div>
+            <article class="panel table-panel">
+              <div class="table-toolbar">
+                <label class="table-search"
+                  ><span>⌕</span
+                  ><input
+                    id="clientSearch"
+                    placeholder="Search clients" /></label
+                ><select id="clientTypeFilter">
+                  <option value="all">All services</option>
+                  <option>Personal training</option>
+                  <option>InBody scan</option>
+                  <option>PT consult</option>
+                </select>
+              </div>
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Client</th>
+                      <th>Service</th>
+                      <th>Last session</th>
+                      <th>Sessions</th>
+                      <th>Next step</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="clientRows"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="view" id="view-inbox" data-title="Inbox">
+            <div class="page-intro split-intro">
+              <div>
+                <div class="eyebrow"><i></i>PRIORITY COMMUNICATIONS</div>
+                <h1>Inbox</h1>
+                <p>
+                  Important unread mail from the approved Google account and
+                  Adobe Microsoft inbox, together.
+                </p>
+              </div>
+              <button class="primary-btn" id="inboxRefresh">
+                ↻ Refresh inbox
+              </button>
+            </div>
+            <div class="inbox-layout">
+              <aside class="panel inbox-sources">
+                <button class="source-filter active" data-source="all">
+                  <span>All priority</span><b id="mailAllCount">0</b></button
+                ><button class="source-filter" data-source="google">
+                  <span class="source-dot google"></span><span>Google</span
+                  ><b id="mailGoogleCount">0</b></button
+                ><button class="source-filter" data-source="microsoft">
+                  <span class="source-dot microsoft"></span
+                  ><span>Adobe Microsoft</span><b id="mailMicrosoftCount">0</b>
+                </button>
+                <hr />
+                <small
+                  >Only unread messages marked important or starred are pulled
+                  into Task Dash.</small
+                >
+              </aside>
+              <article class="panel inbox-panel">
+                <div class="mail-list" id="mailList"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="view-events" data-title="Events">
+            <div class="page-intro split-intro">
+              <div>
+                <div class="eyebrow"><i></i>EXOS EVENT SOP</div>
+                <h1>Events</h1>
+                <p>
+                  Choose the date. Task Dash back-plans the room, creative,
+                  catering, Slack, attendance, and follow-up deadlines.
+                </p>
+              </div>
+              <button class="primary-btn" id="newEventBtn">＋ New event</button>
+            </div>
+            <div class="rule-strip">
+              <article>
+                <strong>35 days</strong><span>Lock the date</span>
+              </article>
+              <article>
+                <strong>28 days</strong><span>Book room with Sahar</span>
+              </article>
+              <article>
+                <strong>21 days</strong><span>Flyer + catering</span>
+              </article>
+              <article>
+                <strong>&lt; 14 days</strong
+                ><span>Run launch steps in parallel</span>
+              </article>
+              <article>
+                <strong>+ 3 days</strong><span>NPS survey</span>
+              </article>
+            </div>
+            <div class="event-board" id="eventBoard"></div>
+          </section>
+
+          <section class="view" id="view-connections" data-title="Connections">
+            <div class="page-intro">
+              <div class="eyebrow"><i></i>INTEGRATIONS & USAGE</div>
+              <h1>Connections</h1>
+              <p>
+                See what is live, what needs attention, and how many API calls
+                the dashboard is making.
+              </p>
+            </div>
+            <div class="connection-summary">
+              <article class="dark-stat">
+                <span>CONNECTED</span><strong id="connectedTotal">0 / 0</strong
+                ><small>services ready</small>
+              </article>
+              <article class="dark-stat">
+                <span>API CALLS</span><strong id="apiCalls">0</strong
+                ><small>this month</small>
+              </article>
+              <article class="dark-stat">
+                <span>AI TOKENS</span><strong id="aiTokens">0</strong
+                ><small>tracked this month</small>
+              </article>
+              <article class="dark-stat">
+                <span>EST. CREDITS</span><strong id="apiCredits">—</strong
+                ><small>provider reporting</small>
+              </article>
+            </div>
+            <div class="connections-grid" id="connectionsGrid"></div>
+            <article class="panel run-log">
+              <div class="section-heading">
+                <div>
+                  <span class="kicker">RECENT ACTIVITY</span>
+                  <h2>API runs</h2>
+                </div>
+              </div>
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Service</th>
+                      <th>Operation</th>
+                      <th>Status</th>
+                      <th>Calls</th>
+                      <th>Last run</th>
+                    </tr>
+                  </thead>
+                  <tbody id="runRows"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="view" id="view-settings" data-title="Settings">
+            <div class="page-intro">
+              <div class="eyebrow"><i></i>WORKSPACE PREFERENCES</div>
+              <h1>Settings</h1>
+              <p>Adjust your dashboard without changing the underlying SOP.</p>
+            </div>
+            <div class="settings-grid">
+              <article class="panel settings-card">
+                <span class="kicker">ACCOUNT</span>
+                <h2>Owner account</h2>
+                <label
+                  >Email<input value="willfarparan@gmail.com" disabled /></label
+                ><small
+                  >Google connections are code-restricted to this
+                  account.</small
+                ><label
+                  >Display name<input id="settingName" value="William Farparan"
+                /></label>
+              </article>
+              <article class="panel settings-card">
+                <span class="kicker">WORKDAY</span>
+                <h2>Daily overview</h2>
+                <label
+                  >Timezone<select id="settingTimezone">
+                    <option value="America/Los_Angeles">Pacific time</option>
+                  </select></label
+                ><label
+                  >Start of shift<input
+                    id="settingShift"
+                    type="time"
+                    value="06:00" /></label
+                ><label class="toggle-row"
+                  ><span
+                    ><b>Show completed tasks</b
+                    ><small
+                      >Keep finished items in the operating queue</small
+                    ></span
+                  ><input id="settingCompleted" type="checkbox" checked
+                /></label>
+              </article>
+              <article class="panel settings-card">
+                <span class="kicker">PRINT</span>
+                <h2>Program sheets</h2>
+                <label
+                  >Coach name<input
+                    id="settingCoach"
+                    value="William Farparan" /></label
+                ><label
+                  >Footer note<input
+                    id="settingFooter"
+                    value="Move well. Train with intent."
+                /></label>
+              </article>
+              <article class="panel settings-card danger-card">
+                <span class="kicker">DATA</span>
+                <h2>Local dashboard data</h2>
+                <p>
+                  Clear only this browser's cached preferences and unsynced
+                  drafts. Database records are not removed.
+                </p>
+                <button class="secondary-btn" id="clearLocal">
+                  Clear local cache
+                </button>
+              </article>
+            </div>
+            <div class="settings-save">
+              <span id="settingsSaved">Changes save to this browser.</span
+              ><button class="primary-btn" id="saveSettings">
+                Save settings
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <dialog id="formDialog" class="modal">
+      <form method="dialog" id="dialogForm">
+        <div class="modal-head">
+          <div>
+            <span class="kicker" id="dialogKicker">QUICK ADD</span>
+            <h2 id="dialogTitle">Add item</h2>
           </div>
-        </section>
-
-        <section class="view" id="view-programs" data-title="Training programs">
-          <div class="page-intro split-intro"><div><div class="eyebrow"><i></i>COACHING TOOLS</div><h1>Training programs</h1><p>Build a client plan, organize each day, and print a clean coaching sheet from the dashboard.</p></div><button class="primary-btn" id="newProgramBtn">＋ New program</button></div>
-          <div class="toolbar"><div class="segmented" id="programFilters"><button class="active" data-filter="all">All</button><button data-filter="active">Active</button><button data-filter="draft">Drafts</button></div><label class="table-search"><span>⌕</span><input id="programSearch" placeholder="Search programs"></label></div>
-          <div class="program-grid" id="programGrid"></div><article class="panel editor-panel" id="programEditor" hidden></article>
-        </section>
-
-        <section class="view" id="view-clients" data-title="Clients">
-          <div class="page-intro split-intro"><div><div class="eyebrow"><i></i>CLIENT ROSTER</div><h1>Clients</h1><p>Track every consult, InBody scan, and personal training session in one running record.</p></div><button class="primary-btn" id="newClientBtn">＋ Add client</button></div>
-          <div class="metric-grid client-metrics"><article class="metric-card"><span>Total clients</span><strong id="clientTotal">0</strong><small>all service types</small></article><article class="metric-card"><span>PT clients</span><strong id="clientPt">0</strong><small>personal training</small></article><article class="metric-card"><span>Sessions this month</span><strong id="clientSessions">0</strong><small>completed records</small></article><article class="metric-card"><span>Follow-ups due</span><strong id="clientFollowups">0</strong><small>next action set</small></article></div>
-          <article class="panel table-panel"><div class="table-toolbar"><label class="table-search"><span>⌕</span><input id="clientSearch" placeholder="Search clients"></label><select id="clientTypeFilter"><option value="all">All services</option><option>Personal training</option><option>InBody scan</option><option>PT consult</option></select></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Client</th><th>Service</th><th>Last session</th><th>Sessions</th><th>Next step</th><th></th></tr></thead><tbody id="clientRows"></tbody></table></div></article>
-        </section>
-
-        <section class="view" id="view-inbox" data-title="Inbox">
-          <div class="page-intro split-intro"><div><div class="eyebrow"><i></i>PRIORITY COMMUNICATIONS</div><h1>Inbox</h1><p>Important unread mail from the approved Google account and Adobe Microsoft inbox, together.</p></div><button class="primary-btn" id="inboxRefresh">↻ Refresh inbox</button></div>
-          <div class="inbox-layout"><aside class="panel inbox-sources"><button class="source-filter active" data-source="all"><span>All priority</span><b id="mailAllCount">0</b></button><button class="source-filter" data-source="google"><span class="source-dot google"></span><span>Google</span><b id="mailGoogleCount">0</b></button><button class="source-filter" data-source="microsoft"><span class="source-dot microsoft"></span><span>Adobe Microsoft</span><b id="mailMicrosoftCount">0</b></button><hr><small>Only unread messages marked important or starred are pulled into Task Dash.</small></aside><article class="panel inbox-panel"><div class="mail-list" id="mailList"></div></article></div>
-        </section>
-
-        <section class="view" id="view-events" data-title="Events">
-          <div class="page-intro split-intro"><div><div class="eyebrow"><i></i>EXOS EVENT SOP</div><h1>Events</h1><p>Choose the date. Task Dash back-plans the room, creative, catering, Slack, attendance, and follow-up deadlines.</p></div><button class="primary-btn" id="newEventBtn">＋ New event</button></div>
-          <div class="rule-strip"><article><strong>35 days</strong><span>Lock the date</span></article><article><strong>28 days</strong><span>Book room with Sahar</span></article><article><strong>21 days</strong><span>Flyer + catering</span></article><article><strong>&lt; 14 days</strong><span>Run launch steps in parallel</span></article><article><strong>+ 3 days</strong><span>NPS survey</span></article></div>
-          <div class="event-board" id="eventBoard"></div>
-        </section>
-
-        <section class="view" id="view-connections" data-title="Connections">
-          <div class="page-intro"><div class="eyebrow"><i></i>INTEGRATIONS & USAGE</div><h1>Connections</h1><p>See what is live, what needs attention, and how many API calls the dashboard is making.</p></div>
-          <div class="connection-summary"><article class="dark-stat"><span>CONNECTED</span><strong id="connectedTotal">0 / 0</strong><small>services ready</small></article><article class="dark-stat"><span>API CALLS</span><strong id="apiCalls">0</strong><small>this month</small></article><article class="dark-stat"><span>AI TOKENS</span><strong id="aiTokens">0</strong><small>tracked this month</small></article><article class="dark-stat"><span>EST. CREDITS</span><strong id="apiCredits">—</strong><small>provider reporting</small></article></div>
-          <div class="connections-grid" id="connectionsGrid"></div><article class="panel run-log"><div class="section-heading"><div><span class="kicker">RECENT ACTIVITY</span><h2>API runs</h2></div></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Service</th><th>Operation</th><th>Status</th><th>Calls</th><th>Last run</th></tr></thead><tbody id="runRows"></tbody></table></div></article>
-        </section>
-
-        <section class="view" id="view-settings" data-title="Settings">
-          <div class="page-intro"><div class="eyebrow"><i></i>WORKSPACE PREFERENCES</div><h1>Settings</h1><p>Adjust your dashboard without changing the underlying SOP.</p></div>
-          <div class="settings-grid">
-            <article class="panel settings-card"><span class="kicker">ACCOUNT</span><h2>Owner account</h2><label>Email<input value="willfarparan@gmail.com" disabled></label><small>Google connections are code-restricted to this account.</small><label>Display name<input id="settingName" value="William Farparan"></label></article>
-            <article class="panel settings-card"><span class="kicker">WORKDAY</span><h2>Daily overview</h2><label>Timezone<select id="settingTimezone"><option value="America/Los_Angeles">Pacific time</option></select></label><label>Start of shift<input id="settingShift" type="time" value="06:00"></label><label class="toggle-row"><span><b>Show completed tasks</b><small>Keep finished items in the operating queue</small></span><input id="settingCompleted" type="checkbox" checked></label></article>
-            <article class="panel settings-card"><span class="kicker">PRINT</span><h2>Program sheets</h2><label>Coach name<input id="settingCoach" value="William Farparan"></label><label>Footer note<input id="settingFooter" value="Move well. Train with intent."></label></article>
-            <article class="panel settings-card danger-card"><span class="kicker">DATA</span><h2>Local dashboard data</h2><p>Clear only this browser's cached preferences and unsynced drafts. Database records are not removed.</p><button class="secondary-btn" id="clearLocal">Clear local cache</button></article>
-          </div><div class="settings-save"><span id="settingsSaved">Changes save to this browser.</span><button class="primary-btn" id="saveSettings">Save settings</button></div>
-        </section>
-      </div>
-    </main>
-  </div>
-  <dialog id="formDialog" class="modal"><form method="dialog" id="dialogForm"><div class="modal-head"><div><span class="kicker" id="dialogKicker">QUICK ADD</span><h2 id="dialogTitle">Add item</h2></div><button class="icon-btn" value="cancel" aria-label="Close">×</button></div><div id="dialogFields" class="modal-body"></div><div class="modal-actions"><button class="secondary-btn" value="cancel">Cancel</button><button class="primary-btn" id="dialogSubmit" value="default">Save</button></div></form></dialog>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div><div class="mobile-scrim" id="mobileScrim"></div>
-  <script src="/app.js" defer></script>
-</body>
+          <button class="icon-btn" value="cancel" aria-label="Close">×</button>
+        </div>
+        <div id="dialogFields" class="modal-body"></div>
+        <div class="modal-actions">
+          <button class="secondary-btn" value="cancel">Cancel</button
+          ><button class="primary-btn" id="dialogSubmit" value="default">
+            Save
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="mobile-scrim" id="mobileScrim"></div>
+    <script src="/app.js" defer></script>
+  </body>
 </html>

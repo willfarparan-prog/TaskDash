@@ -8,7 +8,7 @@ Task Dash is William Farparan's private Exos at Adobe SF operating dashboard. It
 - **Resource hub:** a dedicated sidebar destination for every private tracker, SOP, form, inbox, and recurring work link from the source sheet, with search and task-based filters.
 - **Calendar:** read-only Google Calendar plus manual Adobe/Exos work blocks.
 - **Scheduler:** a permanent, no-sign-in public booking link with live availability, configurable work hours, visit reasons, booking tracking, and work-calendar conflict protection.
-- **Training programs:** client-linked, multi-day program editor with print-ready day sheets.
+- **Training programs:** client-linked, multi-day program builder with warm-ups, lettered blocks, week-by-week prescriptions, print-ready day sheets, and independent reusable stock templates.
 - **Clients:** PT consult, InBody, and personal-training roster with session history and follow-ups.
 - **Inbox:** unread important/starred Google mail, with an Adobe Microsoft connection held as a separate future authorization.
 - **Events:** the Exos event SOP with exact due dates, compressed-timeline rules, vendor escalation, attendance capture, and post-event survey follow-up.
@@ -19,9 +19,9 @@ The resource hub keeps URLs in the private `links` database table, not in the pu
 
 ## Account and privacy rules
 
-Dashboard ownership remains restricted to `willfarparan@gmail.com`. The callback verifies the returned Google identity before saving tokens. A signed, HTTP-only session cookie protects client records, programs, calendar data, inbox data, private work links, scheduler settings, and every private data-changing API request.
+Dashboard ownership remains restricted to `willfarparan@gmail.com`. The callback verifies the returned Google identity before saving tokens. A signed, HTTP-only session cookie protects every private read and write, including tasks, events, client records, programs, calendar data, inbox data, private work links, connection health, and scheduler settings. Cross-site mutations are rejected and Vercel applies restrictive browser security headers.
 
-The Scheduler has a second, purpose-limited Google connection restricted to `William.farparan@teamexos.com`. It is used only to read busy work-calendar events and create or remove Task Dash booking events. Visitors never sign in and never receive dashboard access.
+The Scheduler has a second, purpose-limited Google connection restricted to `william.farparan@teamexos.com`. It is used only to read busy work-calendar events and create or remove Task Dash booking events. Future work Docs and Sheets connections should follow this same pattern: ownership stays personal, while explicitly approved work data is accessed through a separate purpose-limited work authorization. Visitors never sign in and never receive dashboard access.
 
 Personal Google scopes are read-only:
 
@@ -43,8 +43,10 @@ Required environment variables:
 - `neon` or `DATABASE_URL`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
-- `DASHBOARD_SESSION_SECRET` (recommended; falls back to `GOOGLE_CLIENT_SECRET`)
+- `DASHBOARD_SESSION_SECRET` (required; use a dedicated random value)
 - `ANTHROPIC_API_KEY` (optional)
+
+Copy `.env.example` for local setup. Keep the database, OAuth application, GitHub repository, and Vercel project in the personal account. Work-account permissions should be added only as separate, purpose-limited OAuth connections; never change the dashboard owner email to the work account.
 
 The production Google OAuth redirect URI must remain:
 
@@ -54,8 +56,7 @@ The production Google OAuth redirect URI must remain:
 
 ```bash
 npm install
-node --check app.js
-for f in api/*.js api/auth/*.js lib/*.js; do node --check "$f"; done
+npm run check
 python3 -m http.server 4173
 ```
 

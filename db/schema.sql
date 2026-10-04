@@ -146,6 +146,12 @@ create table if not exists training_programs (
       weeks           int not null default 4,
       status          text not null default 'draft',
       content         jsonb not null default '[]'::jsonb,
+      is_stock        boolean not null default false,
+      source_program_id bigint references training_programs(id) on delete set null,
+      goal            text,
+      level           text,
+      sport           text,
+      emphasis        text,
       created_at      timestamptz not null default now(),
       updated_at      timestamptz not null default now()
     );
@@ -163,4 +169,6 @@ create table if not exists api_usage (
     );
 
 create index if not exists idx_client_sessions_client on client_sessions(client_id, session_date desc);
+create index if not exists idx_training_programs_client on training_programs(client_id, updated_at desc);
+create index if not exists idx_training_programs_stock on training_programs(is_stock, level, emphasis);
 create index if not exists idx_api_usage_created on api_usage(created_at desc);

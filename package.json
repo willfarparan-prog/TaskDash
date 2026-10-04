@@ -1,11 +1,15 @@
 {
-    "name": "taskdash",
-    "version": "3.0.0",
-    "private": true,
-    "engines": {
-          "node": "22.x"
-    },
-    "dependencies": {
-          "pg": "^8.11.3"
-    }
+  "name": "taskdash",
+  "version": "4.0.0",
+  "private": true,
+  "description": "William Farparan's private coaching and operations dashboard",
+  "scripts": {
+    "check": "node scripts/check.js"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  }
 }

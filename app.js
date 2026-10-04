@@ -1,136 +1,2140 @@
 /* Task Dash v3 · Apex-inspired coach command center */
-const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const OWNER_EMAIL='willfarparan@gmail.com',WORK_EMAIL='william.farparan@teamexos.com',DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const today=new Date(),todayKey=ymd(today);
-const DEFAULT_BOOKING_SCHEDULE={timezone:'America/Los_Angeles',slotMinutes:30,sessionMinutes:60,noticeMinutes:120,bookAheadDays:21,location:'Adobe SF Wellness Center',note:'Choose a time that works for you. William will see your reason for visiting before the session.',reasons:['Personal training session','PT consultation','InBody scan','Movement or fitness consultation','Other'],hours:{sun:{enabled:false,start:'09:00',end:'12:00'},mon:{enabled:true,start:'09:00',end:'16:00'},tue:{enabled:true,start:'09:00',end:'16:00'},wed:{enabled:true,start:'09:00',end:'16:00'},thu:{enabled:true,start:'09:00',end:'16:00'},fri:{enabled:true,start:'09:00',end:'15:00'},sat:{enabled:false,start:'09:00',end:'12:00'}}};
-const state={view:'dashboard',tasks:[],events:[],clients:[],sessions:[],programs:[],mail:[],calendar:[],connections:[],usage:{calls:0,tokens:0,credits:null,runs:[]},links:[],linkFilter:'all',linkError:'',programFilter:'all',mailFilter:'all',calendarOffset:0,activeProgram:null,scheduler:{settings:structuredClone(DEFAULT_BOOKING_SCHEDULE),bookings:[],days:[],workCalendar:{connected:false},publicUrl:`${location.origin}/book.html`,ownerReady:false},settings:Object.assign({name:'William Farparan',coach:'William Farparan',footer:'Move well. Train with intent.',shift:'06:00',showCompleted:true},readLocal('taskdash_settings',{}))};
-const RECUR=[
- {id:'wr-am',name:'Reset weight room — AM',cad:'Daily',time:'AM',when:d=>weekday(d)},
- {id:'inbox',name:'Check inboxes — Exos · Adobe · Wellness',cad:'Daily',time:'Shift start',when:d=>weekday(d)},
- {id:'wr-pm',name:'Reset weight room — PM',cad:'Daily',time:'PM',when:d=>weekday(d)},
- {id:'workday',name:'Log hours — Workday',cad:'Daily',time:'EOD',when:d=>weekday(d)},
- {id:'board',name:'Write workout on board',cad:'Weekly',time:'Mon',when:d=>d.getDay()===1},
- {id:'lab',name:'Strength Lab programming',cad:'Weekly',time:'Wed–Fri',when:d=>[3,4,5].includes(d.getDay())},
- {id:'glove',name:'White Glove Walkthrough',cad:'Weekly',time:'By 2:00p',when:d=>[4,5].includes(d.getDay())},
- {id:'meeting',name:'Exos team meeting',cad:'Weekly',time:'Fri',when:d=>d.getDay()===5},
- {id:'news',name:'Newsletter draft → Kelly',cad:'Monthly',time:'By the 15th',when:d=>d.getDate()>=12&&d.getDate()<=15},
- {id:'fdt',name:'FDT badge report',cad:'Monthly',time:'Last week',when:d=>d.getDate()>=lastWeekStart(d)},
- {id:'class',name:'Update class schedule',cad:'Monthly',time:'End of month',when:d=>d.getDate()>=lastWeekStart(d)}
+const $ = (s, r = document) => r.querySelector(s),
+  $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const OWNER_EMAIL = "willfarparan@gmail.com",
+  WORK_EMAIL = "william.farparan@teamexos.com",
+  DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  MONTHS = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+const today = new Date(),
+  todayKey = ymd(today);
+const DEFAULT_BOOKING_SCHEDULE = {
+  timezone: "America/Los_Angeles",
+  slotMinutes: 30,
+  sessionMinutes: 60,
+  noticeMinutes: 120,
+  bookAheadDays: 21,
+  location: "Adobe SF Wellness Center",
+  note: "Choose a time that works for you. William will see your reason for visiting before the session.",
+  reasons: [
+    "Personal training session",
+    "PT consultation",
+    "InBody scan",
+    "Movement or fitness consultation",
+    "Other",
+  ],
+  hours: {
+    sun: { enabled: false, start: "09:00", end: "12:00" },
+    mon: { enabled: true, start: "09:00", end: "16:00" },
+    tue: { enabled: true, start: "09:00", end: "16:00" },
+    wed: { enabled: true, start: "09:00", end: "16:00" },
+    thu: { enabled: true, start: "09:00", end: "16:00" },
+    fri: { enabled: true, start: "09:00", end: "15:00" },
+    sat: { enabled: false, start: "09:00", end: "12:00" },
+  },
+};
+const state = {
+  view: "dashboard",
+  tasks: [],
+  events: [],
+  clients: [],
+  sessions: [],
+  programs: [],
+  mail: [],
+  calendar: [],
+  connections: [],
+  usage: { calls: 0, tokens: 0, credits: null, runs: [] },
+  links: [],
+  linkFilter: "all",
+  linkError: "",
+  programFilter: "clients",
+  mailFilter: "all",
+  calendarOffset: 0,
+  activeProgram: null,
+  scheduler: {
+    settings: structuredClone(DEFAULT_BOOKING_SCHEDULE),
+    bookings: [],
+    days: [],
+    workCalendar: { connected: false },
+    publicUrl: `${location.origin}/book.html`,
+    ownerReady: false,
+  },
+  settings: Object.assign(
+    {
+      name: "William Farparan",
+      coach: "William Farparan",
+      footer: "Move well. Train with intent.",
+      shift: "06:00",
+      showCompleted: true,
+    },
+    readLocal("taskdash_settings", {}),
+  ),
+};
+const RECUR = [
+  {
+    id: "wr-am",
+    name: "Reset weight room — AM",
+    cad: "Daily",
+    time: "AM",
+    when: (d) => weekday(d),
+  },
+  {
+    id: "inbox",
+    name: "Check inboxes — Exos · Adobe · Wellness",
+    cad: "Daily",
+    time: "Shift start",
+    when: (d) => weekday(d),
+  },
+  {
+    id: "wr-pm",
+    name: "Reset weight room — PM",
+    cad: "Daily",
+    time: "PM",
+    when: (d) => weekday(d),
+  },
+  {
+    id: "workday",
+    name: "Log hours — Workday",
+    cad: "Daily",
+    time: "EOD",
+    when: (d) => weekday(d),
+  },
+  {
+    id: "board",
+    name: "Write workout on board",
+    cad: "Weekly",
+    time: "Mon",
+    when: (d) => d.getDay() === 1,
+  },
+  {
+    id: "lab",
+    name: "Strength Lab programming",
+    cad: "Weekly",
+    time: "Wed–Fri",
+    when: (d) => [3, 4, 5].includes(d.getDay()),
+  },
+  {
+    id: "glove",
+    name: "White Glove Walkthrough",
+    cad: "Weekly",
+    time: "By 2:00p",
+    when: (d) => [4, 5].includes(d.getDay()),
+  },
+  {
+    id: "meeting",
+    name: "Exos team meeting",
+    cad: "Weekly",
+    time: "Fri",
+    when: (d) => d.getDay() === 5,
+  },
+  {
+    id: "news",
+    name: "Newsletter draft → Kelly",
+    cad: "Monthly",
+    time: "By the 15th",
+    when: (d) => d.getDate() >= 12 && d.getDate() <= 15,
+  },
+  {
+    id: "fdt",
+    name: "FDT badge report",
+    cad: "Monthly",
+    time: "Last week",
+    when: (d) => d.getDate() >= lastWeekStart(d),
+  },
+  {
+    id: "class",
+    name: "Update class schedule",
+    cad: "Monthly",
+    time: "End of month",
+    when: (d) => d.getDate() >= lastWeekStart(d),
+  },
 ];
-const PIPE=[
- {key:'vendor',name:'Escalate vendor + budget to Michelle',offset:35,vendor:true,owner:'Michelle'},
- {key:'date',name:'Pin down event date',offset:35,owner:'William'},
- {key:'room',name:'Book the room',offset:28,owner:'Sahar',parallel:true},
- {key:'flyer',name:'Create flyer / poster',offset:21,owner:'William',parallel:true},
- {key:'catering',name:'Confirm catering',offset:21,owner:'Josh'},
- {key:'slack-1',name:'Initial Slack post',offset:18,owner:'William',parallel:true},
- {key:'slack-2',name:'Secondary Slack post',offset:10,owner:'William'},
- {key:'slack-3',name:'Third Slack post',offset:3,owner:'William'},
- {key:'day-of',name:'Day-of Slack post + badge reader',offset:0,owner:'William'},
- {key:'survey',name:'Send Microsoft Forms NPS survey',offset:-3,owner:'William'},
- {key:'response',name:'Follow up if survey response is under 20%',offset:-7,owner:'William'}
+const PIPE = [
+  {
+    key: "vendor",
+    name: "Escalate vendor + budget to Michelle",
+    offset: 35,
+    vendor: true,
+    owner: "Michelle",
+  },
+  { key: "date", name: "Pin down event date", offset: 35, owner: "William" },
+  {
+    key: "room",
+    name: "Book the room",
+    offset: 28,
+    owner: "Sahar",
+    parallel: true,
+  },
+  {
+    key: "flyer",
+    name: "Create flyer / poster",
+    offset: 21,
+    owner: "William",
+    parallel: true,
+  },
+  { key: "catering", name: "Confirm catering", offset: 21, owner: "Josh" },
+  {
+    key: "slack-1",
+    name: "Initial Slack post",
+    offset: 18,
+    owner: "William",
+    parallel: true,
+  },
+  {
+    key: "slack-2",
+    name: "Secondary Slack post",
+    offset: 10,
+    owner: "William",
+  },
+  { key: "slack-3", name: "Third Slack post", offset: 3, owner: "William" },
+  {
+    key: "day-of",
+    name: "Day-of Slack post + badge reader",
+    offset: 0,
+    owner: "William",
+  },
+  {
+    key: "survey",
+    name: "Send Microsoft Forms NPS survey",
+    offset: -3,
+    owner: "William",
+  },
+  {
+    key: "response",
+    name: "Follow up if survey response is under 20%",
+    offset: -7,
+    owner: "William",
+  },
 ];
-document.addEventListener('DOMContentLoaded',init);
-async function init(){wireNavigation();wireControls();applySettings();renderShellDate();await refreshAll();routeFromHash()}
-function wireNavigation(){
- $('#sideNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)go(b.dataset.view)});
- document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
- window.addEventListener('hashchange',routeFromHash);$('#mobileMenu').onclick=()=>toggleRail(true);$('#mobileScrim').onclick=()=>toggleRail(false);
- document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#globalSearch').focus()}if(e.key==='Escape')toggleRail(false)});$('#globalSearch').addEventListener('input',e=>globalSearch(e.target.value));
+document.addEventListener("DOMContentLoaded", init);
+async function init() {
+  wireNavigation();
+  wireControls();
+  applySettings();
+  renderShellDate();
+  await refreshAll();
+  routeFromHash();
 }
-function go(view){location.hash=view==='dashboard'?'':view;state.view=view;renderRoute();toggleRail(false)}
-function routeFromHash(){const view=location.hash.slice(1)||'dashboard';state.view=$(`#view-${view}`)?view:'dashboard';renderRoute()}
-function renderRoute(){$$('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${state.view}`));$$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));const active=$(`#view-${state.view}`);$('#crumbTitle').textContent=active?.dataset.title||'Dashboard';document.title=`${active?.dataset.title||'Dashboard'} · Task Dash`;if(state.view==='calendar')renderCalendar();if(state.view==='scheduler')renderScheduler();if(state.view==='resources')renderLinks();if(state.view==='programs')renderPrograms();if(state.view==='clients')renderClients();if(state.view==='inbox'){loadInbox();renderInbox()}if(state.view==='events')renderEvents();if(state.view==='connections')renderConnections()}
-function toggleRail(open){$('#sidebar').classList.toggle('open',open);$('#mobileScrim').classList.toggle('show',open)}
-function wireControls(){
- $('#refreshBtn').onclick=refreshAll;$('#briefRefresh').onclick=renderDashboard;$('#taskAdd').onclick=addTask;$('#taskInput').addEventListener('keydown',e=>{if(e.key==='Enter')addTask()});$('#taskList').addEventListener('change',toggleTask);$('#taskList').addEventListener('click',deleteTask);$('#quickAddBtn').onclick=openQuickAdd;
-	 $('#addBlockOpen').onclick=openBlockDialog;$('#calendarConnect').onclick=()=>location.href='/api/auth/start';$('#prevWeek').onclick=()=>{state.calendarOffset--;renderCalendar()};$('#nextWeek').onclick=()=>{state.calendarOffset++;renderCalendar()};
-	 $('#openBookingPage').onclick=()=>window.open(state.scheduler.publicUrl,'_blank','noopener');$('#copyBookingLink').onclick=copyBookingLink;$('#copyBookingLinkInline').onclick=copyBookingLink;$('#workCalendarConnect').onclick=()=>location.href='/api/auth/start?account=work';$('#saveSchedule').onclick=saveSchedule;$('#scheduleHours').addEventListener('change',scheduleHoursChange);$('#bookingList').addEventListener('click',cancelBooking);
- $('#newProgramBtn').onclick=openProgramDialog;$('#programSearch').oninput=renderPrograms;$('#programFilters').onclick=e=>{const b=e.target.closest('[data-filter]');if(!b)return;state.programFilter=b.dataset.filter;$$('#programFilters button').forEach(x=>x.classList.toggle('active',x===b));renderPrograms()};$('#programGrid').onclick=programAction;$('#programEditor').onclick=programEditorAction;
- $('#newClientBtn').onclick=openClientDialog;$('#clientSearch').oninput=renderClients;$('#clientTypeFilter').onchange=renderClients;$('#clientRows').onclick=clientAction;$('#inboxRefresh').onclick=loadInbox;$$('.source-filter').forEach(b=>b.onclick=()=>{state.mailFilter=b.dataset.source;$$('.source-filter').forEach(x=>x.classList.toggle('active',x===b));renderInbox()});
- $('#newEventBtn').onclick=openEventDialog;$('#eventBoard').addEventListener('change',eventStepChange);$('#eventBoard').addEventListener('click',eventAction);$('#saveSettings').onclick=saveSettings;$('#clearLocal').onclick=clearLocal;
-	 $$('.link-search').forEach(input=>input.oninput=renderLinks);$$('.resource-filters').forEach(filters=>filters.onclick=e=>{const b=e.target.closest('[data-link-filter]');if(!b)return;state.linkFilter=b.dataset.linkFilter;renderLinks()});
+function wireNavigation() {
+  $("#sideNav").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-view]");
+    if (b) go(b.dataset.view);
+  });
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-go]");
+    if (b) go(b.dataset.go);
+  });
+  window.addEventListener("hashchange", routeFromHash);
+  $("#mobileMenu").onclick = () => toggleRail(true);
+  $("#mobileScrim").onclick = () => toggleRail(false);
+  document.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      $("#globalSearch").focus();
+    }
+    if (e.key === "Escape") toggleRail(false);
+  });
+  $("#globalSearch").addEventListener("input", (e) =>
+    globalSearch(e.target.value),
+  );
 }
-async function refreshAll(){$('#refreshBtn').classList.add('loading');await Promise.allSettled([loadTasks(),loadEvents(),loadClients(),loadPrograms(),loadCalendar(),loadConnections(),loadLinks(),loadScheduler()]);renderEverything();$('#refreshBtn').classList.remove('loading')}
-function renderEverything(){renderDashboard();renderCalendar();renderScheduler();renderPrograms();renderClients();renderInbox();renderEvents();renderConnections()}
-async function getJSON(url,opts){const r=await fetch(url,opts);let data={};try{data=await r.json()}catch{}if(!r.ok)throw new Error(data.error||`Request failed (${r.status})`);return data}
-async function loadTasks(){try{const data=await getJSON(`/api/tasks?day=${todayKey}`),checks=new Map((data.checks||[]).filter(x=>x.period_key===todayKey).map(x=>[x.task_id,x.done])),recurring=RECUR.filter(t=>t.when(today)).map(t=>({...t,done:!!checks.get(t.id),kind:'recur'})),customRecur=(data.recur||[]).filter(t=>t.source==='custom'&&(t.cadence==='Daily'||t.weekday===today.getDay())).map(t=>({id:t.id,name:t.name,cad:t.cadence,time:t.cadence==='Daily'?'Today':DOW[t.weekday],done:!!checks.get(t.id),kind:'recur'})),daily=(data.daily||[]).map(t=>({id:String(t.id),name:t.name,cad:'Today',time:'',done:!!t.done,kind:'daily'}));state.tasks=[...recurring,...customRecur,...daily]}catch{state.tasks=RECUR.filter(t=>t.when(today)).map(t=>({...t,done:false,kind:'recur'}))}}
-async function loadEvents(){try{state.events=(await getJSON('/api/events')).events||[]}catch{state.events=readLocal('taskdash_events',[])}}
-async function loadClients(){try{const d=await getJSON('/api/clients');state.clients=d.clients||[];state.sessions=d.sessions||[]}catch{state.clients=readLocal('taskdash_clients',[]);state.sessions=readLocal('taskdash_sessions',[])}}
-async function loadPrograms(){try{state.programs=(await getJSON('/api/programs')).programs||[]}catch{state.programs=readLocal('taskdash_programs',[])}}
-async function loadCalendar(){try{const d=await getJSON('/api/calendar-week');state.calendar=d.events||[];state.calendarConnected=!!d.connected;state.calendarEmail=d.accountEmail||null}catch{state.calendar=[];state.calendarConnected=false}}
-async function loadInbox(){try{const d=await getJSON('/api/inbox');state.mail=d.messages||[];state.inboxConnections=d.connections||{};state.inboxError=''}catch(e){state.mail=[];state.inboxError=e.message}renderInbox()}
-async function loadConnections(){try{const d=await getJSON('/api/connections');state.connections=d.connections||[];state.usage=d.usage||state.usage}catch{state.connections=fallbackConnections()}}
-async function loadLinks(){try{state.links=((await getJSON('/api/links')).links||[]).filter(l=>/^https?:\/\//.test(l.url||''));state.linkError=''}catch(e){state.links=[];state.linkError=e.message.includes('401')||e.message.includes('Connect Google')?`Connect Google as ${OWNER_EMAIL} to unlock private work links.`:'Private work links load after sign-in on the deployed dashboard.'}}
-async function loadScheduler(){
- try{const publicData=await getJSON('/api/calendar-manual?resource=availability');state.scheduler.days=publicData.days||[];state.scheduler.settings={...state.scheduler.settings,...(publicData.settings||{})};state.scheduler.workCalendar.connected=!!publicData.calendarConnected}catch{}
- try{const data=await getJSON('/api/calendar-manual?resource=scheduler');state.scheduler={...state.scheduler,...data,days:state.scheduler.days,ownerReady:true};state.scheduler.publicUrl=data.publicUrl||`${location.origin}/book.html`}catch{state.scheduler.ownerReady=false}
+function go(view) {
+  location.hash = view === "dashboard" ? "" : view;
+  state.view = view;
+  renderRoute();
+  toggleRail(false);
 }
-function renderShellDate(){const hour=today.getHours();$('#greeting').textContent=`Good ${hour<12?'morning':hour<17?'afternoon':'evening'}, ${state.settings.name.split(' ')[0]||'Will'}.`;$('#todayStamp').textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase()}
-function renderDashboard(){
- const visible=state.settings.showCompleted?state.tasks:state.tasks.filter(t=>!t.done),done=state.tasks.filter(t=>t.done).length,remaining=state.tasks.length-done,overdue=state.tasks.filter(t=>!t.done&&taskState(t)==='over').length,sessionsToday=state.sessions.filter(s=>String(s.session_date||'').slice(0,10)===todayKey).length;
- $('#attentionCount').textContent=overdue||remaining;$('#attentionLabel').textContent=overdue?`${overdue} overdue · ${remaining} open`:`${remaining} task${remaining===1?'':'s'} remaining`;$('#sessionCount').textContent=sessionsToday;$('#eventCount').textContent=state.events.length;$('#metricTasks').textContent=`${done} / ${state.tasks.length}`;$('#taskProgress').style.width=`${state.tasks.length?done/state.tasks.length*100:0}%`;$('#metricClients').textContent=state.clients.length;$('#metricPrograms').textContent=state.programs.filter(p=>p.status!=='archived').length;
- const live=state.connections.filter(c=>c.status==='connected').length,readiness=state.connections.length?Math.round(live/state.connections.length*100):0;$('#metricReadiness').textContent=`${readiness}%`;$('#readyProgress').style.width=`${readiness}%`;$('#todayTaskCount').textContent=`${remaining} open · ${done} done`;$('#taskList').innerHTML=visible.length?visible.map(taskHTML).join(''):'<div class="empty-state compact">Nothing is due today.</div>';
- const next=state.tasks.filter(t=>!t.done).slice(0,3).map(t=>`<li><strong>${esc(t.name)}</strong> · ${esc(t.time||t.cad)}</li>`).join(''),nextEvent=state.events.map(normalizeEvent).sort((a,b)=>a.date-b.date).find(e=>e.days>=0);$('#dailyBrief').innerHTML=`<strong>${overdue?'Start with the overdue work.':'Your operating queue is under control.'}</strong><ul>${next||'<li>No open tasks on today’s list.</li>'}${nextEvent?`<li><strong>${esc(nextEvent.name)}</strong> is ${nextEvent.days===0?'today':`in ${nextEvent.days} days`}.</li>`:''}</ul>`;renderAgenda();renderEventPreview();renderReadiness();renderLinks();
+function routeFromHash() {
+  const view = location.hash.slice(1) || "dashboard";
+  state.view = $(`#view-${view}`) ? view : "dashboard";
+  renderRoute();
 }
-function taskHTML(t){const s=taskState(t),links=taskResourceLinks(t);return`<div class="task-row ${t.done?'done':''}" data-id="${attr(t.id)}" data-kind="${t.kind}"><input class="task-check" type="checkbox" aria-label="Complete ${attr(t.name)}" ${t.done?'checked':''}><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${esc(t.cad)}${t.time?` · ${esc(t.time)}`:''}${links.map(l=>` <a href="${attr(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.short||l.title)} ↗</a>`).join('')}</div></div><span class="task-status ${s}">${t.done?'DONE':s==='over'?'OVERDUE':s==='due'?'DUE':'OPEN'}</span>${t.kind==='daily'?'<button class="row-delete" aria-label="Delete task">×</button>':'<span></span>'}</div>`}
-function taskResourceLinks(t){const keys={inbox:['work-gmail','adobe-outlook'],workday:['workday'],lab:['strength-lab'],fdt:['badge-report-sop','badge-report-claude'],class:['signature-classes-site']};return(keys[t.id]||[]).map(id=>state.links.find(l=>l.id===id)).filter(Boolean)}
-function renderLinks(){const hubs=$$('.resource-hub');if(!hubs.length)return;const categories=[...new Set(state.links.map(l=>l.category))],labels={communication:'Communication',coaching:'Coaching',programming:'Classes & programs',operations:'Operations',resources:'Resources & SOPs',tracking:'Tracking',reporting:'Reporting',daily:'Daily',forms:'Forms',hr_sop:'HR & policy',marketing:'Marketing'};hubs.forEach(hub=>{const grid=$('.resource-grid',hub),filters=$('.resource-filters',hub),context=$('.resource-context',hub),search=$('.link-search',hub);if(!state.links.length){filters.innerHTML='';context.innerHTML='';grid.innerHTML=`<div class="empty-state compact resource-locked"><strong>Your links are saved privately.</strong><span>${esc(state.linkError||'No work links are available yet.')}</span><a class="primary-btn resource-connect" href="/api/auth/start">Connect ${OWNER_EMAIL}</a></div>`;return}filters.innerHTML=`<button class="${state.linkFilter==='all'?'active':''}" data-link-filter="all">All</button>`+categories.map(c=>`<button class="${state.linkFilter===c?'active':''}" data-link-filter="${attr(c)}">${esc(labels[c]||cap(c.replace('_',' ')))}</button>`).join('');const q=(search?.value||'').trim().toLowerCase(),visible=state.links.filter(l=>(state.linkFilter==='all'||l.category===state.linkFilter)&&(!q||`${l.title} ${l.description||''} ${l.category}`.toLowerCase().includes(q)));grid.innerHTML=visible.length?visible.map(l=>`<a class="quick-link-card" href="${attr(l.url)}" target="_blank" rel="noopener noreferrer"><span class="quick-link-icon">${esc((l.short||l.title).slice(0,2).toUpperCase())}</span><span><strong>${esc(l.title)}</strong><small>${esc(l.description||'Open work resource')}</small><em>${esc(l.frequency||labels[l.category]||cap(l.category))}</em></span><b>↗</b></a>`).join(''):'<div class="empty-state compact">No links match that search.</div>';const pinned=state.links.filter(l=>l.pinned).slice(0,8);context.innerHTML=pinned.map(l=>`<a href="${attr(l.url)}" target="_blank" rel="noopener noreferrer"><span>${esc(l.short||l.title)}</span><small>${esc(l.frequency||'Quick access')}</small><b>↗</b></a>`).join('')})}
-function taskState(t){if(t.done)return'done';const h=today.getHours();if((/AM|Shift/.test(t.time)&&h>=12)||(/2:00/.test(t.time)&&h>=14)||(/PM|EOD/.test(t.time)&&h>=17))return'over';if(t.cad!=='Daily'||h>=11)return'due';return'open'}
-async function addTask(){const input=$('#taskInput'),name=input.value.trim();if(!name)return;input.value='';try{await getJSON('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'daily_task',dayKey:todayKey,name})});await loadTasks()}catch{state.tasks.push({id:`local-${Date.now()}`,name,cad:'Today',time:'',done:false,kind:'daily'})}renderDashboard();toast('Task added')}
-async function toggleTask(e){const row=e.target.closest('.task-row');if(!row)return;const t=state.tasks.find(x=>String(x.id)===row.dataset.id);if(!t)return;t.done=e.target.checked;renderDashboard();const body=t.kind==='daily'?{kind:'daily_task',id:t.id,done:t.done}:{kind:'recur_check',taskId:t.id,periodKey:todayKey,done:t.done};try{await getJSON('/api/tasks',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}catch{toast('Saved in this browser only')}}
-async function deleteTask(e){const btn=e.target.closest('.row-delete');if(!btn)return;const row=btn.closest('.task-row'),id=row.dataset.id;state.tasks=state.tasks.filter(t=>String(t.id)!==id);renderDashboard();try{await getJSON(`/api/tasks?id=${encodeURIComponent(id)}`,{method:'DELETE'})}catch{}toast('Task removed')}
-function renderAgenda(){const events=state.calendar.map(e=>({...e,date:new Date(e.start)})).filter(e=>e.date>=startOfDay(today)).sort((a,b)=>a.date-b.date).slice(0,5);$('#agendaList').innerHTML=events.length?events.map(e=>`<div class="agenda-row"><div class="agenda-date"><strong>${e.date.getDate()}</strong><small>${DOW[e.date.getDay()]}</small></div><i class="agenda-line ${attr(e.source||'')}"></i><div class="agenda-body"><strong>${esc(e.title)}</strong><span>${e.allDay?'All day':fmtTime(e.date)} · ${esc(cap(e.source||'calendar'))}</span></div></div>`).join(''):'<div class="empty-state compact">No connected calendar items this week.</div>'}
-function renderEventPreview(){const list=state.events.map(normalizeEvent).sort((a,b)=>a.date-b.date).slice(0,4);$('#eventPreview').innerHTML=list.length?list.map(e=>{const steps=eventSteps(e.raw),done=steps.filter(s=>s.done).length;return`<div class="preview-event"><header><strong>${esc(e.name)}</strong><span>${e.days>=0?`${e.days}d out`:'past'}</span></header><div class="track"><i style="width:${steps.length?done/steps.length*100:0}%"></i></div><span>${done} of ${steps.length} SOP steps complete · ${fmtDate(e.date)}</span></div>`}).join(''):'<div class="empty-state compact">No active events. Add a date and the SOP will build itself.</div>'}
-function renderReadiness(){const sample=state.connections.length?state.connections.slice(0,6):fallbackConnections();$('#readinessList').innerHTML=sample.map(c=>`<div class="ready-row"><i class="ready-dot ${c.status==='connected'?'live':c.status==='attention'?'attention':''}"></i><span>${esc(c.name)}</span><em>${esc(cap(c.status||'queued'))}</em></div>`).join('')}
-function weekStart(offset=0){const d=new Date(today),day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day)+offset*7);d.setHours(0,0,0,0);return d}
-function renderCalendar(){const start=weekStart(state.calendarOffset),end=new Date(start);end.setDate(end.getDate()+6);$('#calendarRange').textContent=`${MONTHS[start.getMonth()]} ${start.getDate()} – ${MONTHS[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;$('#calendarBanner strong').textContent=state.calendarConnected?'Google calendar connected':'Connect Google calendar';$('#calendarBanner span').textContent=state.calendarConnected?`${state.calendarEmail||OWNER_EMAIL} · read-only sync`:`Only ${OWNER_EMAIL} is allowed`;$('#calendarConnect').textContent=state.calendarConnected?'Connected':'Connect';$('#calendarConnect').disabled=state.calendarConnected;let html='<div class="cal-corner"></div>';for(let i=0;i<7;i++){const d=new Date(start);d.setDate(d.getDate()+i);html+=`<div class="cal-day-head ${ymd(d)===todayKey?'today':''}"><span>${DOW[d.getDay()]}</span><strong>${d.getDate()}</strong></div>`}html+='<div class="time-axis">';for(let h=6;h<=18;h+=2)html+=`<span style="top:${(h-6)/12*100}%">${h>12?h-12:h}${h>=12?'p':'a'}</span>`;html+='</div>';for(let i=0;i<7;i++){const d=new Date(start);d.setDate(d.getDate()+i);const key=ymd(d);html+=`<div class="cal-day" data-date="${key}">${state.calendar.filter(e=>String(e.start).slice(0,10)===key).map(calendarEventHTML).join('')}</div>`}$('#weekCalendar').innerHTML=html}
-function calendarEventHTML(e){if(e.allDay)return`<div class="cal-event ${attr(e.source||'')}" style="top:4px;height:28px"><strong>${esc(e.title)}</strong></div>`;const s=new Date(e.start),en=new Date(e.end),top=Math.max(0,(s.getHours()+s.getMinutes()/60-6)/12*100),height=Math.max(4,(en-s)/36e5/12*100);return`<div class="cal-event ${attr(e.source||'')}" style="top:${top}%;height:${height}%"><strong>${esc(e.title)}</strong>${fmtTime(s)}</div>`}
-function openBlockDialog(){openDialog({kicker:'CALENDAR',title:'Add a work block',fields:[['title','Title','text','e.g. PT consult'],['date','Date','date',todayKey],['start','Start','time','09:00'],['end','End','time','10:00'],['source','Source','select',['Adobe','Exos','Personal']]],submit:async v=>{await getJSON('/api/calendar-manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:v.title,date:v.date,start:v.start,end:v.end,source:v.source.toLowerCase()})});await loadCalendar();renderCalendar();toast('Calendar block added')}})}
-function renderScheduler(){
- const scheduler=state.scheduler,s=scheduler.settings||DEFAULT_BOOKING_SCHEDULE,url=scheduler.publicUrl||`${location.origin}/book.html`;
- $('#bookingUrl').textContent=url;$('#scheduleSlot').value=s.slotMinutes||30;$('#scheduleDuration').value=s.sessionMinutes||60;$('#scheduleNotice').value=String(s.noticeMinutes??120);$('#scheduleAhead').value=s.bookAheadDays||21;$('#scheduleLocation').value=s.location||'';$('#scheduleNote').value=s.note||'';
- const connected=!!scheduler.workCalendar?.connected;$('#workCalendarBanner strong').textContent=connected?'Work Google Calendar connected':'Connect Work Google Calendar';$('#workCalendarBanner span').textContent=connected?`${scheduler.workCalendar.email||WORK_EMAIL} · busy times hidden automatically`:`Connect ${WORK_EMAIL} to hide busy times and create calendar events.`;$('#workCalendarConnect').textContent=connected?'Connected':'Connect work calendar';$('#workCalendarConnect').disabled=connected||!scheduler.ownerReady;
- const names={sun:'Sunday',mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday'};
- $('#scheduleHours').innerHTML=['mon','tue','wed','thu','fri','sat','sun'].map(day=>{const h=s.hours?.[day]||DEFAULT_BOOKING_SCHEDULE.hours[day];return`<div class="schedule-day ${h.enabled?'':'off'}" data-day="${day}"><label class="schedule-toggle"><input type="checkbox" data-hour="enabled" ${h.enabled?'checked':''}><span>${names[day]}</span></label><div class="schedule-range"><input type="time" data-hour="start" value="${attr(h.start)}" ${h.enabled?'':'disabled'} aria-label="${names[day]} start"><span>to</span><input type="time" data-hour="end" value="${attr(h.end)}" ${h.enabled?'':'disabled'} aria-label="${names[day]} end"></div><em>${h.enabled?'Available':'Not available'}</em></div>`}).join('');
- const openDays=(scheduler.days||[]).filter(day=>day.openCount>0).slice(0,4);$('#schedulePreview').innerHTML=openDays.length?openDays.map(day=>`<div class="preview-day"><div><strong>${esc(day.label)}</strong><small>${day.openCount} opening${day.openCount===1?'':'s'}</small></div><div class="preview-slots">${day.slots.filter(slot=>slot.open).slice(0,3).map(slot=>`<span>${esc(slot.label)}</span>`).join('')}${day.openCount>3?`<em>+${day.openCount-3}</em>`:''}</div></div>`).join(''):'<div class="empty-state compact">No public openings in the current window.</div>';
- const bookings=(scheduler.bookings||[]).filter(b=>b.status!=='cancelled'&&new Date(b.starts_at)>=startOfDay(today));$('#bookingList').innerHTML=bookings.length?bookings.slice(0,12).map(b=>{const start=new Date(b.starts_at);return`<div class="booking-row" data-booking-id="${b.id}"><div><strong>${esc(b.visitor_name)}</strong><span>${esc(b.reason)} · ${start.toLocaleString('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span><small>${b.calendar_sync_status==='synced'?'On work calendar':b.calendar_sync_status==='error'?'Calendar sync needs attention':'Waiting for calendar connection'}</small></div><button class="row-delete" data-cancel-booking aria-label="Cancel ${attr(b.visitor_name)} booking">×</button></div>`}).join(''):'<div class="empty-state compact">No upcoming bookings yet.</div>';
- $('#schedulerPin').classList.toggle('live',connected);$('#saveSchedule').disabled=!scheduler.ownerReady;$('#schedulerSaved').textContent=scheduler.ownerReady?'Changes update the public booking page.':`Connect ${OWNER_EMAIL} first to edit availability.`;
+function renderRoute() {
+  $$(".view").forEach((v) =>
+    v.classList.toggle("active", v.id === `view-${state.view}`),
+  );
+  $$(".nav-item").forEach((b) =>
+    b.classList.toggle("active", b.dataset.view === state.view),
+  );
+  const active = $(`#view-${state.view}`);
+  $("#crumbTitle").textContent = active?.dataset.title || "Dashboard";
+  document.title = `${active?.dataset.title || "Dashboard"} · Task Dash`;
+  if (state.view === "calendar") renderCalendar();
+  if (state.view === "scheduler") renderScheduler();
+  if (state.view === "resources") renderLinks();
+  if (state.view === "programs") renderPrograms();
+  if (state.view === "clients") renderClients();
+  if (state.view === "inbox") {
+    loadInbox();
+    renderInbox();
+  }
+  if (state.view === "events") renderEvents();
+  if (state.view === "connections") renderConnections();
 }
-function scheduleHoursChange(event){const row=event.target.closest('.schedule-day');if(!row)return;const enabled=row.querySelector('[data-hour="enabled"]').checked;row.classList.toggle('off',!enabled);row.querySelectorAll('input[type=time]').forEach(input=>input.disabled=!enabled);row.querySelector('em').textContent=enabled?'Available':'Not available'}
-async function copyBookingLink(){const value=state.scheduler.publicUrl||`${location.origin}/book.html`;try{await navigator.clipboard.writeText(value)}catch{const input=document.createElement('textarea');input.value=value;document.body.append(input);input.select();document.execCommand('copy');input.remove()}toast('Booking link copied — ready to paste in Slack')}
-async function saveSchedule(){
- const settings={...state.scheduler.settings,slotMinutes:Number($('#scheduleSlot').value),sessionMinutes:Number($('#scheduleDuration').value),noticeMinutes:Number($('#scheduleNotice').value),bookAheadDays:Number($('#scheduleAhead').value),location:$('#scheduleLocation').value.trim(),note:$('#scheduleNote').value.trim(),hours:{}};
- $$('.schedule-day').forEach(row=>{settings.hours[row.dataset.day]={enabled:row.querySelector('[data-hour="enabled"]').checked,start:row.querySelector('[data-hour="start"]').value,end:row.querySelector('[data-hour="end"]').value}});
- const button=$('#saveSchedule');button.disabled=true;button.textContent='Saving…';try{const data=await getJSON('/api/calendar-manual?resource=schedule',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({resource:'schedule',settings})});state.scheduler.settings=data.settings;await loadScheduler();renderScheduler();$('#schedulerSaved').textContent='Saved just now.';toast('Public availability updated')}catch(error){toast(error.message)}finally{button.disabled=!state.scheduler.ownerReady;button.textContent='Save availability'}
+function toggleRail(open) {
+  $("#sidebar").classList.toggle("open", open);
+  $("#mobileScrim").classList.toggle("show", open);
 }
-async function cancelBooking(event){const button=event.target.closest('[data-cancel-booking]');if(!button)return;const row=button.closest('[data-booking-id]');if(!confirm('Cancel this booking and remove its work calendar event?'))return;try{await getJSON(`/api/calendar-manual?resource=booking&id=${encodeURIComponent(row.dataset.bookingId)}`,{method:'DELETE'});await loadScheduler();renderScheduler();toast('Booking cancelled')}catch(error){toast(error.message)}}
-function renderPrograms(){const q=$('#programSearch').value.toLowerCase(),list=state.programs.filter(p=>(state.programFilter==='all'||(p.status||'draft')===state.programFilter)&&`${p.name} ${p.client_name||''}`.toLowerCase().includes(q));$('#programGrid').innerHTML=list.length?list.map(p=>`<article class="program-card" data-id="${p.id}"><div class="program-card-top"></div><div class="program-card-body"><span class="status">${esc((p.status||'draft').toUpperCase())}</span><h3>${esc(p.name)}</h3><p>${esc(p.client_name||'General program')}</p><dl><div><dt>Days</dt><dd>${p.days_per_week||3}</dd></div><div><dt>Weeks</dt><dd>${p.weeks||4}</dd></div><div><dt>Updated</dt><dd>${shortDate(p.updated_at||p.created_at)}</dd></div></dl><footer><button class="secondary-btn" data-action="edit">Open</button><button class="primary-btn" data-action="print">Print</button></footer></div></article>`).join(''):'<div class="empty-state">No programs match this view. Start one for a client and it will appear here.</div>';$('#metricPrograms').textContent=state.programs.length}
-function openProgramDialog(){const options=['Not linked',...state.clients.map(c=>c.name)];openDialog({kicker:'TRAINING PROGRAM',title:'Start a program',fields:[['name','Program name','text','e.g. Jordan · Foundation Block'],['client','Client','select',options],['days','Days per week','number','3'],['weeks','Weeks','number','4']],submit:async v=>{const payload={name:v.name,clientName:v.client==='Not linked'?'':v.client,daysPerWeek:Number(v.days),weeks:Number(v.weeks),status:'draft'};let saved;try{saved=await getJSON('/api/programs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});await loadPrograms()}catch{saved={...payload,id:`local-${Date.now()}`,days_per_week:payload.daysPerWeek,weeks:payload.weeks,client_name:payload.clientName,content:defaultProgram(payload.daysPerWeek)};state.programs.push(saved);writeLocal('taskdash_programs',state.programs)}renderPrograms();openProgram(saved.id);toast('Program created')}})}
-function programAction(e){const card=e.target.closest('.program-card');if(!card)return;const action=e.target.closest('[data-action]')?.dataset.action;if(action==='edit')openProgram(card.dataset.id);if(action==='print'){openProgram(card.dataset.id);setTimeout(()=>window.print(),80)}}
-function openProgram(id){state.activeProgram=String(id);const p=state.programs.find(x=>String(x.id)===state.activeProgram);if(!p)return;const content=normalizeProgramContent(p);$('#programEditor').hidden=false;$('#programEditor').innerHTML=`<div class="print-header" hidden><span class="kicker">TASK DASH · TRAINING PROGRAM</span></div><div class="section-heading"><div><span class="kicker">PROGRAM EDITOR</span><h2>${esc(p.name)}</h2><p>${esc(p.client_name||'General')} · ${p.days_per_week||3} days/week · ${p.weeks||4} weeks</p></div><button class="icon-btn" data-editor="close">×</button></div><div class="day-tabs">${content.map((d,i)=>`<button class="${i===0?'active':''}" data-day="${i}">${esc(d.name||`Day ${i+1}`)}</button>`).join('')}</div><div class="program-day">${content.map((d,i)=>`<div data-day-panel="${i}" ${i?'hidden':''}><label class="kicker">${esc(d.name||`DAY ${i+1}`)}</label><textarea data-content="${i}" aria-label="${attr(d.name)} exercises">${esc(d.exercises||'')}</textarea></div>`).join('')}</div><div class="editor-actions"><button class="secondary-btn" data-editor="print">Print current sheet</button><button class="primary-btn" data-editor="save">Save program</button></div>`;$('#programEditor').scrollIntoView({behavior:'smooth',block:'start'})}
-function normalizeProgramContent(p){if(Array.isArray(p.content))return p.content;try{const parsed=JSON.parse(p.content);return Array.isArray(parsed)?parsed:defaultProgram(p.days_per_week||3)}catch{return defaultProgram(p.days_per_week||3)}}
-function defaultProgram(days){return Array.from({length:Number(days)||3},(_,i)=>({name:`Day ${i+1}`,exercises:'WARM-UP\n1. Mobility / activation — 2 rounds\n\nLIFTS\nA1. Primary movement — 4 × 6\nA2. Paired movement — 4 × 8\nB1. Secondary movement — 3 × 10\nB2. Core / carry — 3 rounds\n\nCOOLDOWN\nBreathing + recovery — 5 min'}))}
-function programEditorAction(e){const day=e.target.closest('[data-day]');if(day){$$('.day-tabs button',$('#programEditor')).forEach(b=>b.classList.toggle('active',b===day));$$('[data-day-panel]',$('#programEditor')).forEach(p=>p.hidden=p.dataset.dayPanel!==day.dataset.day);return}const a=e.target.closest('[data-editor]')?.dataset.editor;if(a==='close')$('#programEditor').hidden=true;if(a==='print')window.print();if(a==='save')saveProgram()}
-async function saveProgram(){const p=state.programs.find(x=>String(x.id)===state.activeProgram);if(!p)return;const content=$$('[data-content]',$('#programEditor')).map((x,i)=>({name:`Day ${i+1}`,exercises:x.value}));p.content=content;p.status='active';try{await getJSON(`/api/programs?id=${encodeURIComponent(p.id)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,status:'active'})});await loadPrograms()}catch{writeLocal('taskdash_programs',state.programs)}renderPrograms();toast('Program saved')}
-function renderClients(){const q=$('#clientSearch').value.toLowerCase(),type=$('#clientTypeFilter').value,list=state.clients.filter(c=>(type==='all'||c.service_type===type)&&`${c.name} ${c.email||''}`.toLowerCase().includes(q));$('#clientRows').innerHTML=list.length?list.map(c=>{const sessions=state.sessions.filter(s=>String(s.client_id)===String(c.id));const last=[...sessions].sort((a,b)=>String(b.session_date).localeCompare(String(a.session_date)))[0];return`<tr data-id="${c.id}"><td><div class="client-name"><span class="mini-avatar">${initials(c.name)}</span><div><strong>${esc(c.name)}</strong><small style="display:block;color:#999">${esc(c.email||'No email')}</small></div></div></td><td><span class="service-pill">${esc(c.service_type||'PT consult')}</span></td><td>${last?shortDate(last.session_date):'—'}</td><td><strong>${sessions.length}</strong></td><td>${c.next_follow_up?shortDate(c.next_follow_up):'—'}</td><td><button class="session-btn" data-action="session">＋ Session</button></td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty-state compact">No clients match this view.</div></td></tr>';const month=todayKey.slice(0,7);$('#clientTotal').textContent=state.clients.length;$('#clientPt').textContent=state.clients.filter(c=>c.service_type==='Personal training').length;$('#clientSessions').textContent=state.sessions.filter(s=>String(s.session_date).startsWith(month)).length;$('#clientFollowups').textContent=state.clients.filter(c=>c.next_follow_up&&String(c.next_follow_up).slice(0,10)<=todayKey).length;$('#metricClients').textContent=state.clients.length}
-function openClientDialog(){openDialog({kicker:'CLIENT ROSTER',title:'Add a client',fields:[['name','Full name','text','Client name'],['email','Email','email','name@example.com'],['phone','Phone','tel','Optional'],['serviceType','Primary service','select',['PT consult','InBody scan','Personal training']],['nextFollowUp','Next follow-up','date','']],submit:async v=>{const body={name:v.name,email:v.email,phone:v.phone,serviceType:v.serviceType,nextFollowUp:v.nextFollowUp||null};try{await getJSON('/api/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});await loadClients()}catch{state.clients.push({...body,id:`local-${Date.now()}`,service_type:v.serviceType,next_follow_up:v.nextFollowUp});writeLocal('taskdash_clients',state.clients)}renderClients();toast('Client added')}})}
-function clientAction(e){const b=e.target.closest('[data-action="session"]');if(!b)return;const id=b.closest('tr').dataset.id,c=state.clients.find(x=>String(x.id)===id);openDialog({kicker:'SESSION LOG',title:`Log ${c.name}`,fields:[['type','Session type','select',['Personal training','PT consult','InBody scan']],['date','Date','date',todayKey],['duration','Minutes','number','60'],['notes','Notes','textarea','Key outcomes, measurements, or follow-up'],['next','Next session','date','']],submit:async v=>{const body={clientId:id,sessionType:v.type,date:v.date,durationMinutes:Number(v.duration),notes:v.notes,nextSession:v.next||null};try{await getJSON('/api/clients?resource=sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});await loadClients()}catch{state.sessions.push({...body,id:`local-${Date.now()}`,client_id:id,session_date:v.date,session_type:v.type});writeLocal('taskdash_sessions',state.sessions)}renderClients();renderDashboard();toast('Session logged')}})}
-function renderInbox(){const filtered=state.mail.filter(m=>state.mailFilter==='all'||m.source===state.mailFilter);$('#mailList').innerHTML=filtered.length?filtered.map(m=>`<article class="mail-row unread"><i class="priority-dot"></i><div class="mail-from">${esc(m.from||'Unknown')}</div><div><div class="mail-subject">${esc(m.subject||'(no subject)')}</div><span class="mail-snippet">${esc(m.snippet||'')}</span></div><div class="mail-time">${esc(m.received||'')}</div></article>`).join(''):`<div class="empty-state"><strong>${state.inboxError?'Inbox connection needed':'No priority messages'}</strong><br>${state.inboxError?esc(state.inboxError):'Important unread mail will appear here after its account is connected.'}</div>`;const g=state.mail.filter(m=>m.source==='google').length,ms=state.mail.filter(m=>m.source==='microsoft').length;$('#mailGoogleCount').textContent=g;$('#mailMicrosoftCount').textContent=ms;$('#mailAllCount').textContent=g+ms;$('#inboxBadge').hidden=!(g+ms);$('#inboxBadge').textContent=g+ms}
-function normalizeEvent(raw){const date=new Date(String(raw.event_date||raw.date).slice(0,10)+'T12:00:00');return{raw,name:raw.name,date,days:Math.round((date-startOfDay(today))/864e5)}}
-function eventSteps(raw){const ev=normalizeEvent(raw);let map=raw.pipeline_state||{};if(typeof map==='string')try{map=JSON.parse(map)}catch{map={}}return PIPE.filter(s=>!s.vendor||raw.needs_vendor||raw.needsVendor).map(s=>{const due=new Date(ev.date);due.setDate(due.getDate()-s.offset);const delta=Math.round((due-startOfDay(today))/864e5);return{...s,due,delta,done:!!map[s.key],compressed:ev.days>=0&&ev.days<14&&s.parallel}})}
-function renderEvents(){const list=state.events.map(normalizeEvent).sort((a,b)=>a.date-b.date);$('#eventBoard').innerHTML=list.length?list.map(e=>{const steps=eventSteps(e.raw),compressed=e.days>=0&&e.days<14;return`<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar||'WELLNESS EVENT')}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)} · ${steps.filter(s=>s.done).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days>=0?'DAYS OUT':'DAYS PAST'}</span></div></header>${compressed?'<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>':''}<div class="pipeline">${steps.map(s=>`<div class="pipeline-step ${s.done?'done':''}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done?'checked':''}><span class="step-date">${fmtDate(s.due,{short:true})}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div><span class="step-state ${s.done?'':s.compressed?'now':s.delta<0?'overdue':''}">${s.done?'DONE':s.compressed?'DO NOW':s.delta<0?'OVERDUE':s.delta===0?'TODAY':`${s.delta}D`}</span></div>`).join('')}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div></article>`}).join(''):'<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>';renderEventPreview()}
-function openEventDialog(){openDialog({kicker:'EVENT SOP',title:'Plan an event',fields:[['name','Event name','text','e.g. Press Pause'],['date','Event date','date',''],['pillar','Exos pillar','select',['Movement','Mindset','Nutrition','Recovery']],['attendance','Expected attendance','number','20'],['vendor','New vendor / no SOP','checkbox',false]],submit:async v=>{const body={name:v.name,date:v.date,pillar:v.pillar,expectedAttendance:Number(v.attendance)||null,needsVendor:!!v.vendor};try{await getJSON('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});await loadEvents()}catch{state.events.push({...body,id:`local-${Date.now()}`,event_date:v.date,needs_vendor:body.needsVendor,pipeline_state:{}});writeLocal('taskdash_events',state.events)}renderEvents();renderDashboard();toast('Event timeline built')}})}
-async function eventStepChange(e){const card=e.target.closest('.event-card');if(!card)return;const raw=state.events.find(x=>String(x.id)===card.dataset.id);if(!raw)return;let map=raw.pipeline_state||{};if(typeof map==='string')try{map=JSON.parse(map)}catch{map={}}map[e.target.dataset.step]=e.target.checked;raw.pipeline_state=map;renderEvents();try{await getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({pipelineState:map})})}catch{writeLocal('taskdash_events',state.events)}}
-async function eventAction(e){const b=e.target.closest('[data-event-action="delete"]');if(!b)return;const card=b.closest('.event-card'),id=card.dataset.id;state.events=state.events.filter(x=>String(x.id)!==id);renderEvents();try{await getJSON(`/api/events?id=${encodeURIComponent(id)}`,{method:'DELETE'})}catch{writeLocal('taskdash_events',state.events)}toast('Event removed')}
-function renderConnections(){const list=state.connections.length?state.connections:fallbackConnections(),live=list.filter(c=>c.status==='connected').length;$('#connectedTotal').textContent=`${live} / ${list.length}`;$('#apiCalls').textContent=Number(state.usage.calls||0).toLocaleString();$('#aiTokens').textContent=Number(state.usage.tokens||0).toLocaleString();$('#apiCredits').textContent=state.usage.credits==null?'—':state.usage.credits;$('#connectionsGrid').innerHTML=list.map(c=>`<article class="connection-card"><div class="connection-logo">${esc(c.initials||c.name.slice(0,2).toUpperCase())}</div><div><h3>${esc(c.name)}</h3><p>${esc(c.detail||'')}</p></div><span class="conn-status ${c.status}">${esc(c.status==='connected'?'LIVE':c.status==='attention'?'ACTION NEEDED':'READY LATER')}</span></article>`).join('');const runs=state.usage.runs||[];$('#runRows').innerHTML=runs.length?runs.map(r=>`<tr><td><strong>${esc(r.service)}</strong></td><td>${esc(r.operation)}</td><td><span class="service-pill">${esc(r.status)}</span></td><td>${r.calls||1}</td><td>${shortDate(r.last_run)}</td></tr>`).join(''):'<tr><td colspan="5"><div class="empty-state compact">Usage tracking begins with this dashboard release.</div></td></tr>';$('#connectionPin').classList.toggle('live',live===list.length);renderReadiness()}
-function fallbackConnections(){return[{name:'Neon database',initials:'N',status:'connected',detail:'Tasks, clients, programs, and events'},{name:'Google',initials:'G',status:state.calendarConnected?'connected':'attention',detail:`Restricted to ${OWNER_EMAIL}`},{name:'Work Scheduler Calendar',initials:'WC',status:state.scheduler.workCalendar.connected?'connected':'attention',detail:`Booking sync · ${WORK_EMAIL}`},{name:'Adobe Microsoft',initials:'M',status:'queued',detail:'Work inbox · connection not authorized yet'},{name:'Claude assistant',initials:'C',status:'queued',detail:'Daily overview and drafting'},{name:'GitHub',initials:'GH',status:'connected',detail:'willfarparan-prog/TaskDash'},{name:'Vercel',initials:'V',status:'connected',detail:'task-dash production'}]}
-function applySettings(){$('#settingName').value=state.settings.name;$('#settingCoach').value=state.settings.coach;$('#settingFooter').value=state.settings.footer;$('#settingShift').value=state.settings.shift;$('#settingCompleted').checked=state.settings.showCompleted}
-function saveSettings(){state.settings={...state.settings,name:$('#settingName').value.trim()||'William Farparan',coach:$('#settingCoach').value.trim(),footer:$('#settingFooter').value.trim(),shift:$('#settingShift').value,showCompleted:$('#settingCompleted').checked};writeLocal('taskdash_settings',state.settings);renderShellDate();renderDashboard();$('#settingsSaved').textContent='Saved just now.';toast('Settings saved')}
-function clearLocal(){['taskdash_settings','taskdash_clients','taskdash_sessions','taskdash_programs','taskdash_events'].forEach(k=>localStorage.removeItem(k));toast('Local cache cleared')}
-function openQuickAdd(){openDialog({kicker:'QUICK ADD',title:'What are you adding?',fields:[['type','Item type','select',['Task','Client','Session','Program','Event','Calendar block']]],submit:v=>{const action={Task:()=>{$('#taskInput').focus()},Client:openClientDialog,Program:openProgramDialog,Event:openEventDialog,'Calendar block':openBlockDialog,Session:()=>go('clients')}[v.type];setTimeout(()=>action?.(),80)}})}
-function openDialog({kicker,title,fields,submit}){const d=$('#formDialog'),body=$('#dialogFields');$('#dialogKicker').textContent=kicker;$('#dialogTitle').textContent=title;body.innerHTML=fields.map(fieldHTML).join('');const form=$('#dialogForm');form.onsubmit=async e=>{e.preventDefault();if(e.submitter?.value==='cancel'){d.close();return}const values={};for(const f of fields){const el=form.elements[f[0]];values[f[0]]=f[2]==='checkbox'?el.checked:el.value}const btn=$('#dialogSubmit');btn.disabled=true;try{await submit(values);d.close()}catch(err){toast(err.message||'Could not save')}finally{btn.disabled=false}};d.showModal();setTimeout(()=>body.querySelector('input:not([type=checkbox]),select,textarea')?.focus(),50)}
-function fieldHTML(f){const[name,label,type,value]=f,full=type==='textarea'||type==='checkbox';if(type==='select')return`<label class="${full?'full':''}">${label}<select name="${name}" required>${value.map(v=>`<option>${esc(v)}</option>`).join('')}</select></label>`;if(type==='textarea')return`<label class="full">${label}<textarea name="${name}" placeholder="${attr(value||'')}"></textarea></label>`;if(type==='checkbox')return`<label class="full toggle-row"><span>${label}</span><input name="${name}" type="checkbox" ${value?'checked':''}></label>`;return`<label>${label}<input name="${name}" type="${type}" ${['text','email'].includes(type)?'required':''} ${type==='date'||type==='time'||type==='number'?`value="${attr(value||'')}"`:`placeholder="${attr(value||'')}"`}></label>`}
-function globalSearch(q){q=q.trim().toLowerCase();if(!q)return;const found=[['clients',state.clients],['programs',state.programs],['events',state.events],['dashboard',state.tasks]].find(([,items])=>items.some(x=>JSON.stringify(x).toLowerCase().includes(q)));if(found)go(found[0])}
-function ymd(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function weekday(d){return d.getDay()>0&&d.getDay()<6}function lastWeekStart(d){return new Date(d.getFullYear(),d.getMonth()+1,0).getDate()-6}function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x}function fmtDate(d,opt={}){return d.toLocaleDateString('en-US',opt.short?{month:'short',day:'numeric'}:{weekday:'short',month:'short',day:'numeric',year:'numeric'})}function fmtTime(d){return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}function shortDate(v){if(!v)return'—';const d=new Date(String(v).slice(0,10)+'T12:00:00');return`${MONTHS[d.getMonth()]} ${d.getDate()}`}function cap(s){return String(s).charAt(0).toUpperCase()+String(s).slice(1)}function initials(s){return String(s).split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function attr(s=''){return esc(s)}function readLocal(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeLocal(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}let toastTimer;function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600)}
+function wireControls() {
+  $("#refreshBtn").onclick = refreshAll;
+  $("#briefRefresh").onclick = renderDashboard;
+  $("#taskAdd").onclick = addTask;
+  $("#taskInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addTask();
+  });
+  $("#taskList").addEventListener("change", toggleTask);
+  $("#taskList").addEventListener("click", deleteTask);
+  $("#quickAddBtn").onclick = openQuickAdd;
+  $("#addBlockOpen").onclick = openBlockDialog;
+  $("#calendarConnect").onclick = () => (location.href = "/api/auth/start");
+  $("#prevWeek").onclick = () => {
+    state.calendarOffset--;
+    renderCalendar();
+  };
+  $("#nextWeek").onclick = () => {
+    state.calendarOffset++;
+    renderCalendar();
+  };
+  $("#openBookingPage").onclick = () =>
+    window.open(state.scheduler.publicUrl, "_blank", "noopener");
+  $("#copyBookingLink").onclick = copyBookingLink;
+  $("#copyBookingLinkInline").onclick = copyBookingLink;
+  $("#workCalendarConnect").onclick = () =>
+    (location.href = "/api/auth/start?account=work");
+  $("#saveSchedule").onclick = saveSchedule;
+  $("#scheduleHours").addEventListener("change", scheduleHoursChange);
+  $("#bookingList").addEventListener("click", cancelBooking);
+  $("#newProgramBtn").onclick = openProgramDialog;
+  $("#programSearch").oninput = renderPrograms;
+  $("#programFilters").onclick = (e) => {
+    const b = e.target.closest("[data-filter]");
+    if (!b) return;
+    state.programFilter = b.dataset.filter;
+    $$("#programFilters button").forEach((x) =>
+      x.classList.toggle("active", x === b),
+    );
+    renderPrograms();
+  };
+  $("#programGrid").onclick = programAction;
+  $("#programEditor").onclick = programEditorAction;
+  $("#newClientBtn").onclick = openClientDialog;
+  $("#clientSearch").oninput = renderClients;
+  $("#clientTypeFilter").onchange = renderClients;
+  $("#clientRows").onclick = clientAction;
+  $("#inboxRefresh").onclick = loadInbox;
+  $$(".source-filter").forEach(
+    (b) =>
+      (b.onclick = () => {
+        state.mailFilter = b.dataset.source;
+        $$(".source-filter").forEach((x) =>
+          x.classList.toggle("active", x === b),
+        );
+        renderInbox();
+      }),
+  );
+  $("#newEventBtn").onclick = openEventDialog;
+  $("#eventBoard").addEventListener("change", eventStepChange);
+  $("#eventBoard").addEventListener("click", eventAction);
+  $("#saveSettings").onclick = saveSettings;
+  $("#clearLocal").onclick = clearLocal;
+  $$(".link-search").forEach((input) => (input.oninput = renderLinks));
+  $$(".resource-filters").forEach(
+    (filters) =>
+      (filters.onclick = (e) => {
+        const b = e.target.closest("[data-link-filter]");
+        if (!b) return;
+        state.linkFilter = b.dataset.linkFilter;
+        renderLinks();
+      }),
+  );
+}
+async function refreshAll() {
+  $("#refreshBtn").classList.add("loading");
+  await Promise.allSettled([
+    loadTasks(),
+    loadEvents(),
+    loadClients(),
+    loadPrograms(),
+    loadCalendar(),
+    loadConnections(),
+    loadLinks(),
+    loadScheduler(),
+  ]);
+  renderEverything();
+  $("#refreshBtn").classList.remove("loading");
+}
+function renderEverything() {
+  renderDashboard();
+  renderCalendar();
+  renderScheduler();
+  renderPrograms();
+  renderClients();
+  renderInbox();
+  renderEvents();
+  renderConnections();
+}
+async function getJSON(url, opts) {
+  const r = await fetch(url, opts);
+  let data = {};
+  try {
+    data = await r.json();
+  } catch {}
+  if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
+  return data;
+}
+async function loadTasks() {
+  try {
+    const data = await getJSON(`/api/tasks?day=${todayKey}`),
+      checks = new Map(
+        (data.checks || [])
+          .filter((x) => x.period_key === todayKey)
+          .map((x) => [x.task_id, x.done]),
+      ),
+      recurring = RECUR.filter((t) => t.when(today)).map((t) => ({
+        ...t,
+        done: !!checks.get(t.id),
+        kind: "recur",
+      })),
+      customRecur = (data.recur || [])
+        .filter(
+          (t) =>
+            t.source === "custom" &&
+            (t.cadence === "Daily" || t.weekday === today.getDay()),
+        )
+        .map((t) => ({
+          id: t.id,
+          name: t.name,
+          cad: t.cadence,
+          time: t.cadence === "Daily" ? "Today" : DOW[t.weekday],
+          done: !!checks.get(t.id),
+          kind: "recur",
+        })),
+      daily = (data.daily || []).map((t) => ({
+        id: String(t.id),
+        name: t.name,
+        cad: "Today",
+        time: "",
+        done: !!t.done,
+        kind: "daily",
+      }));
+    state.tasks = [...recurring, ...customRecur, ...daily];
+  } catch {
+    state.tasks = RECUR.filter((t) => t.when(today)).map((t) => ({
+      ...t,
+      done: false,
+      kind: "recur",
+    }));
+  }
+}
+async function loadEvents() {
+  try {
+    state.events = (await getJSON("/api/events")).events || [];
+  } catch {
+    state.events = readLocal("taskdash_events", []);
+  }
+}
+async function loadClients() {
+  try {
+    const d = await getJSON("/api/clients");
+    state.clients = d.clients || [];
+    state.sessions = d.sessions || [];
+  } catch {
+    state.clients = readLocal("taskdash_clients", []);
+    state.sessions = readLocal("taskdash_sessions", []);
+  }
+}
+async function loadPrograms() {
+  try {
+    state.programs = (await getJSON("/api/programs")).programs || [];
+  } catch {
+    state.programs = readLocal("taskdash_programs", []);
+  }
+}
+async function loadCalendar() {
+  try {
+    const d = await getJSON("/api/calendar-week");
+    state.calendar = d.events || [];
+    state.calendarConnected = !!d.connected;
+    state.calendarEmail = d.accountEmail || null;
+  } catch {
+    state.calendar = [];
+    state.calendarConnected = false;
+  }
+}
+async function loadInbox() {
+  try {
+    const d = await getJSON("/api/inbox");
+    state.mail = d.messages || [];
+    state.inboxConnections = d.connections || {};
+    state.inboxError = "";
+  } catch (e) {
+    state.mail = [];
+    state.inboxError = e.message;
+  }
+  renderInbox();
+}
+async function loadConnections() {
+  try {
+    const d = await getJSON("/api/connections");
+    state.connections = d.connections || [];
+    state.usage = d.usage || state.usage;
+  } catch {
+    state.connections = fallbackConnections();
+  }
+}
+async function loadLinks() {
+  try {
+    state.links = ((await getJSON("/api/links")).links || []).filter((l) =>
+      /^https?:\/\//.test(l.url || ""),
+    );
+    state.linkError = "";
+  } catch (e) {
+    state.links = [];
+    state.linkError =
+      e.message.includes("401") || e.message.includes("Connect Google")
+        ? `Connect Google as ${OWNER_EMAIL} to unlock private work links.`
+        : "Private work links load after sign-in on the deployed dashboard.";
+  }
+}
+async function loadScheduler() {
+  try {
+    const publicData = await getJSON(
+      "/api/calendar-manual?resource=availability",
+    );
+    state.scheduler.days = publicData.days || [];
+    state.scheduler.settings = {
+      ...state.scheduler.settings,
+      ...(publicData.settings || {}),
+    };
+    state.scheduler.workCalendar.connected = !!publicData.calendarConnected;
+  } catch {}
+  try {
+    const data = await getJSON("/api/calendar-manual?resource=scheduler");
+    state.scheduler = {
+      ...state.scheduler,
+      ...data,
+      days: state.scheduler.days,
+      ownerReady: true,
+    };
+    state.scheduler.publicUrl =
+      data.publicUrl || `${location.origin}/book.html`;
+  } catch {
+    state.scheduler.ownerReady = false;
+  }
+}
+function renderShellDate() {
+  const hour = today.getHours();
+  $("#greeting").textContent =
+    `Good ${hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening"}, ${state.settings.name.split(" ")[0] || "Will"}.`;
+  $("#todayStamp").textContent = today
+    .toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
+    .toUpperCase();
+}
+function renderDashboard() {
+  const visible = state.settings.showCompleted
+      ? state.tasks
+      : state.tasks.filter((t) => !t.done),
+    done = state.tasks.filter((t) => t.done).length,
+    remaining = state.tasks.length - done,
+    overdue = state.tasks.filter(
+      (t) => !t.done && taskState(t) === "over",
+    ).length,
+    sessionsToday = state.sessions.filter(
+      (s) => String(s.session_date || "").slice(0, 10) === todayKey,
+    ).length;
+  $("#attentionCount").textContent = overdue || remaining;
+  $("#attentionLabel").textContent = overdue
+    ? `${overdue} overdue · ${remaining} open`
+    : `${remaining} task${remaining === 1 ? "" : "s"} remaining`;
+  $("#sessionCount").textContent = sessionsToday;
+  $("#eventCount").textContent = state.events.length;
+  $("#metricTasks").textContent = `${done} / ${state.tasks.length}`;
+  $("#taskProgress").style.width =
+    `${state.tasks.length ? (done / state.tasks.length) * 100 : 0}%`;
+  $("#metricClients").textContent = state.clients.length;
+  $("#metricPrograms").textContent = state.programs.filter(
+    (p) => p.status !== "archived",
+  ).length;
+  const live = state.connections.filter((c) => c.status === "connected").length,
+    readiness = state.connections.length
+      ? Math.round((live / state.connections.length) * 100)
+      : 0;
+  $("#metricReadiness").textContent = `${readiness}%`;
+  $("#readyProgress").style.width = `${readiness}%`;
+  $("#todayTaskCount").textContent = `${remaining} open · ${done} done`;
+  $("#taskList").innerHTML = visible.length
+    ? visible.map(taskHTML).join("")
+    : '<div class="empty-state compact">Nothing is due today.</div>';
+  const next = state.tasks
+      .filter((t) => !t.done)
+      .slice(0, 3)
+      .map(
+        (t) =>
+          `<li><strong>${esc(t.name)}</strong> · ${esc(t.time || t.cad)}</li>`,
+      )
+      .join(""),
+    nextEvent = state.events
+      .map(normalizeEvent)
+      .sort((a, b) => a.date - b.date)
+      .find((e) => e.days >= 0);
+  $("#dailyBrief").innerHTML =
+    `<strong>${overdue ? "Start with the overdue work." : "Your operating queue is under control."}</strong><ul>${next || "<li>No open tasks on today’s list.</li>"}${nextEvent ? `<li><strong>${esc(nextEvent.name)}</strong> is ${nextEvent.days === 0 ? "today" : `in ${nextEvent.days} days`}.</li>` : ""}</ul>`;
+  renderAgenda();
+  renderEventPreview();
+  renderReadiness();
+  renderLinks();
+}
+function taskHTML(t) {
+  const s = taskState(t),
+    links = taskResourceLinks(t);
+  return `<div class="task-row ${t.done ? "done" : ""}" data-id="${attr(t.id)}" data-kind="${t.kind}"><input class="task-check" type="checkbox" aria-label="Complete ${attr(t.name)}" ${t.done ? "checked" : ""}><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${esc(t.cad)}${t.time ? ` · ${esc(t.time)}` : ""}${links.map((l) => ` <a href="${attr(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.short || l.title)} ↗</a>`).join("")}</div></div><span class="task-status ${s}">${t.done ? "DONE" : s === "over" ? "OVERDUE" : s === "due" ? "DUE" : "OPEN"}</span>${t.kind === "daily" ? '<button class="row-delete" aria-label="Delete task">×</button>' : "<span></span>"}</div>`;
+}
+function taskResourceLinks(t) {
+  const keys = {
+    inbox: ["work-gmail", "adobe-outlook"],
+    workday: ["workday"],
+    lab: ["strength-lab"],
+    fdt: ["badge-report-sop", "badge-report-claude"],
+    class: ["signature-classes-site"],
+  };
+  return (keys[t.id] || [])
+    .map((id) => state.links.find((l) => l.id === id))
+    .filter(Boolean);
+}
+function renderLinks() {
+  const hubs = $$(".resource-hub");
+  if (!hubs.length) return;
+  const categories = [...new Set(state.links.map((l) => l.category))],
+    labels = {
+      communication: "Communication",
+      coaching: "Coaching",
+      programming: "Classes & programs",
+      operations: "Operations",
+      resources: "Resources & SOPs",
+      tracking: "Tracking",
+      reporting: "Reporting",
+      daily: "Daily",
+      forms: "Forms",
+      hr_sop: "HR & policy",
+      marketing: "Marketing",
+    };
+  hubs.forEach((hub) => {
+    const grid = $(".resource-grid", hub),
+      filters = $(".resource-filters", hub),
+      context = $(".resource-context", hub),
+      search = $(".link-search", hub);
+    if (!state.links.length) {
+      filters.innerHTML = "";
+      context.innerHTML = "";
+      grid.innerHTML = `<div class="empty-state compact resource-locked"><strong>Your links are saved privately.</strong><span>${esc(state.linkError || "No work links are available yet.")}</span><a class="primary-btn resource-connect" href="/api/auth/start">Connect ${OWNER_EMAIL}</a></div>`;
+      return;
+    }
+    filters.innerHTML =
+      `<button class="${state.linkFilter === "all" ? "active" : ""}" data-link-filter="all">All</button>` +
+      categories
+        .map(
+          (c) =>
+            `<button class="${state.linkFilter === c ? "active" : ""}" data-link-filter="${attr(c)}">${esc(labels[c] || cap(c.replace("_", " ")))}</button>`,
+        )
+        .join("");
+    const q = (search?.value || "").trim().toLowerCase(),
+      visible = state.links.filter(
+        (l) =>
+          (state.linkFilter === "all" || l.category === state.linkFilter) &&
+          (!q ||
+            `${l.title} ${l.description || ""} ${l.category}`
+              .toLowerCase()
+              .includes(q)),
+      );
+    grid.innerHTML = visible.length
+      ? visible
+          .map(
+            (l) =>
+              `<a class="quick-link-card" href="${attr(l.url)}" target="_blank" rel="noopener noreferrer"><span class="quick-link-icon">${esc((l.short || l.title).slice(0, 2).toUpperCase())}</span><span><strong>${esc(l.title)}</strong><small>${esc(l.description || "Open work resource")}</small><em>${esc(l.frequency || labels[l.category] || cap(l.category))}</em></span><b>↗</b></a>`,
+          )
+          .join("")
+      : '<div class="empty-state compact">No links match that search.</div>';
+    const pinned = state.links.filter((l) => l.pinned).slice(0, 8);
+    context.innerHTML = pinned
+      .map(
+        (l) =>
+          `<a href="${attr(l.url)}" target="_blank" rel="noopener noreferrer"><span>${esc(l.short || l.title)}</span><small>${esc(l.frequency || "Quick access")}</small><b>↗</b></a>`,
+      )
+      .join("");
+  });
+}
+function taskState(t) {
+  if (t.done) return "done";
+  const h = today.getHours();
+  if (
+    (/AM|Shift/.test(t.time) && h >= 12) ||
+    (/2:00/.test(t.time) && h >= 14) ||
+    (/PM|EOD/.test(t.time) && h >= 17)
+  )
+    return "over";
+  if (t.cad !== "Daily" || h >= 11) return "due";
+  return "open";
+}
+async function addTask() {
+  const input = $("#taskInput"),
+    name = input.value.trim();
+  if (!name) return;
+  input.value = "";
+  try {
+    await getJSON("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "daily_task", dayKey: todayKey, name }),
+    });
+    await loadTasks();
+  } catch {
+    state.tasks.push({
+      id: `local-${Date.now()}`,
+      name,
+      cad: "Today",
+      time: "",
+      done: false,
+      kind: "daily",
+    });
+  }
+  renderDashboard();
+  toast("Task added");
+}
+async function toggleTask(e) {
+  const row = e.target.closest(".task-row");
+  if (!row) return;
+  const t = state.tasks.find((x) => String(x.id) === row.dataset.id);
+  if (!t) return;
+  t.done = e.target.checked;
+  renderDashboard();
+  const body =
+    t.kind === "daily"
+      ? { kind: "daily_task", id: t.id, done: t.done }
+      : {
+          kind: "recur_check",
+          taskId: t.id,
+          periodKey: todayKey,
+          done: t.done,
+        };
+  try {
+    await getJSON("/api/tasks", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    toast("Saved in this browser only");
+  }
+}
+async function deleteTask(e) {
+  const btn = e.target.closest(".row-delete");
+  if (!btn) return;
+  const row = btn.closest(".task-row"),
+    id = row.dataset.id;
+  state.tasks = state.tasks.filter((t) => String(t.id) !== id);
+  renderDashboard();
+  try {
+    await getJSON(`/api/tasks?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  } catch {}
+  toast("Task removed");
+}
+function renderAgenda() {
+  const events = state.calendar
+    .map((e) => ({ ...e, date: new Date(e.start) }))
+    .filter((e) => e.date >= startOfDay(today))
+    .sort((a, b) => a.date - b.date)
+    .slice(0, 5);
+  $("#agendaList").innerHTML = events.length
+    ? events
+        .map(
+          (e) =>
+            `<div class="agenda-row"><div class="agenda-date"><strong>${e.date.getDate()}</strong><small>${DOW[e.date.getDay()]}</small></div><i class="agenda-line ${attr(e.source || "")}"></i><div class="agenda-body"><strong>${esc(e.title)}</strong><span>${e.allDay ? "All day" : fmtTime(e.date)} · ${esc(cap(e.source || "calendar"))}</span></div></div>`,
+        )
+        .join("")
+    : '<div class="empty-state compact">No connected calendar items this week.</div>';
+}
+function renderEventPreview() {
+  const list = state.events
+    .map(normalizeEvent)
+    .sort((a, b) => a.date - b.date)
+    .slice(0, 4);
+  $("#eventPreview").innerHTML = list.length
+    ? list
+        .map((e) => {
+          const steps = eventSteps(e.raw),
+            done = steps.filter((s) => s.done).length;
+          return `<div class="preview-event"><header><strong>${esc(e.name)}</strong><span>${e.days >= 0 ? `${e.days}d out` : "past"}</span></header><div class="track"><i style="width:${steps.length ? (done / steps.length) * 100 : 0}%"></i></div><span>${done} of ${steps.length} SOP steps complete · ${fmtDate(e.date)}</span></div>`;
+        })
+        .join("")
+    : '<div class="empty-state compact">No active events. Add a date and the SOP will build itself.</div>';
+}
+function renderReadiness() {
+  const sample = state.connections.length
+    ? state.connections.slice(0, 6)
+    : fallbackConnections();
+  $("#readinessList").innerHTML = sample
+    .map(
+      (c) =>
+        `<div class="ready-row"><i class="ready-dot ${c.status === "connected" ? "live" : c.status === "attention" ? "attention" : ""}"></i><span>${esc(c.name)}</span><em>${esc(cap(c.status || "queued"))}</em></div>`,
+    )
+    .join("");
+}
+function weekStart(offset = 0) {
+  const d = new Date(today),
+    day = d.getDay();
+  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day) + offset * 7);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+function renderCalendar() {
+  const start = weekStart(state.calendarOffset),
+    end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  $("#calendarRange").textContent =
+    `${MONTHS[start.getMonth()]} ${start.getDate()} – ${MONTHS[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+  $("#calendarBanner strong").textContent = state.calendarConnected
+    ? "Google calendar connected"
+    : "Connect Google calendar";
+  $("#calendarBanner span").textContent = state.calendarConnected
+    ? `${state.calendarEmail || OWNER_EMAIL} · read-only sync`
+    : `Only ${OWNER_EMAIL} is allowed`;
+  $("#calendarConnect").textContent = state.calendarConnected
+    ? "Connected"
+    : "Connect";
+  $("#calendarConnect").disabled = state.calendarConnected;
+  let html = '<div class="cal-corner"></div>';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    html += `<div class="cal-day-head ${ymd(d) === todayKey ? "today" : ""}"><span>${DOW[d.getDay()]}</span><strong>${d.getDate()}</strong></div>`;
+  }
+  html += '<div class="time-axis">';
+  for (let h = 6; h <= 18; h += 2)
+    html += `<span style="top:${((h - 6) / 12) * 100}%">${h > 12 ? h - 12 : h}${h >= 12 ? "p" : "a"}</span>`;
+  html += "</div>";
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    const key = ymd(d);
+    html += `<div class="cal-day" data-date="${key}">${state.calendar
+      .filter((e) => String(e.start).slice(0, 10) === key)
+      .map(calendarEventHTML)
+      .join("")}</div>`;
+  }
+  $("#weekCalendar").innerHTML = html;
+}
+function calendarEventHTML(e) {
+  if (e.allDay)
+    return `<div class="cal-event ${attr(e.source || "")}" style="top:4px;height:28px"><strong>${esc(e.title)}</strong></div>`;
+  const s = new Date(e.start),
+    en = new Date(e.end),
+    top = Math.max(0, ((s.getHours() + s.getMinutes() / 60 - 6) / 12) * 100),
+    height = Math.max(4, ((en - s) / 36e5 / 12) * 100);
+  return `<div class="cal-event ${attr(e.source || "")}" style="top:${top}%;height:${height}%"><strong>${esc(e.title)}</strong>${fmtTime(s)}</div>`;
+}
+function openBlockDialog() {
+  openDialog({
+    kicker: "CALENDAR",
+    title: "Add a work block",
+    fields: [
+      ["title", "Title", "text", "e.g. PT consult"],
+      ["date", "Date", "date", todayKey],
+      ["start", "Start", "time", "09:00"],
+      ["end", "End", "time", "10:00"],
+      ["source", "Source", "select", ["Adobe", "Exos", "Personal"]],
+    ],
+    submit: async (v) => {
+      await getJSON("/api/calendar-manual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: v.title,
+          date: v.date,
+          start: v.start,
+          end: v.end,
+          source: v.source.toLowerCase(),
+        }),
+      });
+      await loadCalendar();
+      renderCalendar();
+      toast("Calendar block added");
+    },
+  });
+}
+function renderScheduler() {
+  const scheduler = state.scheduler,
+    s = scheduler.settings || DEFAULT_BOOKING_SCHEDULE,
+    url = scheduler.publicUrl || `${location.origin}/book.html`;
+  $("#bookingUrl").textContent = url;
+  $("#scheduleSlot").value = s.slotMinutes || 30;
+  $("#scheduleDuration").value = s.sessionMinutes || 60;
+  $("#scheduleNotice").value = String(s.noticeMinutes ?? 120);
+  $("#scheduleAhead").value = s.bookAheadDays || 21;
+  $("#scheduleLocation").value = s.location || "";
+  $("#scheduleNote").value = s.note || "";
+  const connected = !!scheduler.workCalendar?.connected;
+  $("#workCalendarBanner strong").textContent = connected
+    ? "Work Google Calendar connected"
+    : "Connect Work Google Calendar";
+  $("#workCalendarBanner span").textContent = connected
+    ? `${scheduler.workCalendar.email || WORK_EMAIL} · busy times hidden automatically`
+    : `Connect ${WORK_EMAIL} to hide busy times and create calendar events.`;
+  $("#workCalendarConnect").textContent = connected
+    ? "Connected"
+    : "Connect work calendar";
+  $("#workCalendarConnect").disabled = connected || !scheduler.ownerReady;
+  const names = {
+    sun: "Sunday",
+    mon: "Monday",
+    tue: "Tuesday",
+    wed: "Wednesday",
+    thu: "Thursday",
+    fri: "Friday",
+    sat: "Saturday",
+  };
+  $("#scheduleHours").innerHTML = [
+    "mon",
+    "tue",
+    "wed",
+    "thu",
+    "fri",
+    "sat",
+    "sun",
+  ]
+    .map((day) => {
+      const h = s.hours?.[day] || DEFAULT_BOOKING_SCHEDULE.hours[day];
+      return `<div class="schedule-day ${h.enabled ? "" : "off"}" data-day="${day}"><label class="schedule-toggle"><input type="checkbox" data-hour="enabled" ${h.enabled ? "checked" : ""}><span>${names[day]}</span></label><div class="schedule-range"><input type="time" data-hour="start" value="${attr(h.start)}" ${h.enabled ? "" : "disabled"} aria-label="${names[day]} start"><span>to</span><input type="time" data-hour="end" value="${attr(h.end)}" ${h.enabled ? "" : "disabled"} aria-label="${names[day]} end"></div><em>${h.enabled ? "Available" : "Not available"}</em></div>`;
+    })
+    .join("");
+  const openDays = (scheduler.days || [])
+    .filter((day) => day.openCount > 0)
+    .slice(0, 4);
+  $("#schedulePreview").innerHTML = openDays.length
+    ? openDays
+        .map(
+          (day) =>
+            `<div class="preview-day"><div><strong>${esc(day.label)}</strong><small>${day.openCount} opening${day.openCount === 1 ? "" : "s"}</small></div><div class="preview-slots">${day.slots
+              .filter((slot) => slot.open)
+              .slice(0, 3)
+              .map((slot) => `<span>${esc(slot.label)}</span>`)
+              .join(
+                "",
+              )}${day.openCount > 3 ? `<em>+${day.openCount - 3}</em>` : ""}</div></div>`,
+        )
+        .join("")
+    : '<div class="empty-state compact">No public openings in the current window.</div>';
+  const bookings = (scheduler.bookings || []).filter(
+    (b) =>
+      b.status !== "cancelled" && new Date(b.starts_at) >= startOfDay(today),
+  );
+  $("#bookingList").innerHTML = bookings.length
+    ? bookings
+        .slice(0, 12)
+        .map((b) => {
+          const start = new Date(b.starts_at);
+          return `<div class="booking-row" data-booking-id="${b.id}"><div><strong>${esc(b.visitor_name)}</strong><span>${esc(b.reason)} · ${start.toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span><small>${b.calendar_sync_status === "synced" ? "On work calendar" : b.calendar_sync_status === "error" ? "Calendar sync needs attention" : "Waiting for calendar connection"}</small></div><button class="row-delete" data-cancel-booking aria-label="Cancel ${attr(b.visitor_name)} booking">×</button></div>`;
+        })
+        .join("")
+    : '<div class="empty-state compact">No upcoming bookings yet.</div>';
+  $("#schedulerPin").classList.toggle("live", connected);
+  $("#saveSchedule").disabled = !scheduler.ownerReady;
+  $("#schedulerSaved").textContent = scheduler.ownerReady
+    ? "Changes update the public booking page."
+    : `Connect ${OWNER_EMAIL} first to edit availability.`;
+}
+function scheduleHoursChange(event) {
+  const row = event.target.closest(".schedule-day");
+  if (!row) return;
+  const enabled = row.querySelector('[data-hour="enabled"]').checked;
+  row.classList.toggle("off", !enabled);
+  row
+    .querySelectorAll("input[type=time]")
+    .forEach((input) => (input.disabled = !enabled));
+  row.querySelector("em").textContent = enabled ? "Available" : "Not available";
+}
+async function copyBookingLink() {
+  const value = state.scheduler.publicUrl || `${location.origin}/book.html`;
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch {
+    const input = document.createElement("textarea");
+    input.value = value;
+    document.body.append(input);
+    input.select();
+    document.execCommand("copy");
+    input.remove();
+  }
+  toast("Booking link copied — ready to paste in Slack");
+}
+async function saveSchedule() {
+  const settings = {
+    ...state.scheduler.settings,
+    slotMinutes: Number($("#scheduleSlot").value),
+    sessionMinutes: Number($("#scheduleDuration").value),
+    noticeMinutes: Number($("#scheduleNotice").value),
+    bookAheadDays: Number($("#scheduleAhead").value),
+    location: $("#scheduleLocation").value.trim(),
+    note: $("#scheduleNote").value.trim(),
+    hours: {},
+  };
+  $$(".schedule-day").forEach((row) => {
+    settings.hours[row.dataset.day] = {
+      enabled: row.querySelector('[data-hour="enabled"]').checked,
+      start: row.querySelector('[data-hour="start"]').value,
+      end: row.querySelector('[data-hour="end"]').value,
+    };
+  });
+  const button = $("#saveSchedule");
+  button.disabled = true;
+  button.textContent = "Saving…";
+  try {
+    const data = await getJSON("/api/calendar-manual?resource=schedule", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resource: "schedule", settings }),
+    });
+    state.scheduler.settings = data.settings;
+    await loadScheduler();
+    renderScheduler();
+    $("#schedulerSaved").textContent = "Saved just now.";
+    toast("Public availability updated");
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    button.disabled = !state.scheduler.ownerReady;
+    button.textContent = "Save availability";
+  }
+}
+async function cancelBooking(event) {
+  const button = event.target.closest("[data-cancel-booking]");
+  if (!button) return;
+  const row = button.closest("[data-booking-id]");
+  if (!confirm("Cancel this booking and remove its work calendar event?"))
+    return;
+  try {
+    await getJSON(
+      `/api/calendar-manual?resource=booking&id=${encodeURIComponent(row.dataset.bookingId)}`,
+      { method: "DELETE" },
+    );
+    await loadScheduler();
+    renderScheduler();
+    toast("Booking cancelled");
+  } catch (error) {
+    toast(error.message);
+  }
+}
+function renderPrograms() {
+  const q = $("#programSearch").value.toLowerCase(),
+    clients = state.programs.filter((p) => !p.is_stock),
+    stock = state.programs.filter((p) => p.is_stock),
+    list = state.programs.filter((p) => {
+      const filter =
+        state.programFilter === "clients"
+          ? !p.is_stock
+          : state.programFilter === "stock"
+            ? p.is_stock
+            : (p.status || "draft") === state.programFilter;
+      return (
+        filter &&
+        `${p.name} ${p.client_name || ""} ${p.goal || ""} ${p.level || ""} ${p.emphasis || ""}`
+          .toLowerCase()
+          .includes(q)
+      );
+    });
+  $("#programClientCount").textContent = clients.length;
+  $("#programTemplateCount").textContent = stock.length;
+  $("#programActiveCount").textContent = clients.filter(
+    (p) => p.status === "active",
+  ).length;
+  $("#programGrid").innerHTML = list.length
+    ? list.map(programCardHTML).join("")
+    : `<div class="empty-state"><strong>${state.programFilter === "stock" ? "No stock templates yet." : "No programs match this view."}</strong><br>${state.programFilter === "stock" ? "Open a client program and choose “Save as stock template.”" : "Create a program or use a stock template for a client."}</div>`;
+  $("#metricPrograms").textContent = clients.filter(
+    (p) => p.status !== "archived",
+  ).length;
+}
+function programCardHTML(p) {
+  const tags = [p.level, p.sport, p.emphasis].filter(Boolean);
+  return `<article class="program-card ${p.is_stock ? "stock" : ""}" data-id="${p.id}"><div class="program-card-top"></div><div class="program-card-body"><span class="status">${p.is_stock ? "STOCK TEMPLATE" : esc((p.status || "draft").toUpperCase())}</span><h3>${esc(p.name)}</h3><p>${esc(p.is_stock ? tags.join(" · ") || "Ready to reuse" : p.client_name || "Not linked to a client")}</p><dl><div><dt>Days</dt><dd>${p.days_per_week || 3}</dd></div><div><dt>Weeks</dt><dd>${p.weeks || 4}</dd></div><div><dt>Updated</dt><dd>${shortDate(p.updated_at || p.created_at)}</dd></div></dl><footer><button class="secondary-btn" data-action="edit">Open</button>${p.is_stock ? '<button class="primary-btn" data-action="use">Use for client</button>' : '<button class="primary-btn" data-action="print">Print</button>'}</footer></div></article>`;
+}
+function clientChoice(value) {
+  if (!value || value === "Not linked")
+    return { clientId: null, clientName: "" };
+  const [id, ...name] = value.split("|");
+  return { clientId: id, clientName: name.join("|") };
+}
+function openProgramDialog() {
+  const options = [
+    "Not linked",
+    ...state.clients.map((c) => `${c.id}|${c.name}`),
+  ];
+  openDialog({
+    kicker: "TRAINING PROGRAM",
+    title: "Start a client program",
+    fields: [
+      ["name", "Program name", "text", "e.g. Jordan · Foundation Block"],
+      ["client", "Link to client", "select", options],
+      ["goal", "Program goal", "text", "e.g. Foundational strength"],
+      ["days", "Days per week", "number", "3"],
+      ["weeks", "Weeks", "number", "4"],
+    ],
+    submit: async (v) => {
+      const linked = clientChoice(v.client),
+        payload = {
+          name: v.name,
+          ...linked,
+          goal: v.goal,
+          daysPerWeek: Number(v.days),
+          weeks: Number(v.weeks),
+          status: "draft",
+        },
+        local = {
+          ...payload,
+          id: `local-${Date.now()}`,
+          days_per_week: payload.daysPerWeek,
+          weeks: payload.weeks,
+          client_id: linked.clientId,
+          client_name: linked.clientName,
+          content: defaultProgram(payload.daysPerWeek, payload.weeks),
+          is_stock: false,
+        };
+      let saved;
+      try {
+        saved = await getJSON("/api/programs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        await loadPrograms();
+      } catch {
+        saved = local;
+        state.programs.unshift(saved);
+        writeLocal("taskdash_programs", state.programs);
+      }
+      renderPrograms();
+      openProgram(saved.id);
+      toast("Program created");
+    },
+  });
+}
+function programAction(e) {
+  const card = e.target.closest(".program-card");
+  if (!card) return;
+  const action = e.target.closest("[data-action]")?.dataset.action;
+  if (action === "edit") openProgram(card.dataset.id);
+  if (action === "print") {
+    openProgram(card.dataset.id);
+    setTimeout(() => window.print(), 100);
+  }
+  if (action === "use") useStockProgram(card.dataset.id);
+}
+function openProgram(id) {
+  state.activeProgram = String(id);
+  const p = state.programs.find((x) => String(x.id) === state.activeProgram);
+  if (!p) return;
+  const plan = normalizeProgramContent(p),
+    weeks = Number(p.weeks) || 4,
+    clientOptions =
+      `<option value="">Not linked</option>` +
+      state.clients
+        .map(
+          (c) =>
+            `<option value="${attr(c.id)}" ${String(c.id) === String(p.client_id) ? "selected" : ""}>${esc(c.name)}</option>`,
+        )
+        .join("");
+  $("#programEditor").hidden = false;
+  $("#programEditor").innerHTML =
+    `<div class="program-edit-head"><div><span class="kicker">${p.is_stock ? "STOCK TEMPLATE" : "PROGRAM BUILDER"}</span><h2>${esc(p.name)}</h2><p>${p.is_stock ? "Edit the reusable source or copy it for a client." : "Changes here affect this client copy only."}</p></div><button class="icon-btn" data-editor="close">×</button></div><div class="program-meta"><label>Program title<input data-meta="name" value="${attr(p.name)}"></label><label>Client<select data-meta="clientId" ${p.is_stock ? "disabled" : ""}>${clientOptions}</select></label><label>Weeks<select data-meta="weeks">${Array.from({ length: 8 }, (_, i) => `<option ${i + 1 === weeks ? "selected" : ""}>${i + 1}</option>`).join("")}</select></label><label>Status<select data-meta="status"><option ${p.status === "draft" ? "selected" : ""}>draft</option><option ${p.status === "active" ? "selected" : ""}>active</option><option ${p.status === "archived" ? "selected" : ""}>archived</option></select></label><label class="wide">Goal / coaching focus<input data-meta="goal" value="${attr(p.goal || "")}" placeholder="What should this block accomplish?"></label></div><div class="day-tabs">${plan.days.map((d, i) => `<button class="${i === 0 ? "active" : ""}" data-day="${i}">${esc(d.name || `Day ${i + 1}`)}</button>`).join("")}<button data-editor="add-day">＋ Day</button></div><div class="program-builder">${plan.days.map((d, i) => dayEditorHTML(d, i, weeks)).join("")}</div><div class="program-print-sheet">${programPrintHTML(p, plan, weeks)}</div><div class="editor-actions"><button class="text-btn danger-text" data-editor="delete">Delete</button>${p.is_stock ? '<button class="secondary-btn" data-editor="use">Use for a client</button>' : '<button class="secondary-btn" data-editor="template">Save as stock template</button>'}<button class="secondary-btn" data-editor="print">Print program</button><button class="primary-btn" data-editor="save">Save changes</button></div>`;
+  $("#programEditor").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function dayEditorHTML(day, index, weeks) {
+  return `<section class="program-day" data-day-panel="${index}" ${index ? "hidden" : ""}><div class="day-edit-title"><input data-day-name value="${attr(day.name || `Day ${index + 1}`)}" aria-label="Day name"><button class="text-btn" data-editor="remove-day">Remove day</button></div><div class="warmup-editor"><div class="builder-label"><span>WARM-UP / PILLAR PREP</span><button data-editor="add-warmup">＋ Line</button></div>${(day.warmup || []).map((w, i) => `<div class="warmup-row"><b>${i + 1}.</b><input data-warm-name value="${attr(w.name || "")}" placeholder="Warm-up movement"><input data-warm-rx value="${attr(w.prescription || "")}" placeholder="2 rounds"><button data-remove-row>×</button></div>`).join("")}</div><div class="blocks-editor">${(day.blocks || []).map((b, i) => blockEditorHTML(b, i, weeks)).join("")}</div><button class="secondary-btn add-block" data-editor="add-block">＋ Add training block</button></section>`;
+}
+function blockEditorHTML(block, index, weeks) {
+  return `<div class="training-block" data-block><div class="builder-label"><span>BLOCK ${esc(block.letter || String.fromCharCode(65 + index))}</span><button data-editor="add-exercise">＋ Exercise</button></div><div class="exercise-head"><span>Slot</span><span>Exercise / coaching note</span><span>Sets</span>${Array.from({ length: weeks }, (_, i) => `<span>W${i + 1}</span>`).join("")}<span></span></div>${(block.exercises || []).map((x, i) => exerciseRowHTML(x, block.letter || String.fromCharCode(65 + index), i, weeks)).join("")}</div>`;
+}
+function exerciseRowHTML(x, letter, index, weeks) {
+  return `<div class="exercise-row"><b>${letter}${index + 1}</b><div><input data-ex-name value="${attr(x.name || "")}" placeholder="Exercise"><input class="exercise-note" data-ex-note value="${attr(x.note || "")}" placeholder="Coaching note (optional)"></div><input data-ex-sets type="number" min="1" max="10" value="${Number(x.sets) || 3}">${Array.from({ length: weeks }, (_, i) => `<input data-ex-rep="${i}" value="${attr((x.reps || [])[i] || "")}" placeholder="Reps">`).join("")}<button data-remove-row>×</button></div>`;
+}
+function normalizeProgramContent(p) {
+  let value = p.content;
+  try {
+    if (typeof value === "string") value = JSON.parse(value);
+  } catch {}
+  if (value?.days) return value;
+  if (Array.isArray(value))
+    return {
+      days: value.map((d, i) => ({
+        name: d.name || `Day ${i + 1}`,
+        warmup: [],
+        blocks: [
+          {
+            letter: "A",
+            exercises: [
+              {
+                name: "Existing workout",
+                sets: 1,
+                reps: Array(Number(p.weeks) || 4).fill(""),
+                note: d.exercises || "",
+              },
+            ],
+          },
+        ],
+      })),
+    };
+  return defaultProgram(p.days_per_week || 3, p.weeks || 4);
+}
+function defaultProgram(days, weeks = 4) {
+  const count = Math.max(1, Math.min(Number(weeks) || 4, 8));
+  return {
+    days: Array.from(
+      { length: Math.max(1, Math.min(Number(days) || 3, 7)) },
+      (_, i) => ({
+        name: `Day ${i + 1}`,
+        warmup: [{ name: "Mobility / activation", prescription: "2 rounds" }],
+        blocks: [
+          {
+            letter: "A",
+            exercises: [
+              {
+                name: "Primary movement",
+                sets: 4,
+                reps: Array(count).fill("6"),
+                note: "",
+              },
+              {
+                name: "Paired movement",
+                sets: 4,
+                reps: Array(count).fill("8"),
+                note: "",
+              },
+            ],
+          },
+          {
+            letter: "B",
+            exercises: [
+              {
+                name: "Secondary movement",
+                sets: 3,
+                reps: Array(count).fill("10"),
+                note: "",
+              },
+              {
+                name: "Core / carry",
+                sets: 3,
+                reps: Array(count).fill("30 sec"),
+                note: "",
+              },
+            ],
+          },
+        ],
+      }),
+    ),
+  };
+}
+function collectProgram() {
+  const root = $("#programEditor"),
+    weeks = Number($('[data-meta="weeks"]', root).value),
+    days = $$("[data-day-panel]", root).map((panel) => ({
+      name: $("[data-day-name]", panel).value.trim(),
+      warmup: $$(".warmup-row", panel)
+        .map((row) => ({
+          name: $("[data-warm-name]", row).value.trim(),
+          prescription: $("[data-warm-rx]", row).value.trim(),
+        }))
+        .filter((x) => x.name),
+      blocks: $$("[data-block]", panel)
+        .map((block, bi) => ({
+          letter: String.fromCharCode(65 + bi),
+          exercises: $$(".exercise-row", block)
+            .map((row) => ({
+              name: $("[data-ex-name]", row).value.trim(),
+              note: $("[data-ex-note]", row).value.trim(),
+              sets: Number($("[data-ex-sets]", row).value) || 3,
+              reps: Array.from(
+                { length: weeks },
+                (_, i) => $(`[data-ex-rep="${i}"]`, row)?.value.trim() || "",
+              ),
+            }))
+            .filter((x) => x.name),
+        }))
+        .filter((x) => x.exercises.length),
+    }));
+  return { weeks, days };
+}
+function programEditorAction(e) {
+  const day = e.target.closest("[data-day]");
+  if (day) {
+    $$(".day-tabs [data-day]", $("#programEditor")).forEach((b) =>
+      b.classList.toggle("active", b === day),
+    );
+    $$("[data-day-panel]", $("#programEditor")).forEach(
+      (p) => (p.hidden = p.dataset.dayPanel !== day.dataset.day),
+    );
+    return;
+  }
+  if (e.target.closest("[data-remove-row]")) {
+    e.target.closest(".warmup-row,.exercise-row").remove();
+    return;
+  }
+  const a = e.target.closest("[data-editor]")?.dataset.editor,
+    p = state.programs.find((x) => String(x.id) === state.activeProgram);
+  if (!a || !p) return;
+  if (a === "close") $("#programEditor").hidden = true;
+  if (a === "print") {
+    refreshPrintSheet();
+    setTimeout(() => window.print(), 40);
+  }
+  if (a === "save") saveProgram();
+  if (a === "template") saveAsStock(p);
+  if (a === "use") useStockProgram(p.id);
+  if (a === "delete") deleteProgram(p);
+  if (a === "add-exercise") {
+    const block = e.target.closest("[data-block]"),
+      weeks = Number($('[data-meta="weeks"]', $("#programEditor")).value),
+      letter = String.fromCharCode(
+        65 +
+          $$("[data-block]", e.target.closest("[data-day-panel]")).indexOf(
+            block,
+          ),
+      );
+    block.insertAdjacentHTML(
+      "beforeend",
+      exerciseRowHTML(
+        { sets: 3, reps: [] },
+        letter,
+        $$(".exercise-row", block).length,
+        weeks,
+      ),
+    );
+  }
+  if (a === "add-warmup")
+    e.target
+      .closest(".warmup-editor")
+      .insertAdjacentHTML(
+        "beforeend",
+        '<div class="warmup-row"><b>＋</b><input data-warm-name placeholder="Warm-up movement"><input data-warm-rx placeholder="2 rounds"><button data-remove-row>×</button></div>',
+      );
+  if (a === "add-block") {
+    const panel = e.target.closest("[data-day-panel]"),
+      weeks = Number($('[data-meta="weeks"]', $("#programEditor")).value),
+      index = $$("[data-block]", panel).length;
+    $(".blocks-editor", panel).insertAdjacentHTML(
+      "beforeend",
+      blockEditorHTML(
+        {
+          letter: String.fromCharCode(65 + index),
+          exercises: [{ name: "", sets: 3, reps: [] }],
+        },
+        index,
+        weeks,
+      ),
+    );
+  }
+  if (a === "remove-day") {
+    const panels = $$("[data-day-panel]", $("#programEditor"));
+    if (panels.length < 2) return toast("A program needs at least one day");
+    const plan = collectProgram(),
+      idx = panels.indexOf(e.target.closest("[data-day-panel]"));
+    plan.days.splice(idx, 1);
+    p.content = plan;
+    p.days_per_week = plan.days.length;
+    openProgram(p.id);
+  }
+  if (a === "add-day") {
+    const plan = collectProgram();
+    plan.days.push(defaultProgram(1, plan.weeks).days[0]);
+    p.content = plan;
+    p.days_per_week = plan.days.length;
+    openProgram(p.id);
+  }
+}
+async function saveProgram() {
+  const p = state.programs.find((x) => String(x.id) === state.activeProgram);
+  if (!p) return;
+  const root = $("#programEditor"),
+    content = collectProgram(),
+    clientId = $('[data-meta="clientId"]', root)?.value || null,
+    client = state.clients.find((c) => String(c.id) === String(clientId)),
+    body = {
+      name: $('[data-meta="name"]', root).value.trim(),
+      clientId,
+      clientName: client?.name || "",
+      weeks: content.weeks,
+      daysPerWeek: content.days.length,
+      status: $('[data-meta="status"]', root).value,
+      goal: $('[data-meta="goal"]', root).value.trim(),
+      content,
+    };
+  Object.assign(p, {
+    name: body.name,
+    client_id: clientId,
+    client_name: body.clientName,
+    weeks: body.weeks,
+    days_per_week: body.daysPerWeek,
+    status: body.status,
+    goal: body.goal,
+    content,
+  });
+  try {
+    const saved = await getJSON(
+      `/api/programs?id=${encodeURIComponent(p.id)}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    );
+    Object.assign(p, saved);
+    await loadPrograms();
+  } catch {
+    writeLocal("taskdash_programs", state.programs);
+  }
+  renderPrograms();
+  openProgram(p.id);
+  toast("Program saved");
+}
+function saveAsStock(p) {
+  openDialog({
+    kicker: "STOCK LIBRARY",
+    title: "Save a reusable copy",
+    fields: [
+      [
+        "name",
+        "Template name",
+        "text",
+        "Template name",
+        p.name.replace(/^.*? — /, ""),
+      ],
+      [
+        "level",
+        "Training level",
+        "select",
+        ["General", "Beginner", "Intermediate", "Advanced"],
+      ],
+      ["sport", "Sport / audience", "text", "Any sport"],
+      [
+        "emphasis",
+        "Emphasis",
+        "select",
+        ["Strength", "Hypertrophy", "Power", "Speed", "Movement quality"],
+      ],
+    ],
+    submit: async (v) => {
+      await saveProgram();
+      const body = {
+        action: "save_as_stock",
+        sourceId: p.id,
+        name: v.name,
+        level: v.level,
+        sport: v.sport,
+        emphasis: v.emphasis,
+      };
+      let saved;
+      try {
+        saved = await getJSON("/api/programs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        await loadPrograms();
+      } catch {
+        saved = {
+          ...p,
+          ...body,
+          id: `local-${Date.now()}`,
+          name: v.name,
+          is_stock: true,
+          client_id: null,
+          client_name: null,
+          content: structuredClone(p.content),
+        };
+        state.programs.unshift(saved);
+        writeLocal("taskdash_programs", state.programs);
+      }
+      state.programFilter = "stock";
+      $$("#programFilters button").forEach((b) =>
+        b.classList.toggle("active", b.dataset.filter === "stock"),
+      );
+      renderPrograms();
+      openProgram(saved.id);
+      toast("Stock template created");
+    },
+  });
+}
+function useStockProgram(id) {
+  const source = state.programs.find((x) => String(x.id) === String(id));
+  if (!source) return;
+  const options = state.clients.map((c) => `${c.id}|${c.name}`);
+  if (!options.length)
+    return toast("Add a client first, then assign this template");
+  openDialog({
+    kicker: "STOCK TEMPLATE",
+    title: "Copy for a client",
+    fields: [
+      ["client", "Client", "select", options],
+      ["name", "Program title", "text", "Program title", source.name],
+    ],
+    submit: async (v) => {
+      const linked = clientChoice(v.client),
+        body = {
+          action: "use_template",
+          sourceId: source.id,
+          ...linked,
+          name: `${linked.clientName} — ${v.name}`,
+        };
+      let saved;
+      try {
+        saved = await getJSON("/api/programs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        await loadPrograms();
+      } catch {
+        saved = {
+          ...source,
+          id: `local-${Date.now()}`,
+          name: body.name,
+          is_stock: false,
+          status: "draft",
+          client_id: linked.clientId,
+          client_name: linked.clientName,
+          source_program_id: source.id,
+          content: structuredClone(source.content),
+        };
+        state.programs.unshift(saved);
+        writeLocal("taskdash_programs", state.programs);
+      }
+      state.programFilter = "clients";
+      $$("#programFilters button").forEach((b) =>
+        b.classList.toggle("active", b.dataset.filter === "clients"),
+      );
+      renderPrograms();
+      openProgram(saved.id);
+      toast("Client copy created");
+    },
+  });
+}
+async function deleteProgram(p) {
+  if (!confirm(`Delete “${p.name}”?`)) return;
+  state.programs = state.programs.filter((x) => String(x.id) !== String(p.id));
+  $("#programEditor").hidden = true;
+  try {
+    await getJSON(`/api/programs?id=${encodeURIComponent(p.id)}`, {
+      method: "DELETE",
+    });
+  } catch {
+    writeLocal("taskdash_programs", state.programs);
+  }
+  renderPrograms();
+  toast("Program deleted");
+}
+function refreshPrintSheet() {
+  const p = state.programs.find((x) => String(x.id) === state.activeProgram),
+    content = collectProgram();
+  $(".program-print-sheet", $("#programEditor")).innerHTML = programPrintHTML(
+    {
+      ...p,
+      name: $('[data-meta="name"]', $("#programEditor")).value,
+      goal: $('[data-meta="goal"]', $("#programEditor")).value,
+      client_name:
+        state.clients.find(
+          (c) =>
+            String(c.id) ===
+            String($('[data-meta="clientId"]', $("#programEditor"))?.value),
+        )?.name || p.client_name,
+    },
+    content,
+    content.weeks,
+  );
+}
+function programPrintHTML(p, plan, weeks) {
+  return `<div class="print-program-cover"><span>TASK DASH · TRAINING PROGRAM</span><h1>${esc(p.name)}</h1><p>${esc(p.client_name || "Stock program")} · ${weeks} week${weeks === 1 ? "" : "s"}${p.goal ? ` · ${esc(p.goal)}` : ""}</p></div>${plan.days.map((day, di) => `<article class="print-program-day"><header><h2>${esc(day.name || `Day ${di + 1}`)}</h2><span>${esc(p.client_name || "Stock program")}</span></header>${day.warmup?.length ? `<section><h3>Warm-up / Pillar Prep</h3><ol>${day.warmup.map((w) => `<li><strong>${esc(w.name)}</strong> ${esc(w.prescription || "")}</li>`).join("")}</ol></section>` : ""}<table><thead><tr><th>Lift</th><th>Exercise</th><th>Sets</th>${Array.from({ length: weeks }, (_, i) => `<th>Week ${i + 1}<small>Rep / Weight</small></th>`).join("")}</tr></thead><tbody>${(day.blocks || []).flatMap((b) => b.exercises.map((x, i) => `<tr><td><b>${esc(b.letter)}${i + 1}</b></td><td><strong>${esc(x.name)}</strong>${x.note ? `<small>${esc(x.note)}</small>` : ""}</td><td>${x.sets}</td>${Array.from({ length: weeks }, (_, wi) => `<td><span>${esc(x.reps?.[wi] || "")}</span><i></i></td>`).join("")}</tr>`)).join("")}</tbody></table><footer>${esc(state.settings.coach || "William Farparan")} · ${esc(state.settings.footer || "Move well. Train with intent.")}</footer></article>`).join("")}`;
+}
+function renderClients() {
+  const q = $("#clientSearch").value.toLowerCase(),
+    type = $("#clientTypeFilter").value,
+    list = state.clients.filter(
+      (c) =>
+        (type === "all" || c.service_type === type) &&
+        `${c.name} ${c.email || ""}`.toLowerCase().includes(q),
+    );
+  $("#clientRows").innerHTML = list.length
+    ? list
+        .map((c) => {
+          const sessions = state.sessions.filter(
+            (s) => String(s.client_id) === String(c.id),
+          );
+          const last = [...sessions].sort((a, b) =>
+            String(b.session_date).localeCompare(String(a.session_date)),
+          )[0];
+          return `<tr data-id="${c.id}"><td><div class="client-name"><span class="mini-avatar">${initials(c.name)}</span><div><strong>${esc(c.name)}</strong><small style="display:block;color:#999">${esc(c.email || "No email")}</small></div></div></td><td><span class="service-pill">${esc(c.service_type || "PT consult")}</span></td><td>${last ? shortDate(last.session_date) : "—"}</td><td><strong>${sessions.length}</strong></td><td>${c.next_follow_up ? shortDate(c.next_follow_up) : "—"}</td><td><button class="session-btn" data-action="session">＋ Session</button></td></tr>`;
+        })
+        .join("")
+    : '<tr><td colspan="6"><div class="empty-state compact">No clients match this view.</div></td></tr>';
+  const month = todayKey.slice(0, 7);
+  $("#clientTotal").textContent = state.clients.length;
+  $("#clientPt").textContent = state.clients.filter(
+    (c) => c.service_type === "Personal training",
+  ).length;
+  $("#clientSessions").textContent = state.sessions.filter((s) =>
+    String(s.session_date).startsWith(month),
+  ).length;
+  $("#clientFollowups").textContent = state.clients.filter(
+    (c) =>
+      c.next_follow_up && String(c.next_follow_up).slice(0, 10) <= todayKey,
+  ).length;
+  $("#metricClients").textContent = state.clients.length;
+}
+function openClientDialog() {
+  openDialog({
+    kicker: "CLIENT ROSTER",
+    title: "Add a client",
+    fields: [
+      ["name", "Full name", "text", "Client name"],
+      ["email", "Email", "email", "name@example.com"],
+      ["phone", "Phone", "tel", "Optional"],
+      [
+        "serviceType",
+        "Primary service",
+        "select",
+        ["PT consult", "InBody scan", "Personal training"],
+      ],
+      ["nextFollowUp", "Next follow-up", "date", ""],
+    ],
+    submit: async (v) => {
+      const body = {
+        name: v.name,
+        email: v.email,
+        phone: v.phone,
+        serviceType: v.serviceType,
+        nextFollowUp: v.nextFollowUp || null,
+      };
+      try {
+        await getJSON("/api/clients", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        await loadClients();
+      } catch {
+        state.clients.push({
+          ...body,
+          id: `local-${Date.now()}`,
+          service_type: v.serviceType,
+          next_follow_up: v.nextFollowUp,
+        });
+        writeLocal("taskdash_clients", state.clients);
+      }
+      renderClients();
+      toast("Client added");
+    },
+  });
+}
+function clientAction(e) {
+  const b = e.target.closest('[data-action="session"]');
+  if (!b) return;
+  const id = b.closest("tr").dataset.id,
+    c = state.clients.find((x) => String(x.id) === id);
+  openDialog({
+    kicker: "SESSION LOG",
+    title: `Log ${c.name}`,
+    fields: [
+      [
+        "type",
+        "Session type",
+        "select",
+        ["Personal training", "PT consult", "InBody scan"],
+      ],
+      ["date", "Date", "date", todayKey],
+      ["duration", "Minutes", "number", "60"],
+      [
+        "notes",
+        "Notes",
+        "textarea",
+        "Key outcomes, measurements, or follow-up",
+      ],
+      ["next", "Next session", "date", ""],
+    ],
+    submit: async (v) => {
+      const body = {
+        clientId: id,
+        sessionType: v.type,
+        date: v.date,
+        durationMinutes: Number(v.duration),
+        notes: v.notes,
+        nextSession: v.next || null,
+      };
+      try {
+        await getJSON("/api/clients?resource=sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        await loadClients();
+      } catch {
+        state.sessions.push({
+          ...body,
+          id: `local-${Date.now()}`,
+          client_id: id,
+          session_date: v.date,
+          session_type: v.type,
+        });
+        writeLocal("taskdash_sessions", state.sessions);
+      }
+      renderClients();
+      renderDashboard();
+      toast("Session logged");
+    },
+  });
+}
+function renderInbox() {
+  const filtered = state.mail.filter(
+    (m) => state.mailFilter === "all" || m.source === state.mailFilter,
+  );
+  $("#mailList").innerHTML = filtered.length
+    ? filtered
+        .map(
+          (m) =>
+            `<article class="mail-row unread"><i class="priority-dot"></i><div class="mail-from">${esc(m.from || "Unknown")}</div><div><div class="mail-subject">${esc(m.subject || "(no subject)")}</div><span class="mail-snippet">${esc(m.snippet || "")}</span></div><div class="mail-time">${esc(m.received || "")}</div></article>`,
+        )
+        .join("")
+    : `<div class="empty-state"><strong>${state.inboxError ? "Inbox connection needed" : "No priority messages"}</strong><br>${state.inboxError ? esc(state.inboxError) : "Important unread mail will appear here after its account is connected."}</div>`;
+  const g = state.mail.filter((m) => m.source === "google").length,
+    ms = state.mail.filter((m) => m.source === "microsoft").length;
+  $("#mailGoogleCount").textContent = g;
+  $("#mailMicrosoftCount").textContent = ms;
+  $("#mailAllCount").textContent = g + ms;
+  $("#inboxBadge").hidden = !(g + ms);
+  $("#inboxBadge").textContent = g + ms;
+}
+function normalizeEvent(raw) {
+  const date = new Date(
+    String(raw.event_date || raw.date).slice(0, 10) + "T12:00:00",
+  );
+  return {
+    raw,
+    name: raw.name,
+    date,
+    days: Math.round((date - startOfDay(today)) / 864e5),
+  };
+}
+function eventSteps(raw) {
+  const ev = normalizeEvent(raw);
+  let map = raw.pipeline_state || {};
+  if (typeof map === "string")
+    try {
+      map = JSON.parse(map);
+    } catch {
+      map = {};
+    }
+  return PIPE.filter(
+    (s) => !s.vendor || raw.needs_vendor || raw.needsVendor,
+  ).map((s) => {
+    const due = new Date(ev.date);
+    due.setDate(due.getDate() - s.offset);
+    const delta = Math.round((due - startOfDay(today)) / 864e5);
+    return {
+      ...s,
+      due,
+      delta,
+      done: !!map[s.key],
+      compressed: ev.days >= 0 && ev.days < 14 && s.parallel,
+    };
+  });
+}
+function renderEvents() {
+  const list = state.events.map(normalizeEvent).sort((a, b) => a.date - b.date);
+  $("#eventBoard").innerHTML = list.length
+    ? list
+        .map((e) => {
+          const steps = eventSteps(e.raw),
+            compressed = e.days >= 0 && e.days < 14;
+          return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)} · ${steps.filter((s) => s.done).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${fmtDate(s.due, { short: true })}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div><span class="step-state ${s.done ? "" : s.compressed ? "now" : s.delta < 0 ? "overdue" : ""}">${s.done ? "DONE" : s.compressed ? "DO NOW" : s.delta < 0 ? "OVERDUE" : s.delta === 0 ? "TODAY" : `${s.delta}D`}</span></div>`).join("")}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div></article>`;
+        })
+        .join("")
+    : '<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>';
+  renderEventPreview();
+}
+function openEventDialog() {
+  openDialog({
+    kicker: "EVENT SOP",
+    title: "Plan an event",
+    fields: [
+      ["name", "Event name", "text", "e.g. Press Pause"],
+      ["date", "Event date", "date", ""],
+      [
+        "pillar",
+        "Exos pillar",
+        "select",
+        ["Movement", "Mindset", "Nutrition", "Recovery"],
+      ],
+      ["attendance", "Expected attendance", "number", "20"],
+      ["vendor", "New vendor / no SOP", "checkbox", false],
+    ],
+    submit: async (v) => {
+      const body = {
+        name: v.name,
+        date: v.date,
+        pillar: v.pillar,
+        expectedAttendance: Number(v.attendance) || null,
+        needsVendor: !!v.vendor,
+      };
+      try {
+        await getJSON("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        await loadEvents();
+      } catch {
+        state.events.push({
+          ...body,
+          id: `local-${Date.now()}`,
+          event_date: v.date,
+          needs_vendor: body.needsVendor,
+          pipeline_state: {},
+        });
+        writeLocal("taskdash_events", state.events);
+      }
+      renderEvents();
+      renderDashboard();
+      toast("Event timeline built");
+    },
+  });
+}
+async function eventStepChange(e) {
+  const card = e.target.closest(".event-card");
+  if (!card) return;
+  const raw = state.events.find((x) => String(x.id) === card.dataset.id);
+  if (!raw) return;
+  let map = raw.pipeline_state || {};
+  if (typeof map === "string")
+    try {
+      map = JSON.parse(map);
+    } catch {
+      map = {};
+    }
+  map[e.target.dataset.step] = e.target.checked;
+  raw.pipeline_state = map;
+  renderEvents();
+  try {
+    await getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pipelineState: map }),
+    });
+  } catch {
+    writeLocal("taskdash_events", state.events);
+  }
+}
+async function eventAction(e) {
+  const b = e.target.closest('[data-event-action="delete"]');
+  if (!b) return;
+  const card = b.closest(".event-card"),
+    id = card.dataset.id;
+  state.events = state.events.filter((x) => String(x.id) !== id);
+  renderEvents();
+  try {
+    await getJSON(`/api/events?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  } catch {
+    writeLocal("taskdash_events", state.events);
+  }
+  toast("Event removed");
+}
+function renderConnections() {
+  const list = state.connections.length
+      ? state.connections
+      : fallbackConnections(),
+    live = list.filter((c) => c.status === "connected").length;
+  $("#connectedTotal").textContent = `${live} / ${list.length}`;
+  $("#apiCalls").textContent = Number(state.usage.calls || 0).toLocaleString();
+  $("#aiTokens").textContent = Number(state.usage.tokens || 0).toLocaleString();
+  $("#apiCredits").textContent =
+    state.usage.credits == null ? "—" : state.usage.credits;
+  $("#connectionsGrid").innerHTML = list
+    .map(
+      (c) =>
+        `<article class="connection-card"><div class="connection-logo">${esc(c.initials || c.name.slice(0, 2).toUpperCase())}</div><div><h3>${esc(c.name)}</h3><p>${esc(c.detail || "")}</p></div><span class="conn-status ${c.status}">${esc(c.status === "connected" ? "LIVE" : c.status === "attention" ? "ACTION NEEDED" : "READY LATER")}</span></article>`,
+    )
+    .join("");
+  const runs = state.usage.runs || [];
+  $("#runRows").innerHTML = runs.length
+    ? runs
+        .map(
+          (r) =>
+            `<tr><td><strong>${esc(r.service)}</strong></td><td>${esc(r.operation)}</td><td><span class="service-pill">${esc(r.status)}</span></td><td>${r.calls || 1}</td><td>${shortDate(r.last_run)}</td></tr>`,
+        )
+        .join("")
+    : '<tr><td colspan="5"><div class="empty-state compact">Usage tracking begins with this dashboard release.</div></td></tr>';
+  $("#connectionPin").classList.toggle("live", live === list.length);
+  renderReadiness();
+}
+function fallbackConnections() {
+  return [
+    {
+      name: "Neon database",
+      initials: "N",
+      status: "connected",
+      detail: "Tasks, clients, programs, and events",
+    },
+    {
+      name: "Google",
+      initials: "G",
+      status: state.calendarConnected ? "connected" : "attention",
+      detail: `Restricted to ${OWNER_EMAIL}`,
+    },
+    {
+      name: "Work Scheduler Calendar",
+      initials: "WC",
+      status: state.scheduler.workCalendar.connected
+        ? "connected"
+        : "attention",
+      detail: `Booking sync · ${WORK_EMAIL}`,
+    },
+    {
+      name: "Adobe Microsoft",
+      initials: "M",
+      status: "queued",
+      detail: "Work inbox · connection not authorized yet",
+    },
+    {
+      name: "Claude assistant",
+      initials: "C",
+      status: "queued",
+      detail: "Daily overview and drafting",
+    },
+    {
+      name: "GitHub",
+      initials: "GH",
+      status: "connected",
+      detail: "willfarparan-prog/TaskDash",
+    },
+    {
+      name: "Vercel",
+      initials: "V",
+      status: "connected",
+      detail: "task-dash production",
+    },
+  ];
+}
+function applySettings() {
+  $("#settingName").value = state.settings.name;
+  $("#settingCoach").value = state.settings.coach;
+  $("#settingFooter").value = state.settings.footer;
+  $("#settingShift").value = state.settings.shift;
+  $("#settingCompleted").checked = state.settings.showCompleted;
+}
+function saveSettings() {
+  state.settings = {
+    ...state.settings,
+    name: $("#settingName").value.trim() || "William Farparan",
+    coach: $("#settingCoach").value.trim(),
+    footer: $("#settingFooter").value.trim(),
+    shift: $("#settingShift").value,
+    showCompleted: $("#settingCompleted").checked,
+  };
+  writeLocal("taskdash_settings", state.settings);
+  renderShellDate();
+  renderDashboard();
+  $("#settingsSaved").textContent = "Saved just now.";
+  toast("Settings saved");
+}
+function clearLocal() {
+  [
+    "taskdash_settings",
+    "taskdash_clients",
+    "taskdash_sessions",
+    "taskdash_programs",
+    "taskdash_events",
+  ].forEach((k) => localStorage.removeItem(k));
+  toast("Local cache cleared");
+}
+function openQuickAdd() {
+  openDialog({
+    kicker: "QUICK ADD",
+    title: "What are you adding?",
+    fields: [
+      [
+        "type",
+        "Item type",
+        "select",
+        ["Task", "Client", "Session", "Program", "Event", "Calendar block"],
+      ],
+    ],
+    submit: (v) => {
+      const action = {
+        Task: () => {
+          $("#taskInput").focus();
+        },
+        Client: openClientDialog,
+        Program: openProgramDialog,
+        Event: openEventDialog,
+        "Calendar block": openBlockDialog,
+        Session: () => go("clients"),
+      }[v.type];
+      setTimeout(() => action?.(), 80);
+    },
+  });
+}
+function openDialog({ kicker, title, fields, submit }) {
+  const d = $("#formDialog"),
+    body = $("#dialogFields");
+  $("#dialogKicker").textContent = kicker;
+  $("#dialogTitle").textContent = title;
+  body.innerHTML = fields.map(fieldHTML).join("");
+  const form = $("#dialogForm");
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    if (e.submitter?.value === "cancel") {
+      d.close();
+      return;
+    }
+    const values = {};
+    for (const f of fields) {
+      const el = form.elements[f[0]];
+      values[f[0]] = f[2] === "checkbox" ? el.checked : el.value;
+    }
+    const btn = $("#dialogSubmit");
+    btn.disabled = true;
+    try {
+      await submit(values);
+      d.close();
+    } catch (err) {
+      toast(err.message || "Could not save");
+    } finally {
+      btn.disabled = false;
+    }
+  };
+  d.showModal();
+  setTimeout(
+    () =>
+      body.querySelector("input:not([type=checkbox]),select,textarea")?.focus(),
+    50,
+  );
+}
+function fieldHTML(f) {
+  const [name, label, type, value, defaultValue] = f,
+    full = type === "textarea" || type === "checkbox",
+    required = ["name", "email"].includes(name);
+  if (type === "select")
+    return `<label class="${full ? "full" : ""}">${label}<select name="${name}" required>${value
+      .map((v) => {
+        const bits = String(v).split("|");
+        return `<option value="${attr(v)}">${esc(bits.length > 1 ? bits.slice(1).join("|") : v)}</option>`;
+      })
+      .join("")}</select></label>`;
+  if (type === "textarea")
+    return `<label class="full">${label}<textarea name="${name}" placeholder="${attr(value || "")}">${esc(defaultValue || "")}</textarea></label>`;
+  if (type === "checkbox")
+    return `<label class="full toggle-row"><span>${label}</span><input name="${name}" type="checkbox" ${value ? "checked" : ""}></label>`;
+  return `<label>${label}<input name="${name}" type="${type}" ${required ? "required" : ""} ${defaultValue != null ? `value="${attr(defaultValue)}"` : type === "date" || type === "time" || type === "number" ? `value="${attr(value || "")}"` : `placeholder="${attr(value || "")}"`}></label>`;
+}
+function globalSearch(q) {
+  q = q.trim().toLowerCase();
+  if (!q) return;
+  const found = [
+    ["clients", state.clients],
+    ["programs", state.programs],
+    ["events", state.events],
+    ["dashboard", state.tasks],
+  ].find(([, items]) =>
+    items.some((x) => JSON.stringify(x).toLowerCase().includes(q)),
+  );
+  if (found) go(found[0]);
+}
+function ymd(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function weekday(d) {
+  return d.getDay() > 0 && d.getDay() < 6;
+}
+function lastWeekStart(d) {
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() - 6;
+}
+function startOfDay(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+function fmtDate(d, opt = {}) {
+  return d.toLocaleDateString(
+    "en-US",
+    opt.short
+      ? { month: "short", day: "numeric" }
+      : { weekday: "short", month: "short", day: "numeric", year: "numeric" },
+  );
+}
+function fmtTime(d) {
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+function shortDate(v) {
+  if (!v) return "—";
+  const d = new Date(String(v).slice(0, 10) + "T12:00:00");
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+}
+function cap(s) {
+  return String(s).charAt(0).toUpperCase() + String(s).slice(1);
+}
+function initials(s) {
+  return String(s)
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((x) => x[0])
+    .join("")
+    .toUpperCase();
+}
+function esc(s = "") {
+  return String(s).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+}
+function attr(s = "") {
+  return esc(s);
+}
+function readLocal(k, f) {
+  try {
+    return JSON.parse(localStorage.getItem(k)) ?? f;
+  } catch {
+    return f;
+  }
+}
+function writeLocal(k, v) {
+  try {
+    localStorage.setItem(k, JSON.stringify(v));
+  } catch {}
+}
+let toastTimer;
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}

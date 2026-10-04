@@ -1,61 +1,149 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0a0a0a">
-  <meta name="description" content="Schedule a visit with William Farparan at the Adobe SF Wellness Center.">
-  <title>Schedule with William</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/book.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Cpath d='M14 44 31 13l19 31h-9L31 28 23 44z' fill='%23ef3123'/%3E%3C/svg%3E">
-</head>
-<body>
-  <main class="booking-shell">
-    <header class="booking-head">
-      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><div><strong>EXOS · ADOBE SF</strong><small>SESSION SCHEDULER</small></div></div>
-      <div class="coach"><span>WF</span><div><strong>William Farparan</strong><small>Performance Coach</small></div></div>
-    </header>
-
-    <section class="booking-intro">
-      <div class="eyebrow"><i></i>BOOK A VISIT</div>
-      <h1>Find a time that works.</h1>
-      <p id="bookingNote">Choose an available time, then tell William your name and reason for visiting. No account or sign-in is required.</p>
-      <div class="booking-facts"><span><b id="durationFact">60 min</b> session</span><span><b>Pacific time</b></span><span id="locationFact"><b>Adobe SF Wellness Center</b></span></div>
-    </section>
-
-    <section class="booking-card" id="bookingApp" aria-live="polite">
-      <div class="step-heading"><span>01</span><div><small>SELECT A DAY</small><h2>Available dates</h2></div></div>
-      <div class="day-strip" id="dayStrip"><div class="loading-card">Loading William’s availability…</div></div>
-      <div class="step-heading time-heading"><span>02</span><div><small>SELECT A TIME</small><h2 id="timeTitle">Choose a date above</h2></div></div>
-      <div class="time-grid" id="timeGrid"><div class="empty">Open times will appear here.</div></div>
-    </section>
-
-    <section class="booking-card details-card" id="detailsCard" hidden>
-      <div class="step-heading"><span>03</span><div><small>YOUR DETAILS</small><h2 id="selectedTime">Finish your booking</h2></div></div>
-      <form id="bookingForm">
-        <div class="field-grid">
-          <label>Full name <span>*</span><input name="name" autocomplete="name" maxlength="80" required placeholder="Your name"></label>
-          <label>Email <small>optional</small><input name="email" type="email" autocomplete="email" maxlength="160" placeholder="you@company.com"></label>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta
+      name="description"
+      content="Schedule a visit with William Farparan at the Adobe SF Wellness Center."
+    />
+    <title>Schedule with William</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/book.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Cpath d='M14 44 31 13l19 31h-9L31 28 23 44z' fill='%23ef3123'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <main class="booking-shell">
+      <header class="booking-head">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <strong>EXOS · ADOBE SF</strong><small>SESSION SCHEDULER</small>
+          </div>
         </div>
-        <label>Reason for visit <span>*</span><select name="reason" id="reasonSelect" required></select></label>
-        <label>Anything William should know? <small>optional</small><textarea name="notes" maxlength="1000" placeholder="Goals, questions, injuries, or other context"></textarea></label>
-        <label class="trap" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
-        <div class="form-actions"><button class="back-btn" type="button" id="changeTime">Change time</button><button class="book-btn" type="submit" id="bookButton">Confirm booking</button></div>
-        <p class="form-error" id="formError" role="alert"></p>
-      </form>
-    </section>
+        <div class="coach">
+          <span>WF</span>
+          <div>
+            <strong>William Farparan</strong><small>Performance Coach</small>
+          </div>
+        </div>
+      </header>
 
-    <section class="booking-card confirmation" id="confirmation" hidden>
-      <div class="checkmark">✓</div><span class="confirmation-kicker">YOU’RE BOOKED</span><h2>See you then.</h2>
-      <p id="confirmationCopy"></p><div class="confirmation-details" id="confirmationDetails"></div>
-      <button class="book-btn" id="bookAnother">Book another visit</button>
-    </section>
+      <section class="booking-intro">
+        <div class="eyebrow"><i></i>BOOK A VISIT</div>
+        <h1>Find a time that works.</h1>
+        <p id="bookingNote">
+          Choose an available time, then tell William your name and reason for
+          visiting. No account or sign-in is required.
+        </p>
+        <div class="booking-facts">
+          <span><b id="durationFact">60 min</b> session</span
+          ><span><b>Pacific time</b></span
+          ><span id="locationFact"><b>Adobe SF Wellness Center</b></span>
+        </div>
+      </section>
 
-    <footer>Scheduling powered by Task Dash · Availability updates from William’s work calendar.</footer>
-  </main>
-  <script src="/book.js"></script>
-</body>
+      <section class="booking-card" id="bookingApp" aria-live="polite">
+        <div class="step-heading">
+          <span>01</span>
+          <div>
+            <small>SELECT A DAY</small>
+            <h2>Available dates</h2>
+          </div>
+        </div>
+        <div class="day-strip" id="dayStrip">
+          <div class="loading-card">Loading William’s availability…</div>
+        </div>
+        <div class="step-heading time-heading">
+          <span>02</span>
+          <div>
+            <small>SELECT A TIME</small>
+            <h2 id="timeTitle">Choose a date above</h2>
+          </div>
+        </div>
+        <div class="time-grid" id="timeGrid">
+          <div class="empty">Open times will appear here.</div>
+        </div>
+      </section>
+
+      <section class="booking-card details-card" id="detailsCard" hidden>
+        <div class="step-heading">
+          <span>03</span>
+          <div>
+            <small>YOUR DETAILS</small>
+            <h2 id="selectedTime">Finish your booking</h2>
+          </div>
+        </div>
+        <form id="bookingForm">
+          <div class="field-grid">
+            <label
+              >Full name <span>*</span
+              ><input
+                name="name"
+                autocomplete="name"
+                maxlength="80"
+                required
+                placeholder="Your name"
+            /></label>
+            <label
+              >Email <small>optional</small
+              ><input
+                name="email"
+                type="email"
+                autocomplete="email"
+                maxlength="160"
+                placeholder="you@company.com"
+            /></label>
+          </div>
+          <label
+            >Reason for visit <span>*</span
+            ><select name="reason" id="reasonSelect" required></select
+          ></label>
+          <label
+            >Anything William should know? <small>optional</small
+            ><textarea
+              name="notes"
+              maxlength="1000"
+              placeholder="Goals, questions, injuries, or other context"
+            ></textarea>
+          </label>
+          <label class="trap" aria-hidden="true"
+            >Website<input name="website" tabindex="-1" autocomplete="off"
+          /></label>
+          <div class="form-actions">
+            <button class="back-btn" type="button" id="changeTime">
+              Change time</button
+            ><button class="book-btn" type="submit" id="bookButton">
+              Confirm booking
+            </button>
+          </div>
+          <p class="form-error" id="formError" role="alert"></p>
+        </form>
+      </section>
+
+      <section class="booking-card confirmation" id="confirmation" hidden>
+        <div class="checkmark">✓</div>
+        <span class="confirmation-kicker">YOU’RE BOOKED</span>
+        <h2>See you then.</h2>
+        <p id="confirmationCopy"></p>
+        <div class="confirmation-details" id="confirmationDetails"></div>
+        <button class="book-btn" id="bookAnother">Book another visit</button>
+      </section>
+
+      <footer>
+        Scheduling powered by Task Dash · Availability updates from William’s
+        work calendar.
+      </footer>
+    </main>
+    <script src="/book.js"></script>
+  </body>
 </html>

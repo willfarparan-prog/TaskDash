@@ -2,99 +2,131 @@
 // The API key is read from ANTHROPIC_API_KEY server-side and never reaches the browser.
 // Claude can call tools to actually create tasks/events - not just talk about them.
 
-const { Pool } = require('pg');
-const { requireOwnerSession } = require('../lib/session');
-const { trackUsage } = require('../lib/db');
+const { Pool } = require("pg");
+const { requireOwnerSession } = require("../lib/session");
+const { trackUsage } = require("../lib/db");
 let pool;
 function getPool() {
   if (!pool) {
-    if (!process.env.neon) throw new Error('neon env var is not set');
-    pool = new Pool({ connectionString: process.env.neon, ssl: { rejectUnauthorized: false } });
+    if (!process.env.neon) throw new Error("neon env var is not set");
+    pool = new Pool({
+      connectionString: process.env.neon,
+      ssl: { rejectUnauthorized: false },
+    });
   }
   return pool;
 }
 
-const MODEL = 'claude-sonnet-5';
+const MODEL = "claude-sonnet-5";
 
 const TOOLS = [
   {
-    name: 'add_recurring_task',
-    description: "Create a recurring task that shows up on the dashboard's Today list going forward, on the given cadence. Use this for anything the user wants remembered on a repeating basis (daily, or a specific weekday every week). For a task tied to a specific week of the month (e.g. 'second week of every month'), still use Weekly cadence on a representative weekday and mention the monthly timing in the task name itself, since the dashboard's recurring engine only supports Daily/Weekly natively.",
+    name: "add_recurring_task",
+    description:
+      "Create a recurring task that shows up on the dashboard's Today list going forward, on the given cadence. Use this for anything the user wants remembered on a repeating basis (daily, or a specific weekday every week). For a task tied to a specific week of the month (e.g. 'second week of every month'), still use Weekly cadence on a representative weekday and mention the monthly timing in the task name itself, since the dashboard's recurring engine only supports Daily/Weekly natively.",
     input_schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        name: { type: 'string', description: 'Short task name, e.g. "Storage room inventory check"' },
-        cadence: { type: 'string', enum: ['Daily', 'Weekly'] },
-        weekday: { type: 'integer', description: '0=Sunday..6=Saturday. Required if cadence is Weekly, omit for Daily.' },
+        name: {
+          type: "string",
+          description: 'Short task name, e.g. "Storage room inventory check"',
+        },
+        cadence: { type: "string", enum: ["Daily", "Weekly"] },
+        weekday: {
+          type: "integer",
+          description:
+            "0=Sunday..6=Saturday. Required if cadence is Weekly, omit for Daily.",
+        },
       },
-      required: ['name', 'cadence'],
+      required: ["name", "cadence"],
     },
   },
   {
-    name: 'add_daily_task',
+    name: "add_daily_task",
     description: "Add a one-off task to today's list only (not recurring).",
     input_schema: {
-      type: 'object',
-      properties: { name: { type: 'string' } },
-      required: ['name'],
+      type: "object",
+      properties: { name: { type: "string" } },
+      required: ["name"],
     },
   },
   {
-    name: 'add_event',
-    description: 'Add a new event to the event pipeline. This seeds the complete pre-event, day-of, and post-event SOP timeline on the given date.',
+    name: "add_event",
+    description:
+      "Add a new event to the event pipeline. This seeds the complete pre-event, day-of, and post-event SOP timeline on the given date.",
     input_schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        name: { type: 'string' },
-        date: { type: 'string', description: 'YYYY-MM-DD' },
-        pillar: { type: 'string', enum: ['Mindset', 'Nutrition', 'Movement', 'Recovery'] },
-        needsVendor: { type: 'boolean', description: 'True if this event needs a vendor or service with no existing SOP, which routes through Michelle first.' },
+        name: { type: "string" },
+        date: { type: "string", description: "YYYY-MM-DD" },
+        pillar: {
+          type: "string",
+          enum: ["Mindset", "Nutrition", "Movement", "Recovery"],
+        },
+        needsVendor: {
+          type: "boolean",
+          description:
+            "True if this event needs a vendor or service with no existing SOP, which routes through Michelle first.",
+        },
       },
-      required: ['name', 'date'],
+      required: ["name", "date"],
     },
   },
 ];
 
 async function runTool(name, input) {
   const db = getPool();
-  if (name === 'add_recurring_task') {
-    const id = 'rc-x' + Date.now();
+  if (name === "add_recurring_task") {
+    const id = "rc-x" + Date.now();
     await db.query(
       `insert into recur_tasks (id, name, cadence, weekday, source) values ($1,$2,$3,$4,'custom')`,
-      [id, input.name, input.cadence, input.cadence === 'Weekly' ? (input.weekday ?? null) : null]
+      [
+        id,
+        input.name,
+        input.cadence,
+        input.cadence === "Weekly" ? (input.weekday ?? null) : null,
+      ],
     );
     return { ok: true, id };
   }
-  if (name === 'add_daily_task') {
+  if (name === "add_daily_task") {
     const today = new Date().toISOString().slice(0, 10);
     const r = await db.query(
       `insert into daily_tasks (day_key, name) values ($1,$2) returning id`,
-      [today, input.name]
+      [today, input.name],
     );
     return { ok: true, id: r.rows[0].id };
   }
-  if (name === 'add_event') {
+  if (name === "add_event") {
     const r = await db.query(
       `insert into events (name, event_date, pillar, needs_vendor) values ($1,$2,$3,$4) returning id`,
-      [input.name, input.date, input.pillar || null, !!input.needsVendor]
+      [input.name, input.date, input.pillar || null, !!input.needsVendor],
     );
     return { ok: true, id: r.rows[0].id, needsVendor: !!input.needsVendor };
   }
-  return { ok: false, error: 'unknown tool' };
+  return { ok: false, error: "unknown tool" };
 }
 
 function buildSystem(ctx = {}) {
-  const today = ctx.today || '(unknown)';
-  const tasks = (ctx.tasks || [])
-    .map(t => `- ${t.name} [${t.cad}${t.done ? ', done' : t.status === 'over' ? ', OVERDUE' : ''}]`)
-    .join('\n') || '(none)';
-  const events = (ctx.events || []).map(e => {
-    const steps = (e.steps || []).map(s => `${s.k}: ${s.st}`).join('; ');
-    return `- ${e.name} on ${e.date}${e.pillar ? ` (${e.pillar})` : ''}, ${e.daysOut} days out${e.compressed ? ' - COMPRESSED TIMELINE' : ''}${steps ? `\n    steps: ${steps}` : ''}`;
-  }).join('\n') || '(none)';
-  const links = (ctx.links || [])
-    .map(l => `- ${l.title} [${l.category}]: ${l.url}`)
-    .join('\n') || '(none)';
+  const today = ctx.today || "(unknown)";
+  const tasks =
+    (ctx.tasks || [])
+      .map(
+        (t) =>
+          `- ${t.name} [${t.cad}${t.done ? ", done" : t.status === "over" ? ", OVERDUE" : ""}]`,
+      )
+      .join("\n") || "(none)";
+  const events =
+    (ctx.events || [])
+      .map((e) => {
+        const steps = (e.steps || []).map((s) => `${s.k}: ${s.st}`).join("; ");
+        return `- ${e.name} on ${e.date}${e.pillar ? ` (${e.pillar})` : ""}, ${e.daysOut} days out${e.compressed ? " - COMPRESSED TIMELINE" : ""}${steps ? `\n    steps: ${steps}` : ""}`;
+      })
+      .join("\n") || "(none)";
+  const links =
+    (ctx.links || [])
+      .map((l) => `- ${l.title} [${l.category}]: ${l.url}`)
+      .join("\n") || "(none)";
 
   return `You are the on-site assistant embedded in William Farparan's coach dashboard. He is a Certified Performance Coach employed by Exos, working on-site at Adobe's San Francisco wellness centers (Hooper and 601 Townsend).
 
@@ -155,11 +187,11 @@ HOW TO ANSWER
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
+  res.setHeader("Content-Type", "application/json");
 
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'method not allowed' });
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "method not allowed" });
   }
 
   if (!requireOwnerSession(req, res)) return;
@@ -167,22 +199,22 @@ module.exports = async (req, res) => {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
     return res.status(200).json({
-      text: "I'm not connected to Claude yet - the ANTHROPIC_API_KEY environment variable isn't set on this deployment. Add it in Vercel under Settings, Environment Variables, then redeploy. In the meantime I can still add and track tasks."
+      text: "I'm not connected to Claude yet - the ANTHROPIC_API_KEY environment variable isn't set on this deployment. Add it in Vercel under Settings, Environment Variables, then redeploy. In the meantime I can still add and track tasks.",
     });
   }
 
   try {
     const { messages = [], context = {} } = req.body || {};
-    const trimmed = messages.slice(-12).filter(m => m && m.content);
-    if (!trimmed.length) return res.status(400).json({ error: 'no messages' });
+    const trimmed = messages.slice(-12).filter((m) => m && m.content);
+    if (!trimmed.length) return res.status(400).json({ error: "no messages" });
 
-    let convo = trimmed.map(m => ({
-      role: m.role === 'bot' ? 'assistant' : 'user',
+    let convo = trimmed.map((m) => ({
+      role: m.role === "bot" ? "assistant" : "user",
       content: String(m.content),
     }));
 
     let changed = false;
-    let finalText = '';
+    let finalText = "";
     let inputTokens = 0;
     let outputTokens = 0;
     const system = buildSystem(context);
@@ -190,12 +222,12 @@ module.exports = async (req, res) => {
     // Tool-use loop: Claude may call a tool, we run it, feed the result back,
     // and let it continue - up to a few rounds so it can't loop forever.
     for (let round = 0; round < 4; round++) {
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01',
+          "Content-Type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
           model: MODEL,
@@ -208,20 +240,29 @@ module.exports = async (req, res) => {
 
       const data = await r.json();
       if (!r.ok) {
-        const detail = (data && data.error && data.error.message) || 'unknown error';
-        return res.status(200).json({ text: `Claude returned an error: ${detail}`, changed });
+        const detail =
+          (data && data.error && data.error.message) || "unknown error";
+        return res
+          .status(200)
+          .json({ text: `Claude returned an error: ${detail}`, changed });
       }
 
       inputTokens += data.usage?.input_tokens || 0;
       outputTokens += data.usage?.output_tokens || 0;
 
-      const textParts = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+      const textParts = (data.content || [])
+        .filter((b) => b.type === "text")
+        .map((b) => b.text)
+        .join("\n")
+        .trim();
       if (textParts) finalText = textParts;
 
-      const toolUses = (data.content || []).filter(b => b.type === 'tool_use');
+      const toolUses = (data.content || []).filter(
+        (b) => b.type === "tool_use",
+      );
       if (!toolUses.length) break;
 
-      convo.push({ role: 'assistant', content: data.content });
+      convo.push({ role: "assistant", content: data.content });
 
       const toolResults = [];
       for (const call of toolUses) {
@@ -233,20 +274,27 @@ module.exports = async (req, res) => {
           result = { ok: false, error: err.message };
         }
         toolResults.push({
-          type: 'tool_result',
+          type: "tool_result",
           tool_use_id: call.id,
           content: JSON.stringify(result),
         });
       }
-      convo.push({ role: 'user', content: toolResults });
+      convo.push({ role: "user", content: toolResults });
 
-      if (data.stop_reason !== 'tool_use') break;
+      if (data.stop_reason !== "tool_use") break;
     }
 
-    trackUsage('Claude', 'Dashboard assistant', 'ok', { inputTokens, outputTokens });
-    return res.status(200).json({ text: finalText || '(empty response)', changed });
+    trackUsage("Claude", "Dashboard assistant", "ok", {
+      inputTokens,
+      outputTokens,
+    });
+    return res
+      .status(200)
+      .json({ text: finalText || "(empty response)", changed });
   } catch (err) {
-    trackUsage('Claude', 'Dashboard assistant', 'error');
-    return res.status(200).json({ text: `Couldn't reach Claude: ${err.message}` });
+    trackUsage("Claude", "Dashboard assistant", "error");
+    return res
+      .status(200)
+      .json({ text: `Couldn't reach Claude: ${err.message}` });
   }
 };
