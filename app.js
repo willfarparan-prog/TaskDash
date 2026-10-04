@@ -56,6 +56,7 @@ const state = {
   calendar: [],
   connections: [],
   usage: { calls: 0, tokens: 0, credits: null, runs: [] },
+  authRequired: false,
   links: [],
   linkFilter: "all",
   linkError: "",
@@ -376,6 +377,7 @@ async function refreshAll() {
   $("#refreshBtn").classList.remove("loading");
 }
 function renderEverything() {
+  renderAuthGate();
   renderDashboard();
   renderCalendar();
   renderScheduler();
@@ -385,13 +387,19 @@ function renderEverything() {
   renderEvents();
   renderConnections();
 }
+function renderAuthGate() {
+  $("#ownerGate").hidden = !state.authRequired;
+}
 async function getJSON(url, opts) {
   const r = await fetch(url, opts);
   let data = {};
   try {
     data = await r.json();
   } catch {}
-  if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
+  if (!r.ok) {
+    if (r.status === 401) state.authRequired = true;
+    throw new Error(data.error || `Request failed (${r.status})`);
+  }
   return data;
 }
 async function loadTasks() {
@@ -488,6 +496,7 @@ async function loadInbox() {
 async function loadConnections() {
   try {
     const d = await getJSON("/api/connections");
+    state.authRequired = false;
     state.connections = d.connections || [];
     state.usage = d.usage || state.usage;
   } catch {

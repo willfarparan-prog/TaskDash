@@ -208,6 +208,43 @@ textarea:focus-visible {
   margin-left: var(--sidebar);
   min-height: 100vh;
 }
+.owner-gate {
+  margin: 14px 34px -8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: #fff0cb;
+  border: 1px solid #e4c66d;
+  border-left: 4px solid #b47b00;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.owner-gate[hidden] {
+  display: none;
+}
+.owner-gate strong,
+.owner-gate span {
+  display: block;
+}
+.owner-gate strong {
+  font-size: 13px;
+}
+.owner-gate span {
+  font-size: 11px;
+  color: #765f24;
+  margin-top: 2px;
+}
+.owner-gate a {
+  background: var(--ink);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 7px;
+  padding: 9px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
 .topbar {
   height: 74px;
   background: #faf9f7;
@@ -2012,6 +2049,9 @@ textarea:focus-visible {
   }
 }
 @media (max-width: 900px) {
+  .owner-gate {
+    margin-inline: 18px;
+  }
   :root {
     --sidebar: 244px;
   }
@@ -2090,6 +2130,15 @@ textarea:focus-visible {
   }
 }
 @media (max-width: 620px) {
+  .owner-gate {
+    margin-inline: 13px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .owner-gate a {
+    width: 100%;
+    text-align: center;
+  }
   .top-actions .primary-btn {
     font-size: 0;
     width: 42px;
@@ -2403,10 +2452,9 @@ textarea:focus-visible {
 .exercise-head,
 .exercise-row {
   display: grid;
-  grid-template-columns: 42px minmax(210px, 2fr) 55px repeat(
-      8,
-      minmax(58px, 0.55fr)
-    ) 28px;
+  grid-template-columns:
+    42px minmax(210px, 2fr) 55px repeat(8, minmax(58px, 0.55fr))
+    28px;
   gap: 6px;
   align-items: center;
   min-width: 900px;
