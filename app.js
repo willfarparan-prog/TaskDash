@@ -3,6 +3,7 @@ const $ = (s, r = document) => r.querySelector(s),
   $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const OWNER_EMAIL = "willfarparan@gmail.com",
   WORK_EMAIL = "william.farparan@teamexos.com",
+  PUBLIC_BOOKING_URL = "https://task-dash-umber.vercel.app/book.html",
   DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
   MONTHS = [
     "Jan",
@@ -69,7 +70,7 @@ const state = {
     bookings: [],
     days: [],
     workCalendar: { connected: false },
-    publicUrl: `${location.origin}/book.html`,
+    publicUrl: PUBLIC_BOOKING_URL,
     ownerReady: false,
   },
   settings: Object.assign(
@@ -538,7 +539,7 @@ async function loadScheduler() {
       ownerReady: true,
     };
     state.scheduler.publicUrl =
-      data.publicUrl || `${location.origin}/book.html`;
+      data.publicUrl || PUBLIC_BOOKING_URL;
   } catch {
     state.scheduler.ownerReady = false;
   }
@@ -892,7 +893,7 @@ function openBlockDialog() {
 function renderScheduler() {
   const scheduler = state.scheduler,
     s = scheduler.settings || DEFAULT_BOOKING_SCHEDULE,
-    url = scheduler.publicUrl || `${location.origin}/book.html`;
+    url = scheduler.publicUrl || PUBLIC_BOOKING_URL;
   $("#bookingUrl").textContent = url;
   $("#scheduleSlot").value = s.slotMinutes || 30;
   $("#scheduleDuration").value = s.sessionMinutes || 60;
@@ -981,7 +982,7 @@ function scheduleHoursChange(event) {
   row.querySelector("em").textContent = enabled ? "Available" : "Not available";
 }
 async function copyBookingLink() {
-  const value = state.scheduler.publicUrl || `${location.origin}/book.html`;
+  const value = PUBLIC_BOOKING_URL;
   try {
     await navigator.clipboard.writeText(value);
   } catch {
