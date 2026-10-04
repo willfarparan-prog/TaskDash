@@ -44,9 +44,12 @@ Required environment variables:
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `DASHBOARD_SESSION_SECRET` (required; use a dedicated random value)
+- `WORK_SOURCE_LINKS_JSON` (private server-side Resource Hub catalog)
 - `ANTHROPIC_API_KEY` (optional)
 
 Copy `.env.example` for local setup. Keep the database, OAuth application, GitHub repository, and Vercel project in the personal account. Work-account permissions should be added only as separate, purpose-limited OAuth connections; never change the dashboard owner email to the work account.
+
+`WORK_SOURCE_LINKS_JSON` is an array of link records with `id`, `title`, `category`, and `url`, plus optional `short`, `description`, `frequency`, `pinned`, and `sort` fields. The server validates and upserts the catalog into Neon during schema initialization. This keeps work URLs in Vercel and Neon rather than the public repository or browser bundle.
 
 The production Google OAuth redirect URI must remain:
 
