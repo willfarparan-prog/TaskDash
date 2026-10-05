@@ -925,6 +925,7 @@ function renderScheduler() {
     s = scheduler.settings || DEFAULT_BOOKING_SCHEDULE,
     url = scheduler.publicUrl || PUBLIC_BOOKING_URL;
   $("#bookingUrl").textContent = url;
+  $("#bookingUrl").href = url;
   $("#scheduleSlot").value = s.slotMinutes || 30;
   $("#scheduleDuration").value = s.sessionMinutes || 60;
   $("#scheduleNotice").value = String(s.noticeMinutes ?? 120);

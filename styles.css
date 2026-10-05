@@ -1825,7 +1825,7 @@ textarea:focus-visible {
   margin-bottom: 14px;
 }
 .booking-link-bar span,
-.booking-link-bar strong {
+.booking-link-bar a {
   display: block;
 }
 .booking-link-bar span {
@@ -1835,10 +1835,14 @@ textarea:focus-visible {
   letter-spacing: 0.12em;
   color: #777;
 }
-.booking-link-bar strong {
+.booking-link-bar a {
+  color: var(--ink);
   font-size: 13px;
+  font-weight: 700;
   margin-top: 4px;
   overflow-wrap: anywhere;
+  text-decoration-color: color-mix(in srgb, var(--red) 55%, transparent);
+  text-underline-offset: 3px;
 }
 .scheduler-layout {
   display: grid;
