@@ -245,6 +245,16 @@ textarea:focus-visible {
   font-weight: 800;
   white-space: nowrap;
 }
+.owner-gate-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.owner-gate a.owner-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid #c7a64d;
+}
 .topbar {
   height: 74px;
   background: #faf9f7;
@@ -2138,6 +2148,11 @@ textarea:focus-visible {
   .owner-gate a {
     width: 100%;
     text-align: center;
+  }
+  .owner-gate-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
   }
   .top-actions .primary-btn {
     font-size: 0;

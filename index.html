@@ -145,11 +145,19 @@
           <div>
             <strong>Private dashboard locked</strong
             ><span
-              >Your data is still saved. Reconnect the owner account to load
-              tasks, clients, programs, links, and integrations.</span
+              >Your data is still saved. Sign in with an approved Google
+              account to load tasks, clients, programs, links, and
+              integrations.</span
             >
           </div>
-          <a href="/api/auth/start">Connect willfarparan@gmail.com</a>
+          <div class="owner-gate-actions">
+            <a href="/api/auth/start?account=operator"
+              >Sign in with work Google</a
+            >
+            <a class="owner-secondary" href="/api/auth/start"
+              >Use personal owner account</a
+            >
+          </div>
         </div>
 
         <div class="content-shell">

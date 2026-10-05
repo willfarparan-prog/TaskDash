@@ -34,12 +34,15 @@ module.exports = async (req, res) => {
       .send(
         "Google connection expired or could not be verified. Start again from Task Dash.",
       );
-  const account = String(state).split(".")[0] === "work" ? "work" : "owner";
+  const requestedAccount = String(state).split(".")[0];
+  const account = ["work", "operator"].includes(requestedAccount)
+    ? requestedAccount
+    : "owner";
   if (account === "work" && !isOwnerSession(req))
     return res
       .status(401)
       .send(`Connect ${OWNER_EMAIL} first, then connect the work calendar.`);
-  const expectedEmail = account === "work" ? WORK_EMAIL : OWNER_EMAIL;
+  const expectedEmail = account === "owner" ? OWNER_EMAIL : WORK_EMAIL;
   const tokenId = account === "work" ? "google-work" : "google";
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -94,13 +97,16 @@ module.exports = async (req, res) => {
         );
     }
 
-    const expiresAt = new Date(Date.now() + (tokens.expires_in || 3600) * 1000);
-    const db = getPool();
-    await db.query(
-      `alter table oauth_tokens add column if not exists account_email text`,
-    );
-    await db.query(
-      `insert into oauth_tokens (id, access_token, refresh_token, expires_at, scope, account_email, updated_at)
+    if (account !== "operator") {
+      const expiresAt = new Date(
+        Date.now() + (tokens.expires_in || 3600) * 1000,
+      );
+      const db = getPool();
+      await db.query(
+        `alter table oauth_tokens add column if not exists account_email text`,
+      );
+      await db.query(
+        `insert into oauth_tokens (id, access_token, refresh_token, expires_at, scope, account_email, updated_at)
        values ($1, $2, $3, $4, $5, $6, now())
        on conflict (id) do update set
          access_token = excluded.access_token,
@@ -109,23 +115,30 @@ module.exports = async (req, res) => {
          scope = excluded.scope,
          account_email = excluded.account_email,
          updated_at = now()`,
-      [
-        tokenId,
-        tokens.access_token,
-        tokens.refresh_token || null,
-        expiresAt,
-        tokens.scope || null,
-        expectedEmail,
-      ],
-    );
+        [
+          tokenId,
+          tokens.access_token,
+          tokens.refresh_token || null,
+          expiresAt,
+          tokens.scope || null,
+          expectedEmail,
+        ],
+      );
+    }
 
     const cookies = [
       "taskdash_oauth_state=; Path=/api/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=0",
     ];
-    if (account === "owner") cookies.push(sessionCookie());
+    if (["owner", "operator"].includes(account))
+      cookies.push(sessionCookie(expectedEmail));
     res.setHeader("Set-Cookie", cookies);
     res.writeHead(302, {
-      Location: account === "work" ? "/#scheduler" : "/?calendar=connected",
+      Location:
+        account === "work"
+          ? "/#scheduler"
+          : account === "operator"
+            ? "/?account=work"
+            : "/?calendar=connected",
     });
     res.end();
   } catch (err) {

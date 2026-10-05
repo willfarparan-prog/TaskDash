@@ -506,15 +506,15 @@ async function loadConnections() {
 }
 async function loadLinks() {
   try {
-    state.links = ((await getJSON("/api/links")).links || []).filter((l) =>
-      /^https?:\/\//.test(l.url || ""),
-    );
+    state.links = ((await getJSON("/api/links")).links || [])
+      .filter((l) => /^https?:\/\//.test(l.url || ""))
+      .map((link) => ({ ...link, url: workAccountUrl(link.url) }));
     state.linkError = "";
   } catch (e) {
     state.links = [];
     state.linkError =
       e.message.includes("401") || e.message.includes("Connect Google")
-        ? `Connect Google as ${OWNER_EMAIL} to unlock private work links.`
+        ? `Sign in as ${WORK_EMAIL} or ${OWNER_EMAIL} to unlock private work links.`
         : "Private work links load after sign-in on the deployed dashboard.";
   }
 }
@@ -653,7 +653,7 @@ function renderLinks() {
     if (!state.links.length) {
       filters.innerHTML = "";
       context.innerHTML = "";
-      grid.innerHTML = `<div class="empty-state compact resource-locked"><strong>Your links are saved privately.</strong><span>${esc(state.linkError || "No work links are available yet.")}</span><a class="primary-btn resource-connect" href="/api/auth/start">Connect ${OWNER_EMAIL}</a></div>`;
+      grid.innerHTML = `<div class="empty-state compact resource-locked"><strong>Your links are saved privately.</strong><span>${esc(state.linkError || "No work links are available yet.")}</span><a class="primary-btn resource-connect" href="/api/auth/start?account=operator">Sign in as ${WORK_EMAIL}</a></div>`;
       return;
     }
     filters.innerHTML =
@@ -701,6 +701,36 @@ function taskState(t) {
     return "over";
   if (t.cad !== "Daily" || h >= 11) return "due";
   return "open";
+}
+
+function workAccountUrl(value) {
+  try {
+    const url = new URL(value),
+      host = url.hostname.toLowerCase(),
+      workspaceHosts = new Set([
+        "docs.google.com",
+        "drive.google.com",
+        "calendar.google.com",
+        "sites.google.com",
+      ]);
+    if (host === "mail.google.com") {
+      url.pathname = url.pathname.replace(
+        /\/mail\/u\/[^/]+\//,
+        `/mail/u/${encodeURIComponent(WORK_EMAIL)}/`,
+      );
+    } else if (workspaceHosts.has(host)) {
+      if (host === "calendar.google.com") {
+        url.pathname = url.pathname.replace(
+          /\/calendar\/u\/[^/]+\//,
+          `/calendar/u/${encodeURIComponent(WORK_EMAIL)}/`,
+        );
+      }
+      url.searchParams.set("authuser", WORK_EMAIL);
+    }
+    return url.toString();
+  } catch {
+    return value;
+  }
 }
 async function addTask() {
   const input = $("#taskInput"),
@@ -969,7 +999,7 @@ function renderScheduler() {
   $("#saveSchedule").disabled = !scheduler.ownerReady;
   $("#schedulerSaved").textContent = scheduler.ownerReady
     ? "Changes update the public booking page."
-    : `Connect ${OWNER_EMAIL} first to edit availability.`;
+    : `Sign in as ${WORK_EMAIL} or ${OWNER_EMAIL} to edit availability.`;
 }
 function scheduleHoursChange(event) {
   const row = event.target.closest(".schedule-day");
@@ -1914,7 +1944,7 @@ function fallbackConnections() {
       name: "Google",
       initials: "G",
       status: state.calendarConnected ? "connected" : "attention",
-      detail: `Restricted to ${OWNER_EMAIL}`,
+      detail: `Personal data: ${OWNER_EMAIL} · operator: ${WORK_EMAIL}`,
     },
     {
       name: "Work Scheduler Calendar",

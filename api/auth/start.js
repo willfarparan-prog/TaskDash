@@ -17,14 +17,17 @@ module.exports = async (req, res) => {
   // redirect URI registered in Google Cloud Console.
   const redirectUri = "https://task-dash-umber.vercel.app/api/auth/callback";
 
-  const account = req.query.account === "work" ? "work" : "owner";
+  const requestedAccount = String(req.query.account || "owner");
+  const account = ["work", "operator"].includes(requestedAccount)
+    ? requestedAccount
+    : "owner";
   if (account === "work" && !isOwnerSession(req))
     return res
       .status(401)
       .send(
         `Connect ${OWNER_EMAIL} first, then connect the work calendar from Scheduler.`,
       );
-  const expectedEmail = account === "work" ? WORK_EMAIL : OWNER_EMAIL;
+  const expectedEmail = account === "owner" ? OWNER_EMAIL : WORK_EMAIL;
   const scopes =
     account === "work"
       ? [
@@ -33,13 +36,15 @@ module.exports = async (req, res) => {
           "profile",
           "https://www.googleapis.com/auth/calendar.events",
         ]
-      : [
+      : account === "owner"
+        ? [
           "openid",
           "email",
           "profile",
           "https://www.googleapis.com/auth/calendar.readonly",
           "https://www.googleapis.com/auth/gmail.readonly",
-        ];
+          ]
+        : ["openid", "email", "profile"];
   const nonce = crypto.randomBytes(18).toString("base64url");
   const state = `${account}.${nonce}`;
   const params = new URLSearchParams({

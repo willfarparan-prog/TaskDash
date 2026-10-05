@@ -19,9 +19,9 @@ The resource hub keeps URLs in the private `links` database table, not in the pu
 
 ## Account and privacy rules
 
-Dashboard ownership remains restricted to `willfarparan@gmail.com`. The callback verifies the returned Google identity before saving tokens. A signed, HTTP-only session cookie protects every private read and write, including tasks, events, client records, programs, calendar data, inbox data, private work links, connection health, and scheduler settings. Cross-site mutations are rejected and Vercel applies restrictive browser security headers.
+Infrastructure ownership remains restricted to `willfarparan@gmail.com`. Both `willfarparan@gmail.com` and the approved work operator `william.farparan@teamexos.com` can create a signed dashboard session after Google verifies the returned identity. The work-operator sign-in requests identity scopes only and does not replace the personal Calendar/Gmail token. A signed, HTTP-only session cookie protects every private read and write, including tasks, events, client records, programs, calendar data, inbox data, private work links, connection health, and scheduler settings. Cross-site mutations are rejected and Vercel applies restrictive browser security headers.
 
-The Scheduler has a second, purpose-limited Google connection restricted to `william.farparan@teamexos.com`. It is used only to read busy work-calendar events and create or remove Task Dash booking events. Future work Docs and Sheets connections should follow this same pattern: ownership stays personal, while explicitly approved work data is accessed through a separate purpose-limited work authorization. Visitors never sign in and never receive dashboard access.
+The Scheduler has a second, purpose-limited Google connection restricted to `william.farparan@teamexos.com`. It is used only to read busy work-calendar events and create or remove Task Dash booking events. Google Workspace shortcuts explicitly select the work account in the browser, while each underlying file still enforces its own sharing permissions. Future API-based work Docs and Sheets connections should follow this same pattern: ownership stays personal, while explicitly approved work data is accessed through a separate purpose-limited work authorization. Visitors never sign in and never receive dashboard access.
 
 Personal Google scopes are read-only:
 
@@ -47,7 +47,7 @@ Required environment variables:
 - `WORK_SOURCE_LINKS_JSON` (private server-side Resource Hub catalog)
 - `ANTHROPIC_API_KEY` (optional)
 
-Copy `.env.example` for local setup. Keep the database, OAuth application, GitHub repository, and Vercel project in the personal account. Work-account permissions should be added only as separate, purpose-limited OAuth connections; never change the dashboard owner email to the work account.
+Copy `.env.example` for local setup. Keep the database, OAuth application, GitHub repository, and Vercel project in the personal account. The work account is an approved dashboard operator and may use separate, purpose-limited OAuth connections; it does not own the deployment infrastructure.
 
 `WORK_SOURCE_LINKS_JSON` is an array of link records with `id`, `title`, `category`, and `url`, plus optional `short`, `description`, `frequency`, `pinned`, and `sort` fields. The server validates and upserts the catalog into Neon during schema initialization. This keeps work URLs in Vercel and Neon rather than the public repository or browser bundle.
 
