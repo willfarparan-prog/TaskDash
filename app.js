@@ -301,6 +301,8 @@ function wireControls() {
   $("#quickAddBtn").onclick = openQuickAdd;
   $("#addBlockOpen").onclick = openBlockDialog;
   $("#calendarConnect").onclick = () => (location.href = "/api/auth/start");
+  $("#workCalendarWeekConnect").onclick = () =>
+    (location.href = "/api/auth/start?account=work");
   $("#prevWeek").onclick = () => {
     state.calendarOffset--;
     renderCalendar();
@@ -477,9 +479,11 @@ async function loadCalendar() {
     state.calendar = d.events || [];
     state.calendarConnected = !!d.connected;
     state.calendarEmail = d.accountEmail || null;
+    state.workCalendarConnected = !!d.workConnected;
   } catch {
     state.calendar = [];
     state.calendarConnected = false;
+    state.workCalendarConnected = false;
   }
 }
 async function loadInbox() {
@@ -861,6 +865,17 @@ function renderCalendar() {
     ? "Connected"
     : "Connect";
   $("#calendarConnect").disabled = state.calendarConnected;
+  $("#workCalendarWeekBanner strong").textContent =
+    state.workCalendarConnected
+      ? "Work Google calendar connected"
+      : "Connect work Google calendar";
+  $("#workCalendarWeekBanner span").textContent = state.workCalendarConnected
+    ? `${WORK_EMAIL} · events show in purple`
+    : `Only ${WORK_EMAIL} is allowed`;
+  $("#workCalendarWeekConnect").textContent = state.workCalendarConnected
+    ? "Connected"
+    : "Connect";
+  $("#workCalendarWeekConnect").disabled = state.workCalendarConnected;
   let html = '<div class="cal-corner"></div>';
   for (let i = 0; i < 7; i++) {
     const d = new Date(start);
