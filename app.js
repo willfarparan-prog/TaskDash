@@ -50,6 +50,8 @@ const state = {
   view: "dashboard",
   tasks: [],
   events: [],
+  openDrafts: new Set(),
+  draftStatus: {},
   clients: [],
   sessions: [],
   programs: [],
@@ -220,6 +222,17 @@ const PIPE = [
     owner: "William",
   },
 ];
+// Messaging drafts generated for each event (see lib/eventDrafts.js).
+const DRAFT_TYPES = [
+  { key: "roomEmail", step: "room", label: "Room & equipment request", hint: "Email to Sahar Rasheed", email: true },
+  { key: "flyerPrompt", step: "flyer", label: "Flyer / poster prompt", hint: "Paste into Nano Banana or Adobe Firefly" },
+  { key: "cateringEmail", step: "catering", label: "Catering request", hint: "Email to Joshua Dougherty", email: true, needsCatering: true },
+  { key: "slack1", step: "slack-1", label: "Initial Slack post", hint: "#sf-wellness-center" },
+  { key: "slack2", step: "slack-2", label: "Secondary Slack post", hint: "#sf-wellness-center" },
+  { key: "slack3", step: "slack-3", label: "Third Slack post", hint: "#sf-wellness-center" },
+  { key: "slackDayOf", step: "day-of", label: "Day-of Slack post", hint: "Morning of the event" },
+  { key: "npsEmail", step: "survey", label: "NPS survey email", hint: "BCC all attendees · Microsoft Forms link" },
+];
 document.addEventListener("DOMContentLoaded", init);
 async function init() {
   wireNavigation();
@@ -343,7 +356,10 @@ function wireControls() {
       }),
   );
   $("#newEventBtn").onclick = openEventDialog;
-  $("#eventBoard").addEventListener("change", eventStepChange);
+  $("#eventBoard").addEventListener("change", (e) => {
+    if (e.target.matches("[data-draft-text]")) saveDraftEdit(e);
+    else if (e.target.matches(".step-check")) eventStepChange(e);
+  });
   $("#eventBoard").addEventListener("click", eventAction);
   $("#saveSettings").onclick = saveSettings;
   $("#clearLocal").onclick = clearLocal;
@@ -1667,7 +1683,7 @@ function renderClients() {
           const last = [...sessions].sort((a, b) =>
             String(b.session_date).localeCompare(String(a.session_date)),
           )[0];
-          return `<tr data-id="${c.id}"><td><div class="client-name"><span class="mini-avatar">${initials(c.name)}</span><div><strong>${esc(c.name)}</strong><small style="display:block;color:#999">${esc(c.email || "No email")}</small></div></div></td><td><span class="service-pill">${esc(c.service_type || "PT consult")}</span></td><td>${last ? shortDate(last.session_date) : "—"}</td><td><strong>${sessions.length}</strong></td><td>${c.next_follow_up ? shortDate(c.next_follow_up) : "—"}</td><td><button class="session-btn" data-action="session">＋ Session</button></td></tr>`;
+          return `<tr data-id="${c.id}"><td><div class="client-name"><span class="mini-avatar">${initials(c.name)}</span><div><strong>${esc(c.name)}</strong><small style="display:block;color:#999">${esc(c.email || "No email")}</small></div></div></td><td><span class="service-pill">${esc(c.service_type || "PT consult")}</span></td><td>${last ? shortDate(last.session_date) : "—"}</td><td><strong>${sessions.length}</strong></td><td>${c.next_follow_up ? shortDate(c.next_follow_up) : "—"}</td><td><div class="row-actions"><button class="session-btn" data-action="session">＋ Session</button><button class="text-btn" data-action="edit" aria-label="Edit ${attr(c.name)}">Edit</button><button class="text-btn danger-text" data-action="delete" aria-label="Delete ${attr(c.name)}">Delete</button></div></td></tr>`;
         })
         .join("")
     : '<tr><td colspan="6"><div class="empty-state compact">No clients match this view.</div></td></tr>';
@@ -1731,10 +1747,14 @@ function openClientDialog() {
   });
 }
 function clientAction(e) {
-  const b = e.target.closest('[data-action="session"]');
+  const b = e.target.closest("[data-action]");
   if (!b) return;
   const id = b.closest("tr").dataset.id,
     c = state.clients.find((x) => String(x.id) === id);
+  if (!c) return;
+  if (b.dataset.action === "edit") return openClientEditDialog(c);
+  if (b.dataset.action === "delete") return deleteClient(c);
+  if (b.dataset.action !== "session") return;
   openDialog({
     kicker: "SESSION LOG",
     title: `Log ${c.name}`,
@@ -1786,6 +1806,96 @@ function clientAction(e) {
       toast("Session logged");
     },
   });
+}
+function openClientEditDialog(c) {
+  openDialog({
+    kicker: "CLIENT ROSTER",
+    title: `Edit ${c.name}`,
+    fields: [
+      ["name", "Full name", "text", "Client name", c.name],
+      ["email", "Email", "email", "name@example.com", c.email || ""],
+      ["phone", "Phone", "tel", "Optional", c.phone || ""],
+      [
+        "serviceType",
+        "Primary service",
+        "select",
+        ["PT consult", "InBody scan", "Personal training"],
+        c.service_type || "PT consult",
+      ],
+      [
+        "status",
+        "Status",
+        "select",
+        ["active", "inactive"],
+        c.status || "active",
+      ],
+      [
+        "nextFollowUp",
+        "Next follow-up",
+        "date",
+        "",
+        c.next_follow_up ? String(c.next_follow_up).slice(0, 10) : "",
+      ],
+      ["notes", "Notes", "textarea", "Goals, injuries, preferences", c.notes || ""],
+    ],
+    submit: async (v) => {
+      const name = v.name.trim();
+      if (!name) throw new Error("A client needs a name");
+      const body = {
+        name,
+        email: v.email.trim(),
+        phone: v.phone.trim(),
+        serviceType: v.serviceType,
+        status: v.status,
+        nextFollowUp: v.nextFollowUp || null,
+        notes: v.notes.trim(),
+      };
+      if (String(c.id).startsWith("local-")) {
+        Object.assign(c, body, {
+          service_type: body.serviceType,
+          next_follow_up: body.nextFollowUp,
+        });
+        writeLocal("taskdash_clients", state.clients);
+      } else {
+        await getJSON(`/api/clients?id=${encodeURIComponent(c.id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        await loadClients();
+      }
+      renderClients();
+      renderDashboard();
+      toast("Client updated");
+    },
+  });
+}
+async function deleteClient(c) {
+  const count = state.sessions.filter(
+    (s) => String(s.client_id) === String(c.id),
+  ).length;
+  const warning = count
+    ? `Delete ${c.name} and their ${count} logged session${count === 1 ? "" : "s"}? Linked programs are kept but unlinked. This can't be undone.`
+    : `Delete ${c.name}? This can't be undone.`;
+  if (!confirm(warning)) return;
+  try {
+    if (!String(c.id).startsWith("local-"))
+      await getJSON(`/api/clients?id=${encodeURIComponent(c.id)}`, {
+        method: "DELETE",
+      });
+    state.clients = state.clients.filter((x) => x !== c);
+    state.sessions = state.sessions.filter(
+      (s) => String(s.client_id) !== String(c.id),
+    );
+    writeLocal("taskdash_clients", state.clients);
+    await loadPrograms();
+    renderClients();
+    renderPrograms();
+    renderDashboard();
+    toast("Client deleted");
+  } catch (err) {
+    toast(err.message || "Could not delete client");
+  }
 }
 function renderInbox() {
   const filtered = state.mail.filter(
@@ -1843,13 +1953,19 @@ function eventSteps(raw) {
   });
 }
 function renderEvents() {
+  document
+    .querySelectorAll(".draft-panel[open]")
+    .forEach((d) => state.openDrafts.add(d.closest(".event-card").dataset.id));
+  document
+    .querySelectorAll(".draft-panel:not([open])")
+    .forEach((d) => state.openDrafts.delete(d.closest(".event-card").dataset.id));
   const list = state.events.map(normalizeEvent).sort((a, b) => a.date - b.date);
   $("#eventBoard").innerHTML = list.length
     ? list
         .map((e) => {
           const steps = eventSteps(e.raw),
             compressed = e.days >= 0 && e.days < 14;
-          return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)} · ${steps.filter((s) => s.done).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${fmtDate(s.due, { short: true })}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div><span class="step-state ${s.done ? "" : s.compressed ? "now" : s.delta < 0 ? "overdue" : ""}">${s.done ? "DONE" : s.compressed ? "DO NOW" : s.delta < 0 ? "OVERDUE" : s.delta === 0 ? "TODAY" : `${s.delta}D`}</span></div>`).join("")}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div></article>`;
+          return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${fmtDate(s.due, { short: true })}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div><span class="step-state ${s.done ? "" : s.compressed ? "now" : s.delta < 0 ? "overdue" : ""}">${s.done ? "DONE" : s.compressed ? "DO NOW" : s.delta < 0 ? "OVERDUE" : s.delta === 0 ? "TODAY" : `${s.delta}D`}</span></div>`).join("")}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${draftPanelHTML(e.raw, steps)}</article>`;
         })
         .join("")
     : '<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>';
@@ -1862,45 +1978,228 @@ function openEventDialog() {
     fields: [
       ["name", "Event name", "text", "e.g. Press Pause"],
       ["date", "Event date", "date", ""],
+      ["startTime", "Start time", "time", ""],
+      ["endTime", "End time", "time", ""],
+      ["location", "Location", "text", "e.g. Hooper Wellness Center"],
       [
         "pillar",
         "Exos pillar",
         "select",
         ["Movement", "Mindset", "Nutrition", "Recovery"],
       ],
+      [
+        "description",
+        "What's happening",
+        "textarea",
+        "Who it's for, what they'll do, and the hook. The drafts are written from this.",
+      ],
       ["attendance", "Expected attendance", "number", "20"],
+      ["equipment", "Equipment needed", "text", "", "1x Table, 2x Chairs"],
+      ["link", "Registration or info link", "url", "Optional"],
+      ["catering", "Needs catering", "checkbox", false],
+      ["cateringBudget", "Catering budget", "text", "e.g. Approximately $450"],
+      [
+        "menuIdeas",
+        "Menu ideas",
+        "textarea",
+        "Optional. Leave blank and the draft suggests a menu that fits the pillar.",
+      ],
       ["vendor", "New vendor / no SOP", "checkbox", false],
     ],
     submit: async (v) => {
+      const name = v.name.trim();
+      if (!name) throw new Error("Give the event a name");
+      if (!v.date) throw new Error("Choose the event date");
+      if (v.startTime && v.endTime && v.endTime <= v.startTime)
+        throw new Error("End time must be after start time");
       const body = {
-        name: v.name,
+        name,
         date: v.date,
+        startTime: v.startTime || null,
+        endTime: v.endTime || null,
+        location: v.location.trim(),
         pillar: v.pillar,
+        description: v.description.trim(),
         expectedAttendance: Number(v.attendance) || null,
+        equipment: v.equipment.trim(),
+        eventLink: v.link.trim(),
+        cateringNeeded: !!v.catering,
+        cateringBudget: v.catering ? v.cateringBudget.trim() : "",
+        menuIdeas: v.catering ? v.menuIdeas.trim() : "",
         needsVendor: !!v.vendor,
       };
+      let created = null;
       try {
-        await getJSON("/api/events", {
+        created = await getJSON("/api/events", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
         await loadEvents();
-      } catch {
+      } catch (err) {
+        if (state.authRequired || /\((400|401|403)\)|required|must/i.test(err.message))
+          throw err;
         state.events.push({
           ...body,
           id: `local-${Date.now()}`,
           event_date: v.date,
           needs_vendor: body.needsVendor,
           pipeline_state: {},
+          drafts: {},
         });
         writeLocal("taskdash_events", state.events);
       }
+      if (created) state.openDrafts.add(String(created.id));
       renderEvents();
       renderDashboard();
-      toast("Event timeline built");
+      toast(created ? "Event timeline built · drafting messages" : "Server unreachable — event saved on this device only");
+      if (created) generateEventDrafts(created.id);
     },
   });
+}
+function eventTimeLabel(raw) {
+  const label = (t) => {
+    if (!/^\d{2}:\d{2}$/.test(String(t || ""))) return "";
+    const [h, m] = t.split(":").map(Number);
+    return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  };
+  const start = label(raw.start_time),
+    end = label(raw.end_time);
+  return start ? ` · ${start}${end ? ` – ${end}` : ""}` : "";
+}
+function eventDrafts(raw) {
+  let drafts = raw.drafts || {};
+  if (typeof drafts === "string")
+    try {
+      drafts = JSON.parse(drafts);
+    } catch {
+      drafts = {};
+    }
+  return drafts;
+}
+function applicableDrafts(raw) {
+  return DRAFT_TYPES.filter((t) => !t.needsCatering || raw.catering_needed);
+}
+function draftPanelHTML(raw, steps) {
+  const id = String(raw.id),
+    types = applicableDrafts(raw),
+    drafts = eventDrafts(raw),
+    ready = types.filter((t) => drafts[t.key]?.text).length,
+    busy = types.some((t) => state.draftStatus[`${id}:${t.key}`] === "pending");
+  if (id.startsWith("local-"))
+    return `<details class="draft-panel"><summary><span>Messaging drafts</span><em>Available once this event is saved to the server</em></summary></details>`;
+  return `<details class="draft-panel" ${state.openDrafts.has(id) ? "open" : ""}><summary><span>Messaging drafts</span><em data-draft-count>${busy ? "Drafting…" : `${ready} of ${types.length} ready`}</em></summary><div class="draft-list">${types.map((t) => draftSlotHTML(raw, t, steps)).join("")}</div><div class="draft-footer"><button class="secondary-btn" data-event-action="draft-all">${ready ? "Regenerate all drafts" : "Generate all drafts"}</button></div></details>`;
+}
+function draftSlotHTML(raw, type, steps = eventSteps(raw)) {
+  const id = String(raw.id),
+    draft = eventDrafts(raw)[type.key],
+    status = state.draftStatus[`${id}:${type.key}`] || "",
+    step = steps.find((s) => s.key === type.step),
+    due = step ? ` · ${step.done ? "done" : `due ${fmtDate(step.due, { short: true })}`}` : "";
+  let body;
+  if (status === "pending")
+    body = `<div class="draft-status">Drafting with Claude…</div>`;
+  else if (status.startsWith("error:"))
+    body = `<div class="draft-status error">${esc(status.slice(6))}</div>`;
+  else if (draft?.text)
+    body = `<textarea data-draft-text spellcheck="true" rows="${Math.min(18, Math.max(6, draft.text.split("\n").length + 1))}" aria-label="${attr(type.label)}">${esc(draft.text)}</textarea>`;
+  else body = `<div class="draft-status">Not drafted yet.</div>`;
+  const actions = draft?.text && status !== "pending"
+    ? `<button class="text-btn" data-draft-action="copy">Copy</button>${type.email ? '<button class="text-btn" data-draft-action="mail">Open in mail</button>' : ""}<button class="text-btn" data-draft-action="regen">Regenerate</button>`
+    : status === "pending"
+      ? ""
+      : `<button class="text-btn" data-draft-action="regen">${status ? "Retry" : "Generate"}</button>`;
+  return `<section class="draft" data-draft="${type.key}"><header><div><strong>${esc(type.label)}</strong><small>${esc(type.hint)}${due}${draft?.edited ? " · edited" : ""}</small></div><div class="draft-actions">${actions}</div></header>${body}</section>`;
+}
+function refreshDraftSlot(eventId, key) {
+  const raw = state.events.find((x) => String(x.id) === String(eventId)),
+    card = document.querySelector(`.event-card[data-id="${CSS.escape(String(eventId))}"]`);
+  if (!raw || !card) return;
+  const type = DRAFT_TYPES.find((t) => t.key === key),
+    slot = card.querySelector(`[data-draft="${key}"]`);
+  if (type && slot) slot.outerHTML = draftSlotHTML(raw, type);
+  const types = applicableDrafts(raw),
+    ready = types.filter((t) => eventDrafts(raw)[t.key]?.text).length,
+    busy = types.some((t) => state.draftStatus[`${raw.id}:${t.key}`] === "pending"),
+    count = card.querySelector("[data-draft-count]");
+  if (count) count.textContent = busy ? "Drafting…" : `${ready} of ${types.length} ready`;
+}
+async function generateDraft(eventId, key) {
+  const statusKey = `${eventId}:${key}`;
+  state.draftStatus[statusKey] = "pending";
+  refreshDraftSlot(eventId, key);
+  try {
+    const result = await getJSON(
+      `/api/events?action=draft&id=${encodeURIComponent(eventId)}&key=${encodeURIComponent(key)}`,
+      { method: "POST" },
+    );
+    const raw = state.events.find((x) => String(x.id) === String(eventId));
+    if (raw) raw.drafts = { ...eventDrafts(raw), [key]: result.draft };
+    delete state.draftStatus[statusKey];
+  } catch (err) {
+    state.draftStatus[statusKey] = `error:${err.message || "Could not draft this message"}`;
+  }
+  refreshDraftSlot(eventId, key);
+}
+async function generateEventDrafts(eventId) {
+  const raw = state.events.find((x) => String(x.id) === String(eventId));
+  if (!raw) return;
+  await Promise.all(applicableDrafts(raw).map((t) => generateDraft(eventId, t.key)));
+  const failed = applicableDrafts(raw).filter((t) =>
+    String(state.draftStatus[`${eventId}:${t.key}`] || "").startsWith("error:"),
+  ).length;
+  toast(failed ? `${failed} draft${failed === 1 ? "" : "s"} failed — use Retry` : `Drafts ready for ${raw.name}`);
+}
+async function saveDraftEdit(e) {
+  const card = e.target.closest(".event-card"),
+    key = e.target.closest("[data-draft]")?.dataset.draft,
+    raw = state.events.find((x) => String(x.id) === card?.dataset.id);
+  if (!raw || !key) return;
+  const previous = eventDrafts(raw)[key] || {};
+  try {
+    const result = await getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        draft: { key, text: e.target.value, generatedAt: previous.generatedAt },
+      }),
+    });
+    raw.drafts = { ...eventDrafts(raw), [key]: result.draft };
+    const small = e.target.closest("[data-draft]").querySelector("header small");
+    if (small && !small.textContent.endsWith(" · edited")) small.textContent += " · edited";
+    toast("Draft saved");
+  } catch (err) {
+    toast(`Draft not saved — ${err.message}`);
+  }
+}
+async function draftAction(b) {
+  const card = b.closest(".event-card"),
+    key = b.closest("[data-draft]").dataset.draft,
+    raw = state.events.find((x) => String(x.id) === card.dataset.id);
+  if (!raw) return;
+  const textarea = card.querySelector(`[data-draft="${key}"] [data-draft-text]`),
+    value = textarea?.value || "";
+  if (b.dataset.draftAction === "regen") {
+    if (eventDrafts(raw)[key]?.edited && !confirm("Replace your edited draft with a new one?"))
+      return;
+    return generateDraft(raw.id, key);
+  }
+  if (b.dataset.draftAction === "copy") {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast("Copied");
+    } catch {
+      textarea.select();
+      toast("Press ⌘C to copy");
+    }
+    return;
+  }
+  if (b.dataset.draftAction === "mail") {
+    const match = value.match(/^Subject:\s*(.*)\n+/i),
+      subject = match ? match[1].trim() : raw.name,
+      body = match ? value.slice(match[0].length) : value;
+    location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
 }
 async function eventStepChange(e) {
   const card = e.target.closest(".event-card");
@@ -1928,8 +2227,21 @@ async function eventStepChange(e) {
   }
 }
 async function eventAction(e) {
+  const draftButton = e.target.closest("[data-draft-action]");
+  if (draftButton) return draftAction(draftButton);
+  const all = e.target.closest('[data-event-action="draft-all"]');
+  if (all) {
+    const raw = state.events.find(
+      (x) => String(x.id) === all.closest(".event-card").dataset.id,
+    );
+    const edited = applicableDrafts(raw).some((t) => eventDrafts(raw)[t.key]?.edited);
+    if (edited && !confirm("Regenerate every draft? Your edits will be replaced."))
+      return;
+    return generateEventDrafts(raw.id);
+  }
   const b = e.target.closest('[data-event-action="delete"]');
   if (!b) return;
+  if (!confirm("Delete this event and its drafts?")) return;
   const card = b.closest(".event-card"),
     id = card.dataset.id;
   state.events = state.events.filter((x) => String(x.id) !== id);
@@ -2122,7 +2434,7 @@ function fieldHTML(f) {
     return `<label class="${full ? "full" : ""}">${label}<select name="${name}" required>${value
       .map((v) => {
         const bits = String(v).split("|");
-        return `<option value="${attr(v)}">${esc(bits.length > 1 ? bits.slice(1).join("|") : v)}</option>`;
+        return `<option value="${attr(v)}" ${defaultValue != null && String(v) === String(defaultValue) ? "selected" : ""}>${esc(bits.length > 1 ? bits.slice(1).join("|") : v)}</option>`;
       })
       .join("")}</select></label>`;
   if (type === "textarea")
