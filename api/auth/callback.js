@@ -2,20 +2,9 @@
 // tokens and store them in Neon (single row, this is a personal single-user app).
 // Never logs or returns the tokens to the browser.
 
-const { Pool } = require("pg");
+const { getPool } = require("../../lib/db");
 const { OWNER_EMAIL, WORK_EMAIL } = require("../../lib/google");
 const { sessionCookie, isOwnerSession } = require("../../lib/session");
-let pool;
-function getPool() {
-  if (!pool) {
-    if (!process.env.neon) throw new Error("neon env var is not set");
-    pool = new Pool({
-      connectionString: process.env.neon,
-      ssl: { rejectUnauthorized: false },
-    });
-  }
-  return pool;
-}
 
 module.exports = async (req, res) => {
   const { code, error, state } = req.query;

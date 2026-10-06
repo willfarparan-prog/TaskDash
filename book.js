@@ -60,8 +60,8 @@ async function loadAvailability() {
 }
 
 function renderDays() {
-  const visible = state.days.filter((day, index) => index < 14);
-  $("#dayStrip").innerHTML = visible
+  // Offer every day inside the owner's "book ahead" window, not a fixed 14.
+  $("#dayStrip").innerHTML = state.days
     .map((day) => {
       const date = new Date(`${day.date}T12:00:00`),
         parts = new Intl.DateTimeFormat("en-US", {

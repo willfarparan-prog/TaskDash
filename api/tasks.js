@@ -2,19 +2,13 @@
 // Reads/writes Postgres via the neon env var (set in Vercel Project Settings → Environment Variables).
 // Never hardcode the connection string here — Vercel injects it at runtime.
 
-const { Pool } = require("pg");
 const { requireOwnerSession } = require("../lib/session");
-let pool;
-function getPool() {
-  if (!pool) {
-    if (!process.env.neon) throw new Error("neon env var is not set");
-    pool = new Pool({
-      connectionString: process.env.neon,
-      ssl: { rejectUnauthorized: false },
-    });
-  }
-  return pool;
-}
+const { getPool } = require("../lib/db");
+
+const clean = (value, max) =>
+  String(value || "")
+    .trim()
+    .slice(0, max);
 
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json");
@@ -45,7 +39,8 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === "POST") {
-      const { type, dayKey, name } = req.body || {};
+      const { type, dayKey } = req.body || {};
+      const name = clean(req.body?.name, 200);
       if (type === "daily_task") {
         if (!dayKey || !name)
           return res.status(400).json({ error: "dayKey and name required" });
@@ -80,8 +75,9 @@ module.exports = async (req, res) => {
     if (req.method === "PATCH") {
       const { kind, id, done, taskId, periodKey } = req.body || {};
       if (kind === "daily_task") {
+        if (!id) return res.status(400).json({ error: "id required" });
         await db.query("update daily_tasks set done=$1 where id=$2", [
-          done,
+          !!done,
           id,
         ]);
         return res.status(200).json({ ok: true });

@@ -303,14 +303,8 @@ function wireControls() {
   $("#calendarConnect").onclick = () => (location.href = "/api/auth/start");
   $("#workCalendarWeekConnect").onclick = () =>
     (location.href = "/api/auth/start?account=work");
-  $("#prevWeek").onclick = () => {
-    state.calendarOffset--;
-    renderCalendar();
-  };
-  $("#nextWeek").onclick = () => {
-    state.calendarOffset++;
-    renderCalendar();
-  };
+  $("#prevWeek").onclick = () => shiftCalendarWeek(-1);
+  $("#nextWeek").onclick = () => shiftCalendarWeek(1);
   $("#openBookingPage").onclick = () =>
     window.open(state.scheduler.publicUrl, "_blank", "noopener");
   $("#copyBookingLink").onclick = copyBookingLink;
@@ -473,9 +467,17 @@ async function loadPrograms() {
     state.programs = readLocal("taskdash_programs", []);
   }
 }
+async function shiftCalendarWeek(step) {
+  state.calendarOffset += step;
+  renderCalendar();
+  await loadCalendar();
+  renderCalendar();
+}
 async function loadCalendar() {
   try {
-    const d = await getJSON("/api/calendar-week");
+    const d = await getJSON(
+      `/api/calendar-week?start=${ymd(weekStart(state.calendarOffset))}`,
+    );
     state.calendar = d.events || [];
     state.calendarConnected = !!d.connected;
     state.calendarEmail = d.accountEmail || null;
@@ -918,6 +920,8 @@ function openBlockDialog() {
       ["source", "Source", "select", ["Adobe", "Exos", "Personal"]],
     ],
     submit: async (v) => {
+      if (!v.title.trim()) throw new Error("Give the block a title");
+      if (v.end <= v.start) throw new Error("End time must be after start time");
       await getJSON("/api/calendar-manual", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1087,13 +1091,17 @@ async function cancelBooking(event) {
   if (!confirm("Cancel this booking and remove its work calendar event?"))
     return;
   try {
-    await getJSON(
+    const result = await getJSON(
       `/api/calendar-manual?resource=booking&id=${encodeURIComponent(row.dataset.bookingId)}`,
       { method: "DELETE" },
     );
     await loadScheduler();
     renderScheduler();
-    toast("Booking cancelled");
+    toast(
+      result.calendarRemoved === false
+        ? "Booking cancelled, but its work calendar event could not be removed. Delete it in Google Calendar."
+        : "Booking cancelled",
+    );
   } catch (error) {
     toast(error.message);
   }
@@ -1154,9 +1162,11 @@ function openProgramDialog() {
       ["weeks", "Weeks", "number", "4"],
     ],
     submit: async (v) => {
+      const name = v.name.trim();
+      if (!name) throw new Error("Give the program a name to continue");
       const linked = clientChoice(v.client),
         payload = {
-          name: v.name,
+          name,
           ...linked,
           goal: v.goal,
           daysPerWeek: Number(v.days),
@@ -1181,14 +1191,17 @@ function openProgramDialog() {
           body: JSON.stringify(payload),
         });
         await loadPrograms();
-      } catch {
+      } catch (err) {
+        if (state.authRequired || /\((400|401|403)\)|required/i.test(err.message))
+          throw err; // a rejection, not an outage: let the dialog show it
         saved = local;
         state.programs.unshift(saved);
         writeLocal("taskdash_programs", state.programs);
+        toast("Server unreachable — program saved on this device only");
       }
       renderPrograms();
       openProgram(saved.id);
-      toast("Program created");
+      if (!String(saved.id).startsWith("local-")) toast("Program created");
     },
   });
 }
@@ -1428,7 +1441,13 @@ async function saveProgram() {
   const p = state.programs.find((x) => String(x.id) === state.activeProgram);
   if (!p) return;
   const root = $("#programEditor"),
-    content = collectProgram(),
+    titleInput = $('[data-meta="name"]', root);
+  if (!titleInput.value.trim()) {
+    titleInput.focus();
+    toast("A program needs a name before it can be saved");
+    return;
+  }
+  const content = collectProgram(),
     clientId = $('[data-meta="clientId"]', root)?.value || null,
     client = state.clients.find((c) => String(c.id) === String(clientId)),
     body = {
@@ -1462,8 +1481,12 @@ async function saveProgram() {
     );
     Object.assign(p, saved);
     await loadPrograms();
-  } catch {
+  } catch (err) {
     writeLocal("taskdash_programs", state.programs);
+    renderPrograms();
+    openProgram(p.id);
+    toast(`Saved on this device only — ${err.message}`);
+    return;
   }
   renderPrograms();
   openProgram(p.id);

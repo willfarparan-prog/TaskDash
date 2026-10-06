@@ -4,7 +4,8 @@
   "private": true,
   "description": "William Farparan's private coaching and operations dashboard",
   "scripts": {
-    "check": "node scripts/check.js"
+    "check": "node scripts/check.js && node --test tests/*.test.js",
+    "test": "node --test tests/*.test.js"
   },
   "engines": {
     "node": "22.x"

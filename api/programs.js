@@ -177,7 +177,7 @@ module.exports = async (req, res) => {
         trackUsage("Task Dash API", "Copy stock program");
         return res.status(201).json(result.rows[0]);
       }
-      if (!body.name)
+      if (!clean(body.name, 120))
         return res.status(400).json({ error: "Program name is required" });
       const days = clamp(body.daysPerWeek, 1, 7, 3),
         weeks = clamp(body.weeks, 1, 8, 4),
@@ -221,7 +221,7 @@ module.exports = async (req, res) => {
             ? JSON.stringify(safeContent(body.content, days || 3, weeks || 4))
             : null,
           body.status ? status(body.status) : null,
-          body.name ? clean(body.name, 120) : null,
+          clean(body.name, 120) || null,
           !!client,
           client?.id || null,
           client?.name || null,

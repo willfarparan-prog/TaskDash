@@ -36,6 +36,13 @@ module.exports = async (req, res) => {
         return res
           .status(400)
           .json({ error: "Client, session type, and date are required" });
+      if (!Number.isInteger(Number(clientId)))
+        return res.status(400).json({ error: "Choose a valid client" });
+      const exists = await db.query("select 1 from clients where id=$1", [
+        clientId,
+      ]);
+      if (!exists.rows.length)
+        return res.status(404).json({ error: "Client not found" });
       const result = await db.query(
         `insert into client_sessions (client_id, session_type, session_date, duration_minutes, notes, next_session)
          values ($1,$2,$3,$4,$5,$6) returning *`,
@@ -58,8 +65,11 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === "POST") {
-      const { name, email, phone, serviceType, nextFollowUp, notes } =
+      const { email, phone, serviceType, nextFollowUp, notes } =
         req.body || {};
+      const name = String(req.body?.name || "")
+        .trim()
+        .slice(0, 120);
       if (!name)
         return res.status(400).json({ error: "Client name is required" });
       const result = await db.query(

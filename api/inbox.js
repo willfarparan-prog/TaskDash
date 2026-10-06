@@ -18,6 +18,16 @@ function shortSender(value) {
   );
 }
 
+function shortDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-US", {
+    timeZone: "America/Los_Angeles",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
@@ -60,10 +70,7 @@ module.exports = async (req, res) => {
           from: shortSender(headerValue(headers, "From")),
           subject: headerValue(headers, "Subject") || "(no subject)",
           snippet: item.snippet || "",
-          received: new Date(headerValue(headers, "Date")).toLocaleDateString(
-            "en-US",
-            { month: "short", day: "numeric" },
-          ),
+          received: shortDate(headerValue(headers, "Date")),
         });
       }
       trackUsage("Google Gmail", "Load priority inbox", "ok", {

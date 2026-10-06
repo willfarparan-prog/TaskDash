@@ -5,13 +5,64 @@ const {
   getVerifiedGoogleToken,
 } = require("../lib/google");
 const { requireOwnerSession } = require("../lib/session");
+const { pacificToday, pacificInstant } = require("../lib/scheduler");
 
-function mondayOf(date) {
-  const day = date.getDay();
-  const result = new Date(date);
-  result.setDate(date.getDate() + (day === 0 ? -6 : 1 - day));
-  result.setHours(0, 0, 0, 0);
-  return result;
+// Weeks run Monday–Sunday in Pacific time, whatever timezone the server uses.
+function addDays(key, amount) {
+  const d = new Date(`${key}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + amount);
+  return d.toISOString().slice(0, 10);
+}
+
+function mondayKey(key) {
+  const day = new Date(`${key}T12:00:00Z`).getUTCDay();
+  return addDays(key, day === 0 ? -6 : 1 - day);
+}
+
+// Reads one Google account's primary calendar for the week. Never throws:
+// a failed account just shows as not connected so the page still loads.
+async function loadGoogleWeek(kind, scope, source, weekStart, weekEnd) {
+  const label = kind === "work" ? "Load work week" : "Load week";
+  try {
+    const token = await getVerifiedGoogleToken(kind);
+    if (!token || !String(token.scope || "").includes(scope))
+      return { connected: false, events: [] };
+    const params = new URLSearchParams({
+      timeMin: weekStart.toISOString(),
+      timeMax: weekEnd.toISOString(),
+      singleEvents: "true",
+      orderBy: "startTime",
+      maxResults: "250",
+    });
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
+      { headers: { Authorization: `Bearer ${token.access_token}` } },
+    );
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || "read failed");
+    trackUsage("Google Calendar", label, "ok", { calls: 1 });
+    const events = (data.items || [])
+      .filter(
+        (e) =>
+          e.status !== "cancelled" &&
+          e.start &&
+          (e.start.dateTime || e.start.date) &&
+          // Booking events Task Dash created already show as bookings.
+          !e.extendedProperties?.private?.taskDashBooking,
+      )
+      .map((e) => ({
+        id: `${source}-${e.id}`,
+        title: e.summary || "(untitled)",
+        start: e.start.dateTime || e.start.date,
+        end: e.end?.dateTime || e.end?.date || e.start.dateTime || e.start.date,
+        allDay: !e.start.dateTime,
+        source,
+      }));
+    return { connected: true, events };
+  } catch (_) {
+    trackUsage("Google Calendar", label, "error");
+    return { connected: false, events: [] };
+  }
 }
 
 module.exports = async (req, res) => {
@@ -21,103 +72,26 @@ module.exports = async (req, res) => {
   try {
     await ensureWorkspaceSchema();
     const db = getPool();
-    const weekStart = mondayOf(new Date());
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 7);
-    let googleEvents = [];
-    let token = null;
-
-    try {
-      token = await getVerifiedGoogleToken();
-      if (token && String(token.scope || "").includes("calendar.readonly")) {
-        const params = new URLSearchParams({
-          timeMin: weekStart.toISOString(),
-          timeMax: weekEnd.toISOString(),
-          singleEvents: "true",
-          orderBy: "startTime",
-          maxResults: "100",
-        });
-        const response = await fetch(
-          `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
-          { headers: { Authorization: `Bearer ${token.access_token}` } },
-        );
-        const data = await response.json();
-        if (response.ok) {
-          googleEvents = (data.items || [])
-            .filter((e) => e.start && (e.start.dateTime || e.start.date))
-            .map((e) => ({
-              id: e.id,
-              title: e.summary || "(untitled)",
-              start: e.start.dateTime || e.start.date,
-              end:
-                e.end?.dateTime ||
-                e.end?.date ||
-                e.start.dateTime ||
-                e.start.date,
-              allDay: !e.start.dateTime,
-              source: "personal",
-            }));
-          trackUsage("Google Calendar", "Load week", "ok", { calls: 1 });
-        }
-      }
-    } catch (_) {
-      token = null;
-      trackUsage("Google Calendar", "Load week", "error");
-    }
-
-    let workEvents = [];
-    let workToken = null;
-    try {
-      workToken = await getVerifiedGoogleToken("work");
-      if (workToken && String(workToken.scope || "").includes("calendar")) {
-        const params = new URLSearchParams({
-          timeMin: weekStart.toISOString(),
-          timeMax: weekEnd.toISOString(),
-          singleEvents: "true",
-          orderBy: "startTime",
-          maxResults: "100",
-        });
-        const response = await fetch(
-          `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
-          { headers: { Authorization: `Bearer ${workToken.access_token}` } },
-        );
-        const data = await response.json();
-        if (response.ok) {
-          workEvents = (data.items || [])
-            // Booking events created by Task Dash already show as bookings.
-            .filter(
-              (e) =>
-                e.start &&
-                (e.start.dateTime || e.start.date) &&
-                !e.extendedProperties?.private?.taskDashBooking,
-            )
-            .map((e) => ({
-              id: `w${e.id}`,
-              title: e.summary || "(untitled)",
-              start: e.start.dateTime || e.start.date,
-              end:
-                e.end?.dateTime ||
-                e.end?.date ||
-                e.start.dateTime ||
-                e.start.date,
-              allDay: !e.start.dateTime,
-              source: "exos",
-            }));
-          trackUsage("Google Calendar", "Load work week", "ok", { calls: 1 });
-        }
-      }
-    } catch (_) {
-      workToken = null;
-      trackUsage("Google Calendar", "Load work week", "error");
-    }
+    const requested = String(req.query.start || "");
+    const startKey = mondayKey(
+      /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : pacificToday(),
+    );
+    const endKey = addDays(startKey, 7);
+    const weekStart = pacificInstant(startKey, "00:00");
+    const weekEnd = pacificInstant(endKey, "00:00");
+    const [personal, work] = await Promise.all([
+      loadGoogleWeek("owner", "calendar.readonly", "personal", weekStart, weekEnd),
+      loadGoogleWeek("work", "calendar", "exos", weekStart, weekEnd),
+    ]);
+    const googleEvents = personal.events;
+    const workEvents = work.events;
+    const token = personal.connected;
+    const workToken = work.connected;
 
     const manualResult = await db.query(
       `select id, title, block_date, start_time, end_time, source from manual_blocks
        where block_date >= $1 and block_date < $2 order by block_date, start_time`,
-      [
-        weekStart.toISOString().slice(0, 10),
-        weekEnd.toISOString().slice(0, 10),
-      ],
+      [startKey, endKey],
     );
     const manual = manualResult.rows.map((row) => {
       const date =
@@ -147,11 +121,11 @@ module.exports = async (req, res) => {
       source: "booking",
     }));
     return res.status(200).json({
-      connected: !!token,
+      connected: token,
       accountEmail: token ? OWNER_EMAIL : null,
-      workConnected: !!workToken,
+      workConnected: workToken,
       workEmail: workToken ? WORK_EMAIL : null,
-      weekStart: weekStart.toISOString().slice(0, 10),
+      weekStart: startKey,
       events: [...googleEvents, ...workEvents, ...manual, ...bookings],
     });
   } catch (err) {

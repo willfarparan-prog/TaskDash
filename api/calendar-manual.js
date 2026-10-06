@@ -7,6 +7,7 @@ const {
   normalizeSchedule,
   buildAvailability,
   publicSettings,
+  pacificInstant,
 } = require("../lib/scheduler");
 
 const json = (res, status, value) => res.status(status).json(value);
@@ -25,28 +26,44 @@ async function getSchedule(db) {
   };
 }
 
+// All-day events carry a bare date; treat it as Pacific midnight, not UTC.
+function eventBound(value, fallback) {
+  if (value?.dateTime) return value.dateTime;
+  if (value?.date) return pacificInstant(value.date, "00:00").toISOString();
+  return fallback;
+}
+
 async function googleBusy(timeMin, timeMax) {
   const token = await getVerifiedGoogleToken("work");
   if (!token || !String(token.scope || "").includes("calendar.events"))
     return { connected: false, busy: [] };
-  const params = new URLSearchParams({
-    timeMin: timeMin.toISOString(),
-    timeMax: timeMax.toISOString(),
-    singleEvents: "true",
-    orderBy: "startTime",
-    maxResults: "250",
-  });
-  const response = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
-    { headers: { Authorization: `Bearer ${token.access_token}` } },
-  );
-  const data = await response.json();
-  if (!response.ok)
-    throw new Error(data.error?.message || "Work calendar could not be read");
+  const items = [];
+  let pageToken = "";
+  // Page through results so a busy calendar can't hide conflicts past 250.
+  for (let page = 0; page < 6; page += 1) {
+    const params = new URLSearchParams({
+      timeMin: timeMin.toISOString(),
+      timeMax: timeMax.toISOString(),
+      singleEvents: "true",
+      orderBy: "startTime",
+      maxResults: "250",
+    });
+    if (pageToken) params.set("pageToken", pageToken);
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
+      { headers: { Authorization: `Bearer ${token.access_token}` } },
+    );
+    const data = await response.json();
+    if (!response.ok)
+      throw new Error(data.error?.message || "Work calendar could not be read");
+    items.push(...(data.items || []));
+    pageToken = data.nextPageToken || "";
+    if (!pageToken) break;
+  }
   trackUsage("Google Work Calendar", "Check booking availability");
   return {
     connected: true,
-    busy: (data.items || [])
+    busy: items
       .filter(
         (event) =>
           event.status !== "cancelled" &&
@@ -54,14 +71,10 @@ async function googleBusy(timeMin, timeMax) {
           event.start &&
           (event.start.dateTime || event.start.date),
       )
-      .map((event) => ({
-        start: event.start.dateTime || `${event.start.date}T00:00:00Z`,
-        end:
-          event.end?.dateTime ||
-          (event.end?.date
-            ? `${event.end.date}T00:00:00Z`
-            : event.start.dateTime),
-      })),
+      .map((event) => {
+        const start = eventBound(event.start);
+        return { start, end: eventBound(event.end, start) };
+      }),
   };
 }
 
@@ -137,6 +150,41 @@ async function createCalendarEvent(booking) {
   return { status: "synced", id: data.id };
 }
 
+// Bookings whose work-calendar event never got created (calendar not yet
+// connected, or Google errored) are retried whenever the owner opens Scheduler.
+async function retryUnsyncedBookings(db) {
+  const pending = await db.query(
+    `select b.id, b.booking_code, b.visitor_name, b.visitor_email, b.reason, b.notes, b.starts_at, b.ends_at
+     from booking_requests b
+     where b.status = 'confirmed' and b.starts_at > now()
+       and b.calendar_sync_status in ('pending','error','awaiting_connection')
+     order by b.starts_at limit 10`,
+  );
+  if (!pending.rows.length) return;
+  const { settings } = await getSchedule(db);
+  for (const row of pending.rows) {
+    try {
+      const sync = await createCalendarEvent({
+        visitorName: row.visitor_name,
+        visitorEmail: row.visitor_email || "",
+        reason: row.reason,
+        notes: row.notes || "",
+        bookingCode: row.booking_code,
+        startsAt: new Date(row.starts_at).toISOString(),
+        endsAt: new Date(row.ends_at).toISOString(),
+        location: settings.location,
+      });
+      if (sync.status !== "synced") break; // calendar still not connected
+      await db.query(
+        `update booking_requests set google_event_id=$1, calendar_sync_status='synced' where id=$2`,
+        [sync.id, row.id],
+      );
+    } catch (_) {
+      break;
+    }
+  }
+}
+
 async function book(req, res, db) {
   const body = req.body || {};
   if (body.website) return json(res, 201, { ok: true });
@@ -153,6 +201,15 @@ async function book(req, res, db) {
   if (visitorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(visitorEmail))
     return json(res, 400, {
       error: "Enter a valid email address or leave it blank.",
+    });
+
+  // Cheap flood guard for the public form: no more than 15 new bookings in 10 minutes.
+  const recent = await db.query(
+    `select count(*)::int n from booking_requests where created_at > now() - interval '10 minutes'`,
+  );
+  if (recent.rows[0].n >= 15)
+    return json(res, 429, {
+      error: "Too many bookings right now. Please try again in a few minutes.",
     });
 
   const availability = await publicAvailability(db);
@@ -240,6 +297,7 @@ module.exports = async (req, res) => {
     if (!requireOwnerSession(req, res)) return;
 
     if (req.method === "GET" && resource === "scheduler") {
+      await retryUnsyncedBookings(db).catch(() => {});
       const [{ settings, updatedAt }, bookings, token] = await Promise.all([
         getSchedule(db),
         db.query(
@@ -273,13 +331,22 @@ module.exports = async (req, res) => {
 
     if (req.method === "POST" && resource === "block") {
       const { title, date, start, end, source } = req.body || {};
-      if (!title || !date || !start || !end)
+      const blockTitle = clean(title, 120);
+      if (!blockTitle || !date || !start || !end)
         return json(res, 400, {
           error: "title, date, start, end are required",
         });
+      const time = /^([01]\d|2[0-3]):[0-5]\d$/;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !time.test(start) || !time.test(end))
+        return json(res, 400, { error: "Use a valid date and times." });
+      if (end <= start)
+        return json(res, 400, { error: "End time must be after start time." });
+      const blockSource = ["adobe", "exos", "personal"].includes(source)
+        ? source
+        : "adobe";
       const result = await db.query(
         `insert into manual_blocks (title, block_date, start_time, end_time, source) values ($1,$2,$3,$4,$5) returning id, title, block_date, start_time, end_time, source`,
-        [title, date, start, end, source || "adobe"],
+        [blockTitle, date, start, end, blockSource],
       );
       return json(res, 201, result.rows[0]);
     }
@@ -291,25 +358,34 @@ module.exports = async (req, res) => {
         `select google_event_id from booking_requests where id=$1`,
         [id],
       );
-      await db.query(
-        `update booking_requests set status='cancelled', calendar_sync_status='cancelled' where id=$1`,
-        [id],
-      );
-      const eventId = found.rows[0]?.google_event_id;
+      if (!found.rows.length)
+        return json(res, 404, { error: "Booking not found" });
+      const eventId = found.rows[0].google_event_id;
+      let calendarRemoved = true;
       if (eventId) {
         try {
           const token = await getVerifiedGoogleToken("work");
-          if (token)
-            await fetch(
+          if (!token) calendarRemoved = false;
+          else {
+            const del = await fetch(
               `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(eventId)}`,
               {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token.access_token}` },
               },
             );
-        } catch (_) {}
+            // 404/410 means the event is already gone, which is fine.
+            calendarRemoved = del.ok || del.status === 404 || del.status === 410;
+          }
+        } catch (_) {
+          calendarRemoved = false;
+        }
       }
-      return json(res, 200, { ok: true });
+      await db.query(
+        `update booking_requests set status='cancelled', calendar_sync_status=$2 where id=$1`,
+        [id, calendarRemoved ? "cancelled" : "cancel_failed"],
+      );
+      return json(res, 200, { ok: true, calendarRemoved });
     }
 
     if (req.method === "DELETE") {

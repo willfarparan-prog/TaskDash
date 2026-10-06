@@ -2,22 +2,11 @@
 // The API key is read from ANTHROPIC_API_KEY server-side and never reaches the browser.
 // Claude can call tools to actually create tasks/events - not just talk about them.
 
-const { Pool } = require("pg");
 const { requireOwnerSession } = require("../lib/session");
-const { trackUsage } = require("../lib/db");
-let pool;
-function getPool() {
-  if (!pool) {
-    if (!process.env.neon) throw new Error("neon env var is not set");
-    pool = new Pool({
-      connectionString: process.env.neon,
-      ssl: { rejectUnauthorized: false },
-    });
-  }
-  return pool;
-}
+const { getPool, trackUsage } = require("../lib/db");
+const { pacificToday } = require("../lib/scheduler");
 
-const MODEL = "claude-sonnet-5";
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 
 const TOOLS = [
   {
@@ -90,7 +79,8 @@ async function runTool(name, input) {
     return { ok: true, id };
   }
   if (name === "add_daily_task") {
-    const today = new Date().toISOString().slice(0, 10);
+    // The dashboard's "today" is Pacific, not UTC (UTC rolls over at 5pm).
+    const today = pacificToday();
     const r = await db.query(
       `insert into daily_tasks (day_key, name) values ($1,$2) returning id`,
       [today, input.name],
@@ -98,6 +88,8 @@ async function runTool(name, input) {
     return { ok: true, id: r.rows[0].id };
   }
   if (name === "add_event") {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(input.date || "")))
+      return { ok: false, error: "date must be YYYY-MM-DD" };
     const r = await db.query(
       `insert into events (name, event_date, pillar, needs_vendor) values ($1,$2,$3,$4) returning id`,
       [input.name, input.date, input.pillar || null, !!input.needsVendor],
@@ -206,6 +198,8 @@ module.exports = async (req, res) => {
   try {
     const { messages = [], context = {} } = req.body || {};
     const trimmed = messages.slice(-12).filter((m) => m && m.content);
+    // The API needs the conversation to open with the user's turn.
+    while (trimmed.length && trimmed[0].role === "bot") trimmed.shift();
     if (!trimmed.length) return res.status(400).json({ error: "no messages" });
 
     let convo = trimmed.map((m) => ({

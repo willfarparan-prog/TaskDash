@@ -16,8 +16,11 @@ module.exports = async (req, res) => {
       return res.status(200).json({ events: result.rows });
     }
     if (req.method === "POST") {
-      const { name, date, pillar, needsVendor, expectedAttendance, notes } =
+      const { date, pillar, needsVendor, expectedAttendance, notes } =
         req.body || {};
+      const name = String(req.body?.name || "")
+        .trim()
+        .slice(0, 160);
       if (!name || !date)
         return res
           .status(400)
@@ -50,6 +53,8 @@ module.exports = async (req, res) => {
           id,
         ],
       );
+      if (!result.rows[0])
+        return res.status(404).json({ error: "Event not found" });
       trackUsage("Task Dash API", "Update event timeline");
       return res.status(200).json(result.rows[0]);
     }
