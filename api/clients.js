@@ -6,6 +6,12 @@ const ONBOARDING_STEPS = ["invoice", "schedule", "program", "programPrinted", "m
 const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""));
 
 module.exports = async (req, res) => {
+  // The Hobby plan allows 12 functions, so meal plans and live-session logs
+  // share this one; vercel.json rewrites their URLs here.
+  if (req.query.resource === "meal-plans")
+    return require("../lib/mealPlansApi")(req, res);
+  if (req.query.resource === "workouts")
+    return require("../lib/workoutsApi")(req, res);
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
   if (!requireOwnerSession(req, res)) return;

@@ -30,8 +30,18 @@
     "api/events.js": {
       "maxDuration": 60
     },
-    "api/meal-plans.js": {
+    "api/clients.js": {
       "maxDuration": 300
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/meal-plans",
+      "destination": "/api/clients?resource=meal-plans"
+    },
+    {
+      "source": "/api/workouts",
+      "destination": "/api/clients?resource=workouts"
+    }
+  ]
 }

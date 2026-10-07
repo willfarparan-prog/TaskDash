@@ -105,8 +105,8 @@ test("generating a meal plan saves the answers, the plan and the checklist step"
     },
   });
   process.env.ANTHROPIC_API_KEY = "test";
-  delete require.cache[require.resolve("../api/meal-plans.js")];
-  const handler = require("../api/meal-plans.js");
+  delete require.cache[require.resolve("../lib/mealPlansApi.js")];
+  const handler = require("../lib/mealPlansApi.js");
   const { code, body } = await call(handler, {
     method: "POST",
     body: { clientId: 7, dayKey: "2026-10-07", intake: { sex: "Man", age: "30", bogus: 1 } },
