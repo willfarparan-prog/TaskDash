@@ -251,13 +251,17 @@
                     <span class="kicker">OPERATING QUEUE</span>
                     <h2>Tasks needed today</h2>
                   </div>
-                  <span class="count-label" id="todayTaskCount">0 items</span>
+                  <div class="task-heading-tools">
+                    <span class="count-label" id="todayTaskCount">0 items</span>
+                    <button class="text-btn" id="taskManage">Manage tasks</button>
+                  </div>
                 </div>
                 <div class="quick-task">
                   <input
                     id="taskInput"
-                    placeholder="Add a task for today"
-                  /><button id="taskAdd">Add task</button>
+                    placeholder="Add a task, or describe a repeating one for Smart add"
+                  /><button id="taskAdd">Add task</button
+                  ><button id="taskSmart" class="smart-add" title="Claude fills in the schedule from your sentence">✦ Smart add</button>
                 </div>
                 <div class="task-list" id="taskList"></div>
               </article>
@@ -904,6 +908,7 @@
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="mobile-scrim" id="mobileScrim"></div>
+    <script src="/task-schedule.js" defer></script>
     <script src="/app.js" defer></script>
   </body>
 </html>

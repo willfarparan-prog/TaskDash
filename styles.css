@@ -2781,3 +2781,62 @@ textarea:focus-visible {
   margin-top: 14px;
   text-decoration: none;
 }
+.task-heading-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quick-task .smart-add {
+  background: var(--red);
+  white-space: nowrap;
+}
+.quick-task button + button {
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+.task-tools {
+  display: flex;
+  gap: 2px;
+}
+.row-edit {
+  border: 0;
+  background: transparent;
+  color: #aaa;
+  font-size: 15px;
+  cursor: pointer;
+}
+.row-edit:hover,
+.row-delete:hover {
+  color: var(--ink);
+}
+.task-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 55vh;
+  overflow: auto;
+  margin-bottom: 12px;
+}
+.task-manager-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 9px 11px;
+  border: 1px solid #e6e2de;
+  border-radius: 8px;
+}
+.task-manager-row strong {
+  display: block;
+  font-size: 14px;
+}
+.task-manager-row span {
+  font:
+    500 10px IBM Plex Mono,
+    monospace;
+  color: #888;
+}
+#dialogFields > .task-manager,
+#dialogFields > .task-manager-add,
+#dialogFields > .empty-state {
+  grid-column: 1 / -1;
+}

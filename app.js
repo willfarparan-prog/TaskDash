@@ -56,6 +56,8 @@ const state = {
   sessions: [],
   programs: [],
   mail: [],
+  recurTasks: [],
+  taskChecks: [],
   calendar: [],
   connections: [],
   usage: { calls: 0, tokens: 0, credits: null, runs: [] },
@@ -87,85 +89,6 @@ const state = {
     readLocal("taskdash_settings", {}),
   ),
 };
-const RECUR = [
-  {
-    id: "wr-am",
-    name: "Reset weight room — AM",
-    cad: "Daily",
-    time: "AM",
-    when: (d) => weekday(d),
-  },
-  {
-    id: "inbox",
-    name: "Check inboxes — Exos · Adobe · Wellness",
-    cad: "Daily",
-    time: "Shift start",
-    when: (d) => weekday(d),
-  },
-  {
-    id: "wr-pm",
-    name: "Reset weight room — PM",
-    cad: "Daily",
-    time: "PM",
-    when: (d) => weekday(d),
-  },
-  {
-    id: "workday",
-    name: "Log hours — Workday",
-    cad: "Daily",
-    time: "EOD",
-    when: (d) => weekday(d),
-  },
-  {
-    id: "board",
-    name: "Write workout on board",
-    cad: "Weekly",
-    time: "Mon",
-    when: (d) => d.getDay() === 1,
-  },
-  {
-    id: "lab",
-    name: "Strength Lab programming",
-    cad: "Weekly",
-    time: "Wed–Fri",
-    when: (d) => [3, 4, 5].includes(d.getDay()),
-  },
-  {
-    id: "glove",
-    name: "White Glove Walkthrough",
-    cad: "Weekly",
-    time: "By 2:00p",
-    when: (d) => [4, 5].includes(d.getDay()),
-  },
-  {
-    id: "meeting",
-    name: "Exos team meeting",
-    cad: "Weekly",
-    time: "Fri",
-    when: (d) => d.getDay() === 5,
-  },
-  {
-    id: "news",
-    name: "Newsletter draft → Kelly",
-    cad: "Monthly",
-    time: "By the 15th",
-    when: (d) => d.getDate() >= 12 && d.getDate() <= 15,
-  },
-  {
-    id: "fdt",
-    name: "FDT badge report",
-    cad: "Monthly",
-    time: "Last week",
-    when: (d) => d.getDate() >= lastWeekStart(d),
-  },
-  {
-    id: "class",
-    name: "Update class schedule",
-    cad: "Monthly",
-    time: "End of month",
-    when: (d) => d.getDate() >= lastWeekStart(d),
-  },
-];
 const PIPE = [
   {
     key: "vendor",
@@ -320,7 +243,9 @@ function wireControls() {
     if (e.key === "Enter") addTask();
   });
   $("#taskList").addEventListener("change", toggleTask);
-  $("#taskList").addEventListener("click", deleteTask);
+  $("#taskList").addEventListener("click", taskRowAction);
+  $("#taskSmart").onclick = smartAddTask;
+  $("#taskManage").onclick = openTaskManager;
   $("#quickAddBtn").onclick = openQuickAdd;
   $("#addBlockOpen").onclick = openBlockDialog;
   $("#calendarConnect").onclick = () => (location.href = "/api/auth/start");
@@ -438,47 +363,53 @@ async function getJSON(url, opts) {
 }
 async function loadTasks() {
   try {
-    const data = await getJSON(`/api/tasks?day=${todayKey}`),
-      checks = new Map(
-        (data.checks || [])
-          .filter((x) => x.period_key === todayKey)
-          .map((x) => [x.task_id, x.done]),
-      ),
-      recurring = RECUR.filter((t) => t.when(today)).map((t) => ({
-        ...t,
-        done: !!checks.get(t.id),
-        kind: "recur",
-      })),
-      customRecur = (data.recur || [])
-        .filter(
-          (t) =>
-            t.source === "custom" &&
-            (t.cadence === "Daily" || t.weekday === today.getDay()),
-        )
-        .map((t) => ({
-          id: t.id,
-          name: t.name,
-          cad: t.cadence,
-          time: t.cadence === "Daily" ? "Today" : DOW[t.weekday],
-          done: !!checks.get(t.id),
-          kind: "recur",
-        })),
-      daily = (data.daily || []).map((t) => ({
+    const data = await getJSON(`/api/tasks?day=${todayKey}`);
+    state.recurTasks = data.recur || [];
+    state.taskChecks = data.checks || [];
+    state.tasks = [
+      ...scheduledTasks(state.recurTasks, state.taskChecks),
+      ...(data.daily || []).map((t) => ({
         id: String(t.id),
         name: t.name,
         cad: "Today",
         time: "",
         done: !!t.done,
         kind: "daily",
-      }));
-    state.tasks = [...recurring, ...customRecur, ...daily];
+      })),
+    ];
   } catch {
-    state.tasks = RECUR.filter((t) => t.when(today)).map((t) => ({
-      ...t,
-      done: false,
-      kind: "recur",
-    }));
+    // Offline preview: show the built-in duties on their schedules.
+    if (!state.recurTasks.length)
+      state.recurTasks = TaskSchedule.BUILTIN_TASKS.map((t) => ({
+        ...t,
+        source: "builtin",
+        created_day: todayKey,
+      }));
+    state.tasks = scheduledTasks(state.recurTasks, state.taskChecks);
   }
+}
+// Recurring tasks whose current cycle belongs on today's list.
+function scheduledTasks(recur, checks) {
+  return recur.flatMap((t) => {
+    const keys = checks
+        .filter((c) => c.task_id === t.id)
+        .map((c) => c.period_key),
+      occ = TaskSchedule.occurrenceOn(t, today, keys, t.created_day);
+    if (!occ) return [];
+    const rule = TaskSchedule.normalizeSchedule(t);
+    return [
+      {
+        id: t.id,
+        name: t.name,
+        kind: "recur",
+        done: occ.done,
+        occ,
+        rule,
+        cad: TaskSchedule.CADENCE_LABELS[rule.cadence],
+        time: rule.timeLabel,
+      },
+    ];
+  });
 }
 async function loadEvents() {
   try {
@@ -659,7 +590,7 @@ function renderDashboard() {
 function taskHTML(t) {
   const s = taskState(t),
     links = taskResourceLinks(t);
-  return `<div class="task-row ${t.done ? "done" : ""}" data-id="${attr(t.id)}" data-kind="${t.kind}"><input class="task-check" type="checkbox" aria-label="Complete ${attr(t.name)}" ${t.done ? "checked" : ""}><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${esc(t.cad)}${t.time ? ` · ${esc(t.time)}` : ""}${links.map((l) => ` <a href="${attr(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.short || l.title)} ↗</a>`).join("")}</div></div><span class="task-status ${s}">${t.done ? "DONE" : s === "over" ? "OVERDUE" : s === "due" ? "DUE" : "OPEN"}</span>${t.kind === "daily" ? '<button class="row-delete" aria-label="Delete task">×</button>' : "<span></span>"}</div>`;
+  return `<div class="task-row ${t.done ? "done" : ""}" data-id="${attr(t.id)}" data-kind="${t.kind}"><input class="task-check" type="checkbox" aria-label="Complete ${attr(t.name)}" ${t.done ? "checked" : ""}><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${esc(t.cad)}${t.time ? ` · ${esc(t.time)}` : ""}${t.occ && !["Daily", "Weekdays"].includes(t.rule.cadence) ? ` · ${esc(TaskSchedule.dueLabel(t.occ))}` : ""}${links.map((l) => ` <a href="${attr(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.short || l.title)} ↗</a>`).join("")}</div></div><span class="task-status ${s}">${t.done ? "DONE" : s === "over" ? "OVERDUE" : s === "due" ? "DUE" : "OPEN"}</span><span class="task-tools"><button class="row-edit" aria-label="Edit task" title="Edit">✎</button><button class="row-delete" aria-label="Delete task" title="Delete">×</button></span></div>`;
 }
 function taskResourceLinks(t) {
   const keys = {
@@ -737,6 +668,8 @@ function renderLinks() {
 }
 function taskState(t) {
   if (t.done) return "done";
+  if (t.occ?.overdue) return "over";
+  if (t.occ && t.occ.daysUntil > 0) return "open";
   const h = today.getHours();
   if (
     (/AM|Shift/.test(t.time) && h >= 12) ||
@@ -744,8 +677,8 @@ function taskState(t) {
     (/PM|EOD/.test(t.time) && h >= 17)
   )
     return "over";
-  if (t.cad !== "Daily" || h >= 11) return "due";
-  return "open";
+  const everyDay = ["Daily", "Weekdays"].includes(t.rule?.cadence);
+  return !everyDay || h >= 11 ? "due" : "open";
 }
 
 function workAccountUrl(value) {
@@ -815,7 +748,14 @@ async function toggleTask(e) {
       : {
           kind: "recur_check",
           taskId: t.id,
-          periodKey: todayKey,
+          periodKey: t.occ.periodKey,
+          windowStart: TaskSchedule.ymd(
+            new Date(
+              t.occ.due.getFullYear(),
+              t.occ.due.getMonth(),
+              t.occ.due.getDate() - t.rule.leadDays,
+            ),
+          ),
           done: t.done,
         };
   try {
@@ -828,19 +768,264 @@ async function toggleTask(e) {
     toast("Saved in this browser only");
   }
 }
-async function deleteTask(e) {
-  const btn = e.target.closest(".row-delete");
-  if (!btn) return;
-  const row = btn.closest(".task-row"),
-    id = row.dataset.id;
+function taskRowAction(e) {
+  const row = e.target.closest(".task-row");
+  if (!row) return;
+  if (e.target.closest(".row-edit")) {
+    const t = state.tasks.find((x) => String(x.id) === row.dataset.id);
+    if (t) openTaskDialog(taskDraft(t));
+  }
+  if (e.target.closest(".row-delete"))
+    deleteTask(row.dataset.id, row.dataset.kind);
+}
+async function deleteTask(id, kind) {
+  const recur = kind === "recur",
+    name =
+      (recur
+        ? state.recurTasks.find((t) => t.id === id)
+        : state.tasks.find((t) => String(t.id) === id)
+      )?.name || "this task";
+  if (
+    recur &&
+    !confirm(`Delete “${name}”? It won't come back on future cycles.`)
+  )
+    return;
   state.tasks = state.tasks.filter((t) => String(t.id) !== id);
+  if (recur) state.recurTasks = state.recurTasks.filter((t) => t.id !== id);
   renderDashboard();
   try {
-    await getJSON(`/api/tasks?id=${encodeURIComponent(id)}`, {
+    await getJSON(
+      `/api/tasks?id=${encodeURIComponent(id)}${recur ? "&kind=recur" : ""}`,
+      { method: "DELETE" },
+    );
+  } catch {}
+  toast("Task deleted");
+}
+// Form values for an existing task (dashboard row or recur_tasks record).
+function taskDraft(t) {
+  if (t.kind === "daily")
+    return { id: t.id, kind: "daily", name: t.name, repeat: "Once" };
+  const source = state.recurTasks.find((x) => x.id === t.id) || t,
+    rule = TaskSchedule.normalizeSchedule(source);
+  return {
+    id: source.id,
+    kind: "recur",
+    name: source.name,
+    repeat: rule.cadence,
+    ...rule,
+  };
+}
+const REPEAT_OPTIONS = [
+  "Once|Just today",
+  "Daily|Every day",
+  "Weekdays|Every weekday (Mon–Fri)",
+  "Weekly|Weekly",
+  "Biweekly|Every 2 weeks",
+  "Monthly|Monthly",
+];
+const WEEKDAY_OPTIONS = DOW.map((d, i) => `${i}|${d}`);
+const MONTH_DAY_OPTIONS = [
+  ...Array.from(
+    { length: 31 },
+    (_, i) => `${i + 1}|${TaskSchedule.ordinal(i + 1)}`,
+  ),
+  "0|Last day of the month",
+];
+const LEAD_OPTIONS = [
+  "0|On the due date",
+  "1|1 day early",
+  "2|2 days early",
+  "3|3 days early",
+  "4|4 days early",
+  "5|5 days early",
+  "6|The week before",
+  "13|2 weeks early",
+];
+// Dialog selects use "value|label" options; these map between the two.
+const optionFor = (options, value) =>
+  options.find((o) => o.split("|")[0] === String(value)) || options[0];
+const optionValue = (choice) => String(choice).split("|")[0];
+// One form for adding or editing any task. `draft.kind` is "daily" or
+// "recur" for an existing task, and absent for a new one.
+function openTaskDialog(draft = {}) {
+  const weekday = draft.weekday ?? today.getDay(),
+    anchor =
+      draft.anchorDate ||
+      TaskSchedule.ymd(
+        TaskSchedule.nextDue({ cadence: "Weekly", weekday }, today),
+      );
+  openDialog({
+    kicker: draft.kind ? "EDIT TASK" : "NEW TASK",
+    title: draft.kind ? "Change this task" : "Add a task",
+    fields: [
+      ["name", "Task", "text", "What needs doing?", draft.name || ""],
+      [
+        "repeat",
+        "Repeats",
+        "select",
+        REPEAT_OPTIONS,
+        optionFor(REPEAT_OPTIONS, draft.repeat || "Once"),
+      ],
+      ["weekday", "Day of the week", "select", WEEKDAY_OPTIONS, optionFor(WEEKDAY_OPTIONS, weekday)],
+      ["anchorDate", "First due date", "date", "", anchor],
+      [
+        "monthDay",
+        "Day of the month",
+        "select",
+        MONTH_DAY_OPTIONS,
+        optionFor(MONTH_DAY_OPTIONS, draft.monthDay ?? 1),
+      ],
+      [
+        "leadDays",
+        "Show it",
+        "select",
+        LEAD_OPTIONS,
+        optionFor(LEAD_OPTIONS, draft.leadDays ?? 0),
+      ],
+      [
+        "timeLabel",
+        "Time note (optional)",
+        "text",
+        "AM, By 2:00p, EOD",
+        draft.timeLabel || "",
+      ],
+    ],
+    submit: (v) => saveTaskForm(draft, v),
+  });
+  // Only show the schedule fields that apply to the chosen repeat.
+  const form = $("#dialogForm"),
+    sync = () => {
+      const r = optionValue(form.elements.repeat.value),
+        show = {
+          weekday: r === "Weekly",
+          anchorDate: r === "Biweekly",
+          monthDay: r === "Monthly",
+          leadDays: ["Weekly", "Biweekly", "Monthly"].includes(r),
+          timeLabel: r !== "Once",
+        };
+      for (const [name, visible] of Object.entries(show))
+        form.elements[name].closest("label").hidden = !visible;
+    };
+  form.elements.repeat.onchange = sync;
+  sync();
+}
+async function saveTaskForm(draft, form) {
+  const v = {
+      ...form,
+      repeat: optionValue(form.repeat),
+      weekday: optionValue(form.weekday),
+      monthDay: optionValue(form.monthDay),
+      leadDays: optionValue(form.leadDays),
+    },
+    name = v.name.trim();
+  if (!name) throw new Error("Give the task a name");
+  const json = (method, body) => ({
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const schedule = {
+    name,
+    cadence: v.repeat,
+    weekday: v.weekday,
+    monthDay: v.monthDay,
+    anchorDate: v.anchorDate,
+    leadDays: v.leadDays,
+    timeLabel: v.timeLabel,
+  };
+  if (v.repeat === "Once") {
+    if (draft.kind === "daily")
+      await getJSON(
+        "/api/tasks",
+        json("PATCH", { kind: "daily_task", id: draft.id, name }),
+      );
+    else
+      await getJSON(
+        "/api/tasks",
+        json("POST", { type: "daily_task", dayKey: todayKey, name }),
+      );
+  } else if (draft.kind === "recur") {
+    await getJSON(
+      "/api/tasks",
+      json("PATCH", { kind: "recur_task", id: draft.id, ...schedule }),
+    );
+  } else {
+    await getJSON("/api/tasks", json("POST", { type: "recur_task", ...schedule }));
+  }
+  // A task that switched between one-off and repeating leaves its old record.
+  if (draft.kind === "daily" && v.repeat !== "Once")
+    await getJSON(`/api/tasks?id=${encodeURIComponent(draft.id)}`, {
       method: "DELETE",
     });
-  } catch {}
-  toast("Task removed");
+  if (draft.kind === "recur" && v.repeat === "Once")
+    await getJSON(
+      `/api/tasks?id=${encodeURIComponent(draft.id)}&kind=recur`,
+      { method: "DELETE" },
+    );
+  await loadTasks();
+  renderDashboard();
+  toast(draft.kind ? "Task updated" : "Task added");
+}
+// Smart add: Claude reads the sentence and pre-fills the task form.
+async function smartAddTask() {
+  const input = $("#taskInput"),
+    text = input.value.trim();
+  if (!text) {
+    openTaskDialog();
+    return;
+  }
+  const btn = $("#taskSmart");
+  btn.disabled = true;
+  btn.textContent = "Reading…";
+  let draft = { name: text };
+  try {
+    draft = await getJSON("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "parse_task", text, dayKey: todayKey }),
+    });
+  } catch (err) {
+    toast(err.message || "Smart add is unavailable; fill in the schedule");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "✦ Smart add";
+  }
+  input.value = "";
+  openTaskDialog(draft);
+}
+// Every repeating task, including ones not due today.
+function openTaskManager() {
+  openDialog({
+    kicker: "OPERATING QUEUE",
+    title: "Repeating tasks",
+    fields: [],
+    submit: () => {},
+  });
+  $("#dialogFields").innerHTML = state.recurTasks.length
+    ? `<div class="task-manager">${state.recurTasks
+        .map(
+          (t) =>
+            `<div class="task-manager-row" data-id="${attr(t.id)}"><div><strong>${esc(t.name)}</strong><span>${esc(TaskSchedule.describe(t))}${t.time_label || t.timeLabel ? ` · ${esc(t.time_label || t.timeLabel)}` : ""}</span></div><button type="button" class="row-edit" aria-label="Edit ${attr(t.name)}">✎</button><button type="button" class="row-delete" aria-label="Delete ${attr(t.name)}">×</button></div>`,
+        )
+        .join("")}</div><button type="button" class="secondary-btn task-manager-add">＋ New task</button>`
+    : '<div class="empty-state compact">No repeating tasks yet.</div><button type="button" class="secondary-btn task-manager-add">＋ New task</button>';
+  $("#dialogSubmit").textContent = "Done";
+  $("#dialogFields").onclick = async (e) => {
+    const row = e.target.closest(".task-manager-row");
+    if (e.target.closest(".task-manager-add")) {
+      openTaskDialog({ repeat: "Weekly" });
+      return;
+    }
+    if (!row) return;
+    const t = state.recurTasks.find((x) => x.id === row.dataset.id);
+    if (!t) return;
+    if (e.target.closest(".row-edit"))
+      openTaskDialog(taskDraft({ ...t, kind: "recur" }));
+    if (e.target.closest(".row-delete")) {
+      await deleteTask(t.id, "recur");
+      openTaskManager();
+    }
+  };
 }
 function renderAgenda() {
   const events = state.calendar
@@ -2486,6 +2671,8 @@ function openDialog({ kicker, title, fields, submit }) {
     body = $("#dialogFields");
   $("#dialogKicker").textContent = kicker;
   $("#dialogTitle").textContent = title;
+  $("#dialogSubmit").textContent = "Save";
+  body.onclick = null;
   body.innerHTML = fields.map(fieldHTML).join("");
   const form = $("#dialogForm");
   form.onsubmit = async (e) => {
@@ -2510,7 +2697,7 @@ function openDialog({ kicker, title, fields, submit }) {
       btn.disabled = false;
     }
   };
-  d.showModal();
+  if (!d.open) d.showModal();
   setTimeout(
     () =>
       body.querySelector("input:not([type=checkbox]),select,textarea")?.focus(),
@@ -2549,12 +2736,6 @@ function globalSearch(q) {
 }
 function ymd(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-function weekday(d) {
-  return d.getDay() > 0 && d.getDay() < 6;
-}
-function lastWeekStart(d) {
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() - 6;
 }
 function startOfDay(d) {
   const x = new Date(d);
