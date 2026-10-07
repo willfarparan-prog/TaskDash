@@ -3,8 +3,9 @@
 // Claude can call tools to actually create tasks/events - not just talk about them.
 
 const { requireOwnerSession } = require("../lib/session");
-const { getPool, trackUsage } = require("../lib/db");
+const { getPool, ensureWorkspaceSchema, trackUsage } = require("../lib/db");
 const { pacificToday } = require("../lib/scheduler");
+const { normalizeSchedule, describe } = require("../task-schedule");
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 
@@ -12,7 +13,7 @@ const TOOLS = [
   {
     name: "add_recurring_task",
     description:
-      "Create a recurring task that shows up on the dashboard's Today list going forward, on the given cadence. Use this for anything the user wants remembered on a repeating basis (daily, or a specific weekday every week). For a task tied to a specific week of the month (e.g. 'second week of every month'), still use Weekly cadence on a representative weekday and mention the monthly timing in the task name itself, since the dashboard's recurring engine only supports Daily/Weekly natively.",
+      "Create a repeating task for the dashboard's Today list. It appears `leadDays` before each due date and stays checked off for that whole cycle once done. Use this for anything the user wants remembered on a repeating basis.",
     input_schema: {
       type: "object",
       properties: {
@@ -20,11 +21,33 @@ const TOOLS = [
           type: "string",
           description: 'Short task name, e.g. "Storage room inventory check"',
         },
-        cadence: { type: "string", enum: ["Daily", "Weekly"] },
+        cadence: {
+          type: "string",
+          enum: ["Daily", "Weekdays", "Weekly", "Biweekly", "Monthly"],
+          description:
+            "Daily = every day; Weekdays = Mon-Fri; Biweekly = every other week.",
+        },
         weekday: {
           type: "integer",
+          description: "0=Sunday..6=Saturday. For Weekly.",
+        },
+        anchorDate: {
+          type: "string",
           description:
-            "0=Sunday..6=Saturday. Required if cadence is Weekly, omit for Daily.",
+            "YYYY-MM-DD of the first due date. Required for Biweekly; its weekday is the due day.",
+        },
+        monthDay: {
+          type: "integer",
+          description: "For Monthly: day of the month 1-31, or 0 for the last day.",
+        },
+        leadDays: {
+          type: "integer",
+          description:
+            "How many days before the due date it starts showing (0-14). Default 0; monthly tasks usually 3-6.",
+        },
+        timeLabel: {
+          type: "string",
+          description: 'Optional short timing note, e.g. "AM" or "By 2:00p".',
         },
       },
       required: ["name", "cadence"],
@@ -64,19 +87,26 @@ const TOOLS = [
 ];
 
 async function runTool(name, input) {
+  await ensureWorkspaceSchema();
   const db = getPool();
   if (name === "add_recurring_task") {
-    const id = "rc-x" + Date.now();
+    const id = "rc-x" + Date.now(),
+      r = normalizeSchedule(input);
     await db.query(
-      `insert into recur_tasks (id, name, cadence, weekday, source) values ($1,$2,$3,$4,'custom')`,
+      `insert into recur_tasks (id, name, cadence, weekday, month_day, anchor_date, lead_days, time_label, source)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,'custom')`,
       [
         id,
-        input.name,
-        input.cadence,
-        input.cadence === "Weekly" ? (input.weekday ?? null) : null,
+        String(input.name || "").slice(0, 200),
+        r.cadence,
+        r.weekday,
+        r.monthDay,
+        r.anchorDate,
+        r.leadDays,
+        r.timeLabel || null,
       ],
     );
-    return { ok: true, id };
+    return { ok: true, id, schedule: describe(r) };
   }
   if (name === "add_daily_task") {
     // The dashboard's "today" is Pacific, not UTC (UTC rolls over at 5pm).
