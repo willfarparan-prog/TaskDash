@@ -530,9 +530,11 @@ async function loadInbox() {
     const d = await getJSON("/api/inbox");
     state.mail = d.messages || [];
     state.inboxConnections = d.connections || {};
+    state.inboxNotice = d.notice || "";
     state.inboxError = "";
   } catch (e) {
     state.mail = [];
+    state.inboxNotice = "";
     state.inboxError = e.message;
   }
   renderInbox();
@@ -1989,7 +1991,7 @@ function renderInbox() {
             `<article class="mail-row unread"><i class="priority-dot"></i><div class="mail-from">${esc(m.from || "Unknown")}</div><div><div class="mail-subject">${esc(m.subject || "(no subject)")}</div><span class="mail-snippet">${esc(m.snippet || "")}</span></div><div class="mail-time">${esc(m.received || "")}</div></article>`,
         )
         .join("")
-    : `<div class="empty-state"><strong>${state.inboxError ? "Inbox connection needed" : "No priority messages"}</strong><br>${state.inboxError ? esc(state.inboxError) : "Important unread mail will appear here after its account is connected."}</div>`;
+    : inboxEmptyHTML();
   const g = state.mail.filter((m) => m.source === "google").length,
     ms = state.mail.filter((m) => m.source === "microsoft").length;
   $("#mailGoogleCount").textContent = g;
@@ -1997,6 +1999,14 @@ function renderInbox() {
   $("#mailAllCount").textContent = g + ms;
   $("#inboxBadge").hidden = !(g + ms);
   $("#inboxBadge").textContent = g + ms;
+}
+function inboxEmptyHTML() {
+  // The API answers 200 with a notice when Gmail isn't connected, so the
+  // notice (not just a thrown error) decides between "connect" and "empty".
+  const reason = state.inboxError || state.inboxNotice;
+  if (reason)
+    return `<div class="empty-state"><strong>Inbox connection needed</strong><br>${esc(reason)}<br><a class="primary-btn inbox-connect" href="/api/auth/start">Connect ${esc(OWNER_EMAIL)}</a></div>`;
+  return `<div class="empty-state"><strong>No priority messages</strong><br>Gmail is connected. Nothing unread from the last 30 days is marked important or starred in ${esc(OWNER_EMAIL)}.</div>`;
 }
 function normalizeEvent(raw) {
   const date = new Date(

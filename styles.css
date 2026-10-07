@@ -2775,3 +2775,9 @@ textarea:focus-visible {
     justify-content: flex-start;
   }
 }
+.inbox-connect {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 14px;
+  text-decoration: none;
+}
