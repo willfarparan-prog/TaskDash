@@ -156,6 +156,11 @@ create table if not exists training_programs (
       updated_at      timestamptz not null default now()
     );
 
+create table if not exists app_meta (
+      key            text primary key,
+      applied_at     timestamptz not null default now()
+    );
+
 create table if not exists api_usage (
       id             bigserial primary key,
       service        text not null,
