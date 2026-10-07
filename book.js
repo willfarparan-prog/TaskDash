@@ -33,18 +33,22 @@ async function loadAvailability() {
       `${state.settings.sessionMinutes || 60} min`;
     $("#locationFact").innerHTML =
       `<b>${esc(state.settings.location || "Location shared after booking")}</b>`;
-    $("#reasonSelect").innerHTML = (
-      state.settings.reasons || [
-        "Personal training session",
-        "PT consultation",
-        "InBody scan",
-        "Other",
-      ]
-    )
-      .map(
-        (reason) => `<option value="${attr(reason)}">${esc(reason)}</option>`,
+    // Start on a blank choice so visitors have to pick a reason.
+    $("#reasonSelect").innerHTML =
+      '<option value="" disabled selected>Choose a reason</option>' +
+      (
+        state.settings.reasons || [
+          "Personal training session",
+          "PT consultation",
+          "InBody scan",
+          "Other",
+        ]
       )
-      .join("");
+        .map(
+          (reason) =>
+            `<option value="${attr(reason)}">${esc(reason)}</option>`,
+        )
+        .join("");
     renderDays();
     const first = state.days.find((day) => day.openCount > 0);
     if (first) {
