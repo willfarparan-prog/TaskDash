@@ -1,6 +1,10 @@
 const { getPool, ensureWorkspaceSchema, trackUsage } = require("../lib/db");
 const { requireOwnerSession } = require("../lib/session");
 
+// New-client checklist steps; `onboarding` maps a step to the date it was done.
+const ONBOARDING_STEPS = ["invoice", "schedule", "program", "programPrinted", "mealPlan", "ptLogger"];
+const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""));
+
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
@@ -64,6 +68,41 @@ module.exports = async (req, res) => {
       return res.status(201).json(result.rows[0]);
     }
 
+    if (req.method === "PATCH" && resource === "onboarding") {
+      const id = Number(req.query.id);
+      if (!Number.isInteger(id) || id <= 0)
+        return res.status(400).json({ error: "Client id is required" });
+      const { step, done, track } = req.body || {};
+      const day = isDate(req.body?.dayKey) ? req.body.dayKey : null;
+      let result;
+      if (typeof track === "boolean") {
+        result = await db.query(
+          `update clients set onboarding = case when $2 then coalesce(onboarding,'{}'::jsonb) else null end,
+             updated_at=now() where id=$1 returning *`,
+          [id, track],
+        );
+      } else {
+        if (!ONBOARDING_STEPS.includes(step))
+          return res.status(400).json({ error: "Unknown checklist step" });
+        result = done
+          ? await db.query(
+              `update clients set onboarding = coalesce(onboarding,'{}'::jsonb) ||
+                 jsonb_build_object($2::text, coalesce($3::text, to_char(now() at time zone 'America/Los_Angeles','YYYY-MM-DD'))),
+                 updated_at=now() where id=$1 returning *`,
+              [id, step, day],
+            )
+          : await db.query(
+              `update clients set onboarding = onboarding - $2::text, updated_at=now()
+                 where id=$1 returning *`,
+              [id, step],
+            );
+      }
+      if (!result.rows[0])
+        return res.status(404).json({ error: "Client not found" });
+      trackUsage("Task Dash API", "Update client checklist");
+      return res.status(200).json(result.rows[0]);
+    }
+
     if (req.method === "POST") {
       const { email, phone, serviceType, nextFollowUp, notes } =
         req.body || {};
@@ -73,8 +112,8 @@ module.exports = async (req, res) => {
       if (!name)
         return res.status(400).json({ error: "Client name is required" });
       const result = await db.query(
-        `insert into clients (name, email, phone, service_type, next_follow_up, notes)
-         values ($1,$2,$3,$4,$5,$6) returning *`,
+        `insert into clients (name, email, phone, service_type, next_follow_up, notes, first_session, onboarding)
+         values ($1,$2,$3,$4,$5,$6,$7,$8) returning *`,
         [
           name,
           email || null,
@@ -82,6 +121,9 @@ module.exports = async (req, res) => {
           serviceType || "PT consult",
           nextFollowUp || null,
           notes || null,
+          isDate(req.body?.firstSession) ? req.body.firstSession : null,
+          // Personal training clients start with the new-client checklist.
+          (serviceType || "PT consult") === "Personal training" ? {} : null,
         ],
       );
       trackUsage("Task Dash API", "Create client");
@@ -104,7 +146,7 @@ module.exports = async (req, res) => {
           .slice(0, max) || null;
       const result = await db.query(
         `update clients set name=$1, email=$2, phone=$3, service_type=$4, status=$5,
-           next_follow_up=$6, notes=$7, updated_at=now()
+           next_follow_up=$6, notes=$7, first_session=$9, updated_at=now()
          where id=$8 returning *`,
         [
           name,
@@ -117,6 +159,7 @@ module.exports = async (req, res) => {
             : null,
           optional(body.notes, 4000),
           id,
+          isDate(body.firstSession) ? body.firstSession : null,
         ],
       );
       if (!result.rows[0])

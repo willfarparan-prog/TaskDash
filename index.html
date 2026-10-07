@@ -264,6 +264,7 @@
                   ><button id="taskSmart" class="smart-add" title="Claude fills in the schedule from your sentence">✦ Smart add</button>
                 </div>
                 <div class="task-list" id="taskList"></div>
+                <div class="onboarding-queue" id="onboardingQueue" hidden></div>
               </article>
               <article class="panel schedule-panel">
                 <div class="section-heading">
@@ -689,6 +690,7 @@
                 </table>
               </div>
             </article>
+            <article class="panel client-profile" id="clientProfile" hidden></article>
           </section>
 
           <section class="view" id="view-inbox" data-title="Inbox">
@@ -913,6 +915,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="mobile-scrim" id="mobileScrim"></div>
     <script src="/task-schedule.js" defer></script>
+    <script src="/meal-intake.js" defer></script>
     <script src="/app.js" defer></script>
   </body>
 </html>
