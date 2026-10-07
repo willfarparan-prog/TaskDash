@@ -2840,3 +2840,40 @@ textarea:focus-visible {
 #dialogFields > .empty-state {
   grid-column: 1 / -1;
 }
+.source-dot.work {
+  background: #00a99d;
+}
+.inbox-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid #ecd9b8;
+  border-radius: 9px;
+  background: #fdf7ec;
+  font-size: 13px;
+}
+.inbox-notice .inbox-connect {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+.mail-account {
+  display: block;
+  margin-top: 3px;
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  color: #888;
+  text-transform: uppercase;
+}
+.mail-account.work {
+  color: #00857b;
+}
+@media (max-width: 640px) {
+  .inbox-notice {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -35,6 +35,7 @@ module.exports = async (req, res) => {
           "email",
           "profile",
           "https://www.googleapis.com/auth/calendar.events",
+          "https://www.googleapis.com/auth/gmail.readonly",
         ]
       : account === "owner"
         ? [
@@ -46,7 +47,9 @@ module.exports = async (req, res) => {
           ]
         : ["openid", "email", "profile"];
   const nonce = crypto.randomBytes(18).toString("base64url");
-  const state = `${account}.${nonce}`;
+  // Where to land afterwards; only known pages are allowed.
+  const next = req.query.next === "inbox" ? "inbox" : "";
+  const state = `${account}.${nonce}${next ? `.${next}` : ""}`;
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,

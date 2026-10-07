@@ -461,11 +461,11 @@ async function loadInbox() {
     const d = await getJSON("/api/inbox");
     state.mail = d.messages || [];
     state.inboxConnections = d.connections || {};
-    state.inboxNotice = d.notice || "";
+    state.inboxNotices = d.notices || (d.notice ? [{ account: "owner", text: d.notice }] : []);
     state.inboxError = "";
   } catch (e) {
     state.mail = [];
-    state.inboxNotice = "";
+    state.inboxNotices = [];
     state.inboxError = e.message;
   }
   renderInbox();
@@ -2173,25 +2173,39 @@ function renderInbox() {
     ? filtered
         .map(
           (m) =>
-            `<article class="mail-row unread"><i class="priority-dot"></i><div class="mail-from">${esc(m.from || "Unknown")}</div><div><div class="mail-subject">${esc(m.subject || "(no subject)")}</div><span class="mail-snippet">${esc(m.snippet || "")}</span></div><div class="mail-time">${esc(m.received || "")}</div></article>`,
+            `<article class="mail-row unread"><i class="priority-dot"></i><div class="mail-from">${esc(m.from || "Unknown")}<small class="mail-account ${attr(m.source)}">${m.source === "work" ? "Exos work" : "Personal"}</small></div><div><div class="mail-subject">${esc(m.subject || "(no subject)")}</div><span class="mail-snippet">${esc(m.snippet || "")}</span></div><div class="mail-time">${esc(m.received || "")}</div></article>`,
         )
         .join("")
     : inboxEmptyHTML();
-  const g = state.mail.filter((m) => m.source === "google").length,
-    ms = state.mail.filter((m) => m.source === "microsoft").length;
-  $("#mailGoogleCount").textContent = g;
-  $("#mailMicrosoftCount").textContent = ms;
-  $("#mailAllCount").textContent = g + ms;
-  $("#inboxBadge").hidden = !(g + ms);
-  $("#inboxBadge").textContent = g + ms;
+  $("#inboxNotices").innerHTML = inboxNoticesHTML();
+  const count = (source) =>
+      state.mail.filter((m) => m.source === source).length,
+    total = state.mail.length;
+  $("#mailGoogleCount").textContent = count("google");
+  $("#mailWorkCount").textContent = count("work");
+  $("#mailMicrosoftCount").textContent = count("microsoft");
+  $("#mailAllCount").textContent = total;
+  $("#inboxBadge").hidden = !total;
+  $("#inboxBadge").textContent = total;
+}
+// One line per account that still needs connecting, with its Connect button.
+function inboxNoticesHTML() {
+  return (state.inboxNotices || [])
+    .map(
+      (n) =>
+        `<div class="inbox-notice"><span>${esc(n.text)}</span><a class="primary-btn inbox-connect" href="/api/auth/start${n.account === "work" ? "?account=work&next=inbox" : ""}">${n.account === "work" ? "Connect work Gmail" : "Connect personal Gmail"}</a></div>`,
+    )
+    .join("");
 }
 function inboxEmptyHTML() {
-  // The API answers 200 with a notice when Gmail isn't connected, so the
-  // notice (not just a thrown error) decides between "connect" and "empty".
-  const reason = state.inboxError || state.inboxNotice;
-  if (reason)
-    return `<div class="empty-state"><strong>Inbox connection needed</strong><br>${esc(reason)}<br><a class="primary-btn inbox-connect" href="/api/auth/start">Connect ${esc(OWNER_EMAIL)}</a></div>`;
-  return `<div class="empty-state"><strong>No priority messages</strong><br>Gmail is connected. Nothing unread from the last 30 days is marked important or starred in ${esc(OWNER_EMAIL)}.</div>`;
+  if (state.inboxError)
+    return `<div class="empty-state"><strong>Inbox connection needed</strong><br>${esc(state.inboxError)}<br><a class="primary-btn inbox-connect" href="/api/auth/start">Connect ${esc(OWNER_EMAIL)}</a></div>`;
+  const live = Object.entries(state.inboxConnections || {})
+    .filter(([source, on]) => on && source !== "microsoft")
+    .map(([source]) => (source === "work" ? WORK_EMAIL : OWNER_EMAIL));
+  if (!live.length)
+    return `<div class="empty-state"><strong>No inbox connected yet</strong><br>Connect an account above to see its important and starred mail here.</div>`;
+  return `<div class="empty-state"><strong>No priority messages</strong><br>Nothing unread from the last 30 days is marked important or starred in ${esc(live.join(" or "))}.</div>`;
 }
 function normalizeEvent(raw) {
   const date = new Date(

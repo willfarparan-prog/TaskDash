@@ -697,8 +697,8 @@
                 <div class="eyebrow"><i></i>PRIORITY COMMUNICATIONS</div>
                 <h1>Inbox</h1>
                 <p>
-                  Important unread mail from the approved Google account and
-                  Adobe Microsoft inbox, together.
+                  Important unread mail from your personal Gmail and Exos work
+                  inbox, together.
                 </p>
               </div>
               <button class="primary-btn" id="inboxRefresh">
@@ -712,6 +712,9 @@
                 ><button class="source-filter" data-source="google">
                   <span class="source-dot google"></span><span>Google</span
                   ><b id="mailGoogleCount">0</b></button
+                ><button class="source-filter" data-source="work">
+                  <span class="source-dot work"></span><span>Exos work</span
+                  ><b id="mailWorkCount">0</b></button
                 ><button class="source-filter" data-source="microsoft">
                   <span class="source-dot microsoft"></span
                   ><span>Adobe Microsoft</span><b id="mailMicrosoftCount">0</b>
@@ -723,6 +726,7 @@
                 >
               </aside>
               <article class="panel inbox-panel">
+                <div id="inboxNotices"></div>
                 <div class="mail-list" id="mailList"></div>
               </article>
             </div>

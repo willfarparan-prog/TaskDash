@@ -124,7 +124,9 @@ module.exports = async (req, res) => {
     res.writeHead(302, {
       Location:
         account === "work"
-          ? "/#scheduler"
+          ? String(state).split(".")[2] === "inbox"
+            ? "/#inbox"
+            : "/#scheduler"
           : account === "operator"
             ? "/?account=work"
             : "/?calendar=connected",

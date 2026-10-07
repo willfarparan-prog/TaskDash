@@ -61,6 +61,20 @@ module.exports = async (req, res) => {
         detail: "Important and starred unread messages only",
       },
       {
+        name: "Exos Work Inbox",
+        initials: "EX",
+        status:
+          workVerified &&
+          String(workGoogle?.scope || "").includes("gmail.readonly")
+            ? "connected"
+            : "attention",
+        detail:
+          workVerified &&
+          String(workGoogle?.scope || "").includes("gmail.readonly")
+            ? `${WORK_EMAIL} · important and starred unread`
+            : `Reconnect ${WORK_EMAIL} from Inbox to add Gmail`,
+      },
+      {
         name: "Adobe Microsoft",
         initials: "MS",
         status: process.env.MICROSOFT_CLIENT_ID ? "attention" : "queued",
