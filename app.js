@@ -67,6 +67,7 @@ const state = {
   mailFilter: "all",
   calendarOffset: 0,
   activeProgram: null,
+  programHistory: { undo: [], redo: [], pending: null },
   scheduler: {
     settings: structuredClone(DEFAULT_BOOKING_SCHEDULE),
     bookings: [],
@@ -260,6 +261,15 @@ function wireNavigation() {
       $("#globalSearch").focus();
     }
     if (e.key === "Escape") toggleRail(false);
+    if (
+      (e.metaKey || e.ctrlKey) &&
+      e.key.toLowerCase() === "z" &&
+      !$("#programEditor").hidden &&
+      !e.target.matches("input, select, textarea")
+    ) {
+      e.preventDefault();
+      stepProgramHistory(e.shiftKey ? "redo" : "undo");
+    }
   });
   $("#globalSearch").addEventListener("input", (e) =>
     globalSearch(e.target.value),
@@ -340,6 +350,17 @@ function wireControls() {
   };
   $("#programGrid").onclick = programAction;
   $("#programEditor").onclick = programEditorAction;
+  $("#programEditor").addEventListener("focusin", (e) => {
+    if (e.target.matches("input, select"))
+      state.programHistory.pending = programSnapshot();
+  });
+  $("#programEditor").addEventListener("change", (e) => {
+    const pending = state.programHistory.pending;
+    if (!pending || !e.target.matches("input, select")) return;
+    state.programHistory.pending = programSnapshot();
+    if (!sameSnapshot(pending, state.programHistory.pending))
+      recordProgramEdit(pending);
+  });
   $("#newClientBtn").onclick = openClientDialog;
   $("#clientSearch").oninput = renderClients;
   $("#clientTypeFilter").onchange = renderClients;
@@ -1232,10 +1253,15 @@ function programAction(e) {
   }
   if (action === "use") useStockProgram(card.dataset.id);
 }
-function openProgram(id) {
+function openProgram(id, { draft, day = 0 } = {}) {
+  // History belongs to one editing session: opening a different program
+  // (or reopening after closing) starts fresh; re-renders keep it.
+  if (String(id) !== state.activeProgram || $("#programEditor").hidden)
+    state.programHistory = { undo: [], redo: [], pending: null };
   state.activeProgram = String(id);
-  const p = state.programs.find((x) => String(x.id) === state.activeProgram);
-  if (!p) return;
+  const saved = state.programs.find((x) => String(x.id) === state.activeProgram);
+  if (!saved) return;
+  const p = draft ? { ...saved, ...draft } : saved;
   const plan = normalizeProgramContent(p),
     weeks = Number(p.weeks) || 4,
     clientOptions =
@@ -1248,8 +1274,63 @@ function openProgram(id) {
         .join("");
   $("#programEditor").hidden = false;
   $("#programEditor").innerHTML =
-    `<div class="program-edit-head"><div><span class="kicker">${p.is_stock ? "STOCK TEMPLATE" : "PROGRAM BUILDER"}</span><h2>${esc(p.name)}</h2><p>${p.is_stock ? "Edit the reusable source or copy it for a client." : "Changes here affect this client copy only."}</p></div><button class="icon-btn" data-editor="close">×</button></div><div class="program-meta"><label>Program title<input data-meta="name" value="${attr(p.name)}"></label><label>Client<select data-meta="clientId" ${p.is_stock ? "disabled" : ""}>${clientOptions}</select></label><label>Weeks<select data-meta="weeks">${Array.from({ length: 8 }, (_, i) => `<option ${i + 1 === weeks ? "selected" : ""}>${i + 1}</option>`).join("")}</select></label><label>Status<select data-meta="status"><option ${p.status === "draft" ? "selected" : ""}>draft</option><option ${p.status === "active" ? "selected" : ""}>active</option><option ${p.status === "archived" ? "selected" : ""}>archived</option></select></label><label class="wide">Goal / coaching focus<input data-meta="goal" value="${attr(p.goal || "")}" placeholder="What should this block accomplish?"></label></div><div class="day-tabs">${plan.days.map((d, i) => `<button class="${i === 0 ? "active" : ""}" data-day="${i}">${esc(d.name || `Day ${i + 1}`)}</button>`).join("")}<button data-editor="add-day">＋ Day</button></div><div class="program-builder">${plan.days.map((d, i) => dayEditorHTML(d, i, weeks)).join("")}</div><div class="program-print-sheet">${programPrintHTML(p, plan, weeks)}</div><div class="editor-actions"><button class="text-btn danger-text" data-editor="delete">Delete</button>${p.is_stock ? '<button class="secondary-btn" data-editor="use">Use for a client</button>' : '<button class="secondary-btn" data-editor="template">Save as stock template</button>'}<button class="secondary-btn" data-editor="print">Print program</button><button class="primary-btn" data-editor="save">Save changes</button></div>`;
-  $("#programEditor").scrollIntoView({ behavior: "smooth", block: "start" });
+    `<div class="program-edit-head"><div><span class="kicker">${p.is_stock ? "STOCK TEMPLATE" : "PROGRAM BUILDER"}</span><h2>${esc(p.name)}</h2><p>${p.is_stock ? "Edit the reusable source or copy it for a client." : "Changes here affect this client copy only."}</p></div><div class="editor-history"><button class="secondary-btn" data-editor="undo" title="Undo (⌘Z)">↶ Undo</button><button class="secondary-btn" data-editor="redo" title="Redo (⇧⌘Z)">↷ Redo</button><button class="icon-btn" data-editor="close">×</button></div></div><div class="program-meta"><label>Program title<input data-meta="name" value="${attr(p.name)}"></label><label>Client<select data-meta="clientId" ${p.is_stock ? "disabled" : ""}>${clientOptions}</select></label><label>Weeks<select data-meta="weeks">${Array.from({ length: 8 }, (_, i) => `<option ${i + 1 === weeks ? "selected" : ""}>${i + 1}</option>`).join("")}</select></label><label>Status<select data-meta="status"><option ${p.status === "draft" ? "selected" : ""}>draft</option><option ${p.status === "active" ? "selected" : ""}>active</option><option ${p.status === "archived" ? "selected" : ""}>archived</option></select></label><label class="wide">Goal / coaching focus<input data-meta="goal" value="${attr(p.goal || "")}" placeholder="What should this block accomplish?"></label></div><div class="day-tabs">${plan.days.map((d, i) => `<button class="${i === 0 ? "active" : ""}" data-day="${i}">${esc(d.name || `Day ${i + 1}`)}</button>`).join("")}<button data-editor="add-day">＋ Day</button></div><div class="program-builder">${plan.days.map((d, i) => dayEditorHTML(d, i, weeks)).join("")}</div><div class="program-print-sheet">${programPrintHTML(p, plan, weeks)}</div><div class="editor-actions"><button class="text-btn danger-text" data-editor="delete">Delete</button>${p.is_stock ? '<button class="secondary-btn" data-editor="use">Use for a client</button>' : '<button class="secondary-btn" data-editor="template">Save as stock template</button>'}<button class="secondary-btn" data-editor="print">Print program</button><button class="primary-btn" data-editor="save">Save changes</button></div>`;
+  if (day) showProgramDay(Math.min(day, plan.days.length - 1));
+  updateProgramHistoryButtons();
+  if (!draft)
+    $("#programEditor").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function showProgramDay(index) {
+  const root = $("#programEditor");
+  $$(".day-tabs [data-day]", root).forEach((b) =>
+    b.classList.toggle("active", Number(b.dataset.day) === index),
+  );
+  $$("[data-day-panel]", root).forEach(
+    (p) => (p.hidden = Number(p.dataset.dayPanel) !== index),
+  );
+}
+function programSnapshot() {
+  const root = $("#programEditor"),
+    meta = (key) => $(`[data-meta="${key}"]`, root)?.value ?? "",
+    content = collectProgram();
+  return {
+    name: meta("name"),
+    client_id: meta("clientId") || null,
+    status: meta("status"),
+    goal: meta("goal"),
+    weeks: content.weeks,
+    content,
+    day: Math.max(
+      0,
+      $$(".day-tabs [data-day]", root).findIndex((b) =>
+        b.classList.contains("active"),
+      ),
+    ),
+  };
+}
+const sameSnapshot = (a, b) =>
+  JSON.stringify({ ...a, day: 0 }) === JSON.stringify({ ...b, day: 0 });
+function recordProgramEdit(snapshot = programSnapshot()) {
+  const h = state.programHistory;
+  h.undo.push(snapshot);
+  if (h.undo.length > 100) h.undo.shift();
+  h.redo = [];
+  updateProgramHistoryButtons();
+}
+function stepProgramHistory(direction) {
+  const h = state.programHistory,
+    from = direction === "redo" ? h.redo : h.undo,
+    to = direction === "redo" ? h.undo : h.redo;
+  if (!from.length) return;
+  to.push(programSnapshot());
+  const { day, ...draft } = from.pop();
+  h.pending = null;
+  openProgram(state.activeProgram, { draft, day });
+}
+function updateProgramHistoryButtons() {
+  const root = $("#programEditor");
+  $('[data-editor="undo"]', root).disabled = !state.programHistory.undo.length;
+  $('[data-editor="redo"]', root).disabled = !state.programHistory.redo.length;
 }
 function dayEditorHTML(day, index, weeks) {
   return `<section class="program-day" data-day-panel="${index}" ${index ? "hidden" : ""}><div class="day-edit-title"><input data-day-name value="${attr(day.name || `Day ${index + 1}`)}" aria-label="Day name"><button class="text-btn" data-editor="remove-day">Remove day</button></div><div class="warmup-editor"><div class="builder-label"><span>WARM-UP / PILLAR PREP</span><button data-editor="add-warmup">＋ Line</button></div>${(day.warmup || []).map((w, i) => `<div class="warmup-row"><b>${i + 1}.</b><input data-warm-name value="${attr(w.name || "")}" placeholder="Warm-up movement"><input data-warm-rx value="${attr(w.prescription || "")}" placeholder="2 rounds"><button data-remove-row>×</button></div>`).join("")}</div><div class="blocks-editor">${(day.blocks || []).map((b, i) => blockEditorHTML(b, i, weeks)).join("")}</div><button class="secondary-btn add-block" data-editor="add-block">＋ Add training block</button></section>`;
@@ -1369,21 +1450,20 @@ function collectProgram() {
 function programEditorAction(e) {
   const day = e.target.closest("[data-day]");
   if (day) {
-    $$(".day-tabs [data-day]", $("#programEditor")).forEach((b) =>
-      b.classList.toggle("active", b === day),
-    );
-    $$("[data-day-panel]", $("#programEditor")).forEach(
-      (p) => (p.hidden = p.dataset.dayPanel !== day.dataset.day),
-    );
+    showProgramDay(Number(day.dataset.day));
     return;
   }
   if (e.target.closest("[data-remove-row]")) {
+    recordProgramEdit();
     e.target.closest(".warmup-row,.exercise-row").remove();
     return;
   }
   const a = e.target.closest("[data-editor]")?.dataset.editor,
     p = state.programs.find((x) => String(x.id) === state.activeProgram);
   if (!a || !p) return;
+  if (a === "undo" || a === "redo") return stepProgramHistory(a);
+  if (["add-exercise", "add-warmup", "add-block", "add-day"].includes(a))
+    recordProgramEdit();
   if (a === "close") $("#programEditor").hidden = true;
   if (a === "print") {
     refreshPrintSheet();
@@ -1438,6 +1518,7 @@ function programEditorAction(e) {
   if (a === "remove-day") {
     const panels = $$("[data-day-panel]", $("#programEditor"));
     if (panels.length < 2) return toast("A program needs at least one day");
+    recordProgramEdit();
     const plan = collectProgram(),
       idx = panels.indexOf(e.target.closest("[data-day-panel]"));
     plan.days.splice(idx, 1);
