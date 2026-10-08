@@ -1,0 +1,6309 @@
+[
+ {
+  "key": "excard-alex-g-1",
+  "name": "Alex G · 2-Day Program",
+  "days_per_week": 2,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Alex G)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Plate Counterbalance Pistol Squat to Box",
+         "note": "Squat to box or Bench",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "4 × 8/side",
+          "10/side",
+          "4 × 10/side"
+         ]
+        },
+        {
+         "name": "Overhead Banded Alternating Straight Leg Lowering",
+         "note": "Arms Straight out front over shoulders",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Row w/ T-Spine Rotation",
+         "note": "Row side knee on ground",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Low-Incline 1-DB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Slider Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8-10",
+          "8-10",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "1/2 Lap = one way down turf, 1 Lap = Down & Back on turf",
+         "sets": 3,
+         "reps": [
+          "1/2 lap",
+          "1/2 lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        },
+        {
+         "name": "TRX Inverted Row",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Activated Low Plank",
+         "note": "Actively bring elbows towards feet",
+         "sets": 3,
+         "reps": [
+          "10 sec",
+          "10-12 sec",
+          "12-15sec",
+          "15 sec"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Heel Elevated DB Goblet Squat",
+         "note": "Stay tall",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "1-DB Straight Leg Sit-Up",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "5/side",
+          "6/side",
+          "7/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Front Foot Elevated 2-DB Reverse Lunge",
+         "note": "Use light or dark blue box under front foot",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "Perform on bench, start with bench pad at knee height",
+         "sets": 3,
+         "reps": [
+          "10-15s/s",
+          "15s/s",
+          "15-20s/s",
+          "15-20s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "Kickstand 1-DB RDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Wide Stance Rotational Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-rachel-1",
+  "name": "Rachel · 2-Day Program",
+  "days_per_week": 2,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Rachel)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Plate Counterbalance Pistol Squat to Box",
+         "note": "Squat to box or Bench",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "4 × 8/side",
+          "10/side",
+          "4 × 10/side"
+         ]
+        },
+        {
+         "name": "Overhead Banded Alternating Straight Leg Lowering",
+         "note": "Arms Straight out front over shoulders",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Row w/ T-Spine Rotation",
+         "note": "Row side knee on ground",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Low-Incline 1-DB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Slider Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8-10",
+          "8-10",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "1/2 Lap = one way down turf, 1 Lap = Down & Back on turf",
+         "sets": 3,
+         "reps": [
+          "1/2 lap",
+          "1/2 lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        },
+        {
+         "name": "TRX Inverted Row",
+         "note": "Week 3: 3pt 1-DB Row",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "8-10",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Activated Low Plank",
+         "note": "Actively bring elbows towards feet; Week 2: Slider MTN Climber; Week 3: Standing 1-DB Curl",
+         "sets": 3,
+         "reps": [
+          "10 sec",
+          "10-12 sec",
+          "12-15sec",
+          "15 sec"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Heel Elevated DB Goblet Squat",
+         "note": "Stay tall",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "1-DB Straight Leg Sit-Up",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "5/side",
+          "5/side, 6/side, 6/side",
+          "7/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Front Foot Elevated 2-DB Reverse Lunge",
+         "note": "Use light or dark blue box under front foot",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "Perform on bench, start with bench pad at knee height",
+         "sets": 3,
+         "reps": [
+          "10-15s/s",
+          "15s/s, 20s/s, 20s/s",
+          "15-20s/s",
+          "15-20s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "Kickstand 1-DB RDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Wide Stance Rotational Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-margaret-lovallo-1",
+  "name": "Margaret Lovallo · 3-Day Program",
+  "days_per_week": 3,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Margaret Lovallo)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Hypertrophy",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Spinal Hygiene (Flexion/Extension)",
+       "prescription": "6e"
+      },
+      {
+       "name": "Hip Thrust on Bench w/ Yoga Block Squeeze",
+       "prescription": "10"
+      },
+      {
+       "name": "Worlds Greatest",
+       "prescription": "6e"
+      },
+      {
+       "name": "SLDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Prone Swimmers on Airex",
+       "prescription": "8"
+      },
+      {
+       "name": "Wall Ref. Alt. Straight Leg Lowering",
+       "prescription": "8e"
+      },
+      {
+       "name": "Lateral Mini Band Moster Walks",
+       "prescription": "10/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Barbell Box Squats",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12, 10, 8, 8",
+          "12, 10, 8, 8",
+          "12, 10, 8, 8",
+          "12, 12, 12, 8, 8"
+         ]
+        },
+        {
+         "name": "Alt. Deadbug w/ DB Pullover ISO",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "5/s, 6/s, 8/side",
+          "4 × 6/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Kickstand 2-DB RDL",
+         "note": "If Form Pass move to 1-DB Kickstand RDL; Week 3: Seat Ham Curl; Week 4: KB/Plate Hug RDL",
+         "sets": 4,
+         "reps": [
+          "8/side",
+          "8/side",
+          "12, 15, 15, 12-15",
+          "12"
+         ]
+        },
+        {
+         "name": "Wide Stance Lateral Cable Chop",
+         "note": "Week 3: Cop. Side Plank; Week 4: Cop. Side Plank",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "20sec/side",
+          "20s/s, 25sec/side, 25sec/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "1.5 Rep Landmine Sumo Deadlift",
+         "note": "Week 4: Banded KB Sumo Deadlift",
+         "sets": 3,
+         "reps": [
+          "8, 8-10, 10-12",
+          "5, 5, 6",
+          "8",
+          "12"
+         ]
+        },
+        {
+         "name": "Lat mini Band Monster Walks",
+         "note": "Week 3: Zig-Zag; Week 4: TP w/ Glute Kickback",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "10/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "Rounds for time!; Week 4: 1 Lap-Rubber Map",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10",
+          "3-4",
+          ""
+         ]
+        },
+        {
+         "name": "2-DB/Plate Straight Leg Sit-Up",
+         "note": "Rounds for Time",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10",
+          "10, 12, 12",
+          "12"
+         ]
+        },
+        {
+         "name": "Versa",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15sec",
+          "15sec",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2 · Upper",
+     "warmup": [
+      {
+       "name": "Spinal Hygiene (Flexion/Extension)",
+       "prescription": "6e"
+      },
+      {
+       "name": "2-DB Low-Incline W-to-Y",
+       "prescription": "12-15 (2.5-5lb)"
+      },
+      {
+       "name": "Worlds Greatest",
+       "prescription": "6e"
+      },
+      {
+       "name": "Prone Swimmers on Airex",
+       "prescription": "8"
+      },
+      {
+       "name": "Stag Stance Serratus Slide w/ FR",
+       "prescription": "10"
+      },
+      {
+       "name": "Wall Ref. Alt. Straight Leg Lowering",
+       "prescription": "8e"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB Bench Press",
+         "note": "Think proud chest, Keep DBs over shoulders or just outside shoulder width at top",
+         "sets": 4,
+         "reps": [
+          "12, 12, 10, 10",
+          "12, 10, 8-10, 8",
+          "10, 8-10, 8, 8",
+          "8-10, 8-10, 8, 8"
+         ]
+        },
+        {
+         "name": "Half-Kneeling Cable Facepull",
+         "note": "High Elbows, Pull thumbs towards eyes",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Pulldown",
+         "note": "Intent: Keep Elbow away from shoulder, Keep thumb up, drive elbow straight to floor",
+         "sets": 3,
+         "reps": [
+          "12/side",
+          "12/side, 10-12/side, 10/side",
+          "10-12/side, 10/side, 10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Stability Ball Stir the Pot",
+         "note": "Start Wide Feet - Small Circles",
+         "sets": 3,
+         "reps": [
+          "5/side",
+          "5/side",
+          "6/side",
+          "6/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "3pt. 1-Arm DB Row",
+         "note": "Keep Spine Neutral, intent to move scap ROM as much as possible (full reps w/ good trunk position)",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "2 × 8/side"
+         ]
+        },
+        {
+         "name": "Half-Kneeing 1-DB Shoulder Press",
+         "note": "Movement will be tougher to progress intensity so we will work on capacity",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "12/side",
+          "12/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Push-Up (elevated on Box or from Knees",
+         "note": "Optional: TRX Scull Crushers; Rounds for time! (8 min)",
+         "sets": 5,
+         "reps": [
+          "8",
+          "8-10",
+          "10",
+          "10"
+         ]
+        },
+        {
+         "name": "Standing 2-DB Bicep Curls",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12",
+          "10-12",
+          "8-10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-15sec/s",
+          "12-15sec/s",
+          "15sec/s",
+          "15-18sec/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "3 rounds - 30sec on / 30sec off - Use Versa/Bike/Rower",
+         "note": "Finisher; Get Heart rate up + Increase HRV",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "10-20 min Constant (Moderate Intensity) Cardio",
+         "note": "Finisher; Keep Heart Rate up + Burn Fat",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 3",
+     "warmup": [
+      {
+       "name": "Cat/Cow",
+       "prescription": "8e"
+      },
+      {
+       "name": "SLDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "90/90 Heel Taps",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Low-Incline Sorrano Press",
+       "prescription": "12"
+      },
+      {
+       "name": "Wall Referenced Alt. Straight Leg Lowering",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Hip Thrust on Bench w/ Yoga Block Squeeze",
+       "prescription": "10"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Barbell Hip Thrust",
+         "note": "1 sec pause at top of each rep",
+         "sets": 4,
+         "reps": [
+          "15",
+          "12",
+          "12, 10, 10, 10",
+          ""
+         ]
+        },
+        {
+         "name": "Anterior Banded Hip Flexor Stretch",
+         "note": "*Optional: Couch Stretch on Bench",
+         "sets": 3,
+         "reps": [
+          "30sec/s",
+          "30sec/s",
+          "30sec/s",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "FFE 2-DB Reverse Lunge",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "6/side",
+          "5/side, 8/s, 10/s, 10s",
+          "8/s, 10/side, 8/side, 6/s",
+          ""
+         ]
+        },
+        {
+         "name": "Slider Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8, 10, 10",
+          "10, 12, 12, 12",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Heel Elevated 2-DB Squats",
+         "note": "Week 4: basnded rdl",
+         "sets": 3,
+         "reps": [
+          "10, 10, 10-12",
+          "10, 8-10, 8-10",
+          "10, 8-10, 8, 8",
+          "10"
+         ]
+        },
+        {
+         "name": "Seated Machine ADDuction",
+         "note": "Week 4: lat band walk",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12",
+          "4 × 10-12",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Seated Hamstring Curl",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "15, 15, 12-15, 12-15",
+          "12-15, 12, 10-12, 10-12",
+          "10-12, 10, 10+DS, 10+DS",
+          ""
+         ]
+        },
+        {
+         "name": "Calf Raises on Leg Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "15",
+          "12-15",
+          "12",
+          ""
+         ]
+        },
+        {
+         "name": "Leg Extension",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12",
+          "10-12",
+          "10, 10, 10+DS, 10+DS",
+          ""
+         ]
+        },
+        {
+         "name": "Abduction",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15",
+          "15, 12-15",
+          "4 × 12-15",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-margaret-lovallo-2",
+  "name": "Margaret Lovallo · 2-Day Program · Block 2",
+  "days_per_week": 3,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Margaret Lovallo, block 2)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Hypertrophy",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Spinal Hygiene (Flexion/Extension)",
+       "prescription": "6e"
+      },
+      {
+       "name": "Hip Thrust on Bench w/ Yoga Block Squeeze",
+       "prescription": "10"
+      },
+      {
+       "name": "Worlds Greatest",
+       "prescription": "6e"
+      },
+      {
+       "name": "SLDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Prone Swimmers on Airex",
+       "prescription": "8"
+      },
+      {
+       "name": "Wall Ref. Alt. Straight Leg Lowering",
+       "prescription": "8e"
+      },
+      {
+       "name": "Lateral Mini Band Moster Walks",
+       "prescription": "10/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Barbell Box Squats",
+         "note": "",
+         "sets": 5,
+         "reps": [
+          "12, 10, 11, 8, 6",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Alt. Deadbug w/ Band Pullover ISO",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/s",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "BB Hip Thrust",
+         "note": "If Form Pass move to 1-DB Kickstand RDL",
+         "sets": 5,
+         "reps": [
+          "12, 10, 10, 10, 10",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "2-DB Straight Leg Sit-Up",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Banded Toe Elevated 1-DB RDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12, 12, 12",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "30s/s",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Seated Hamstring Curl",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8-10",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Calf Raise",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "15-18",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "Seated Leg Extension",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12, 10-12, 8-10, 8-10",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Seated Abduction Machine",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "15",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Spinal Hygiene (Flexion/Extension)",
+       "prescription": "6e"
+      },
+      {
+       "name": "SLDL w/ Hip Opener",
+       "prescription": "6e"
+      },
+      {
+       "name": "HK 1-Arm Windmill",
+       "prescription": "8e"
+      },
+      {
+       "name": "Plank w/ Feet on Slides",
+       "prescription": "10-12sec"
+      },
+      {
+       "name": "Quadraped 1-Leg Adductor Rock",
+       "prescription": "8e"
+      },
+      {
+       "name": "Low-Incline Sorrano Press",
+       "prescription": "12-15"
+      },
+      {
+       "name": "Plank w/ Feet on Slides",
+       "prescription": "10-12sec"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Barbell Box Squats",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Alt. Straight Leg Lowering w/ DB OH",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Banded Toe Elevated MB RDL",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "2-DB Bench Press",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Pulldown",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Valslide Hamstring Curl",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "2-Slider Mountain Climber",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Mobility menu",
+     "warmup": [],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Spinal Hygiene (Flexion/Extension)",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "6e",
+          "6e",
+          "6e",
+          "6e"
+         ]
+        },
+        {
+         "name": "Worlds Greatest",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "6e",
+          "6e",
+          "6e",
+          "6e"
+         ]
+        },
+        {
+         "name": "Prone Swimmers on Airex",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "8",
+          "8",
+          "8",
+          "8"
+         ]
+        },
+        {
+         "name": "Wall Ref. Alt. Straight Leg Lowering",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "8e",
+          "8e",
+          "8e",
+          "8e"
+         ]
+        },
+        {
+         "name": "Lateral Mini Band Moster Walks",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "SLDL",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "6/side",
+          "6/side",
+          "6/side",
+          "6/side"
+         ]
+        },
+        {
+         "name": "Active Low Plank",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "15 sec",
+          "15 sec",
+          "15 sec",
+          "15 sec"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Banded Hip Flexor Stretch",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "30sec/side",
+          "30sec/side",
+          "30sec/side",
+          "30sec/side"
+         ]
+        },
+        {
+         "name": "Active Low Plank",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "15 sec",
+          "15 sec",
+          "15 sec",
+          "15 sec"
+         ]
+        },
+        {
+         "name": "Couch Stretch on Bench",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "30sec/side''",
+          "30sec/side''",
+          "30sec/side''",
+          "30sec/side''"
+         ]
+        },
+        {
+         "name": "Side Plank",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "20sec/side",
+          "20sec/side",
+          "20sec/side",
+          "20sec/side"
+         ]
+        },
+        {
+         "name": "90/90 Heel Taps",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Side Plank",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "20sec/side",
+          "20sec/side",
+          "20sec/side",
+          "20sec/side"
+         ]
+        },
+        {
+         "name": "Quadraped FR Reach Through",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side",
+          "10/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "20sec/side",
+          "20sec/side",
+          "20sec/side",
+          "20sec/side"
+         ]
+        },
+        {
+         "name": "Hanging Shin Box",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "20sec/side",
+          "20sec/side",
+          "20sec/side",
+          "20sec/side"
+         ]
+        },
+        {
+         "name": "Half-Kneeling 1-DB Windmill",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Foam Roller Low Back Release",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Half-Kneeling 1-DB Windmill",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Lacross Ball Hip Flexor Smash",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "45sec/side",
+          "45sec/side",
+          "45sec/side",
+          "45sec/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-DB Windmill",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "KB Calf Smash w/ Ankle CARs",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "10/way",
+          "10/way",
+          "10/way",
+          "10/way"
+         ]
+        },
+        {
+         "name": "Deadbug w/ DB Pullover",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Deep Squat Breathing",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "30sec",
+          "30sec",
+          "30sec",
+          "30sec"
+         ]
+        },
+        {
+         "name": "Deadbug w/ DB Pullover",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "TRX Lateral Line Stretch",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "30sec/side",
+          "30sec/side",
+          "30sec/side",
+          "30sec/side"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-vivian-le-1",
+  "name": "Vivian Le · 3-Day Program",
+  "days_per_week": 3,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Vivian Le)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Hypertrophy",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Spinal Hygiene (Flexion/Extension)",
+       "prescription": "6e"
+      },
+      {
+       "name": "Hip Thrust on Bench w/ Yoga Block Squeeze",
+       "prescription": "10"
+      },
+      {
+       "name": "Worlds Greatest",
+       "prescription": "6e"
+      },
+      {
+       "name": "SLDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Prone Swimmers on Airex",
+       "prescription": "8"
+      },
+      {
+       "name": "Wall Ref. Alt. Straight Leg Lowering",
+       "prescription": "8e"
+      },
+      {
+       "name": "Lateral Mini Band Moster Walks",
+       "prescription": "10/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Barbell Box Squats",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12, 12, 10-12, 10-12",
+          "12, 10, 10, 10",
+          "10, 10, 8-10, 8-10",
+          "8-10, 8-10, 8, 8"
+         ]
+        },
+        {
+         "name": "Alt. Deadbug w/ DB Pullover ISO",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "6/side",
+          "6/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10",
+          "8",
+          "8"
+         ]
+        },
+        {
+         "name": "Seated Abduction Machine",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15-18",
+          "15-18",
+          "12-15",
+          "12-15"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15 steps/side",
+          "15 steps/side",
+          "15 steps/side",
+          "15 steps/side"
+         ]
+        },
+        {
+         "name": "Standing 2-DB Lateral Raise",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12",
+          "12-15",
+          "10",
+          "8-10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "2-DB Straight Leg Sit-Up",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12",
+          "12",
+          "12-15",
+          "12-15"
+         ]
+        },
+        {
+         "name": "1-DB SL Calf Raise",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15/s",
+          "12-15/s",
+          "15-18/s",
+          "15-18/s"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Spinal Hygiene (Flexion/Extension)",
+       "prescription": "6e"
+      },
+      {
+       "name": "Hip Thrust on Bench w/ Yoga Block Squeeze",
+       "prescription": "10"
+      },
+      {
+       "name": "Worlds Greatest",
+       "prescription": "6e"
+      },
+      {
+       "name": "SLDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Prone Swimmers on Airex",
+       "prescription": "8"
+      },
+      {
+       "name": "Wall Ref. Alt. Straight Leg Lowering",
+       "prescription": "8e"
+      },
+      {
+       "name": "Lateral Mini Band Moster Walks",
+       "prescription": "10/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Kickstand 2-DB RDL",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Active Low-Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20-30sec",
+          "20-30sec",
+          "30-40sec",
+          "30-40sec"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Pulldown",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 8-10/side",
+          "8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20-30sec",
+          "30-40sec",
+          "35-45sec",
+          "40-50sec"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Seated Hamstring Curl Machine",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "8-10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "Staggered Stance Cable facepull",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "15",
+          "15"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "3pt. 1-Arm DB Row",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12/s",
+          "12/s",
+          "10/s",
+          "10/s"
+         ]
+        },
+        {
+         "name": "Seated Adduction Machine",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15-18",
+          "15-18",
+          "12-15",
+          "12-15"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 3",
+     "warmup": [
+      {
+       "name": "Spinal Hygiene (Flexion/Extension)",
+       "prescription": "6e"
+      },
+      {
+       "name": "Hip Thrust on Bench w/ Yoga Block Squeeze",
+       "prescription": "10"
+      },
+      {
+       "name": "Worlds Greatest",
+       "prescription": "6e"
+      },
+      {
+       "name": "SLDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Prone Swimmers on Airex",
+       "prescription": "8"
+      },
+      {
+       "name": "Wall Ref. Alt. Straight Leg Lowering",
+       "prescription": "8e"
+      },
+      {
+       "name": "Lateral Mini Band Moster Walks",
+       "prescription": "10/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "BB Hip Thrust",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8-10",
+          "8",
+          "6-8",
+          "6"
+         ]
+        },
+        {
+         "name": "Stability Ball Rollout",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Row",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10",
+          "8-10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "Cable Glute Kickbacks",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12/side",
+          "12/side",
+          "15/side",
+          "15/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Box Step Down",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Wide Stance Lateral Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side",
+          "10/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "10",
+          "10"
+         ]
+        },
+        {
+         "name": "Staggered Stance Cable Flys",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-xingjian-1",
+  "name": "Xingjian · 4-Day Program",
+  "days_per_week": 4,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (XINGJIAN)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB RDL",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10",
+          "10",
+          "8",
+          "8"
+         ]
+        },
+        {
+         "name": "Standing Cable Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Pulldown",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "4 × 8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Valslide Hamstring Curl",
+         "note": "Week 1: 3 hard to rest easy",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8",
+          "10",
+          "10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Row",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12",
+          "10-12",
+          "10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "SL Calf Raise",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12-15",
+          "12-15",
+          "15-18",
+          "15-18"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Seated Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "High-Incline 2-DB Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "12-15",
+          "12-15"
+         ]
+        },
+        {
+         "name": "Staggered Stance Cable Facepull",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "12-15",
+          "12-15"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "BB Back Squats",
+         "note": "Squat to box or Bench",
+         "sets": 4,
+         "reps": [
+          "8",
+          "8",
+          "6",
+          "6"
+         ]
+        },
+        {
+         "name": "Overhead Banded Alternating Straight Leg Lowering",
+         "note": "Arms Straight out front over shoulders",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "BB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8, 8, 8, 8+DS",
+          "8, 8, 8, 8+DS",
+          "6, 6, 6, 6+DS",
+          "6, 6, 6, 6+DS"
+         ]
+        },
+        {
+         "name": "Stability Ball Stir the Pot",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "6/way",
+          "6/way",
+          "8/way",
+          "8/way"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Reverse Lunge",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "6/side",
+          "6/side"
+         ]
+        },
+        {
+         "name": "Staggered Stance Cable Fly",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12, 10, 10",
+          "12",
+          "10",
+          "10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12, 10, 12",
+          "10-12",
+          "10, 8, 8",
+          "8-10"
+         ]
+        },
+        {
+         "name": "Banded Ant. Tib Raise",
+         "note": "Week 3: copenhagen",
+         "sets": 3,
+         "reps": [
+          "15/side",
+          "15/side",
+          "18/side",
+          "18/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "Rope Tricep Pushdown",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "2 × 10-12",
+          "10-12, 8-10, 8-10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "2-DB Lateral Raise",
+         "note": "21's (top range, full range, bottom range)",
+         "sets": 3,
+         "reps": [
+          "7-7-7",
+          "7-7-7",
+          "7-7-7",
+          "7-7-7"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 3",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Trap Bar Deadlift",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "6",
+          "5 × 6",
+          "5 × 5",
+          "5 × 5"
+         ]
+        },
+        {
+         "name": "Alt. Deadbug w/ DB Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/s",
+          "6/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "T-Bar Row",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12",
+          "10",
+          "8-10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "Valslide Bodysaw",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8",
+          "8",
+          "8"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Landmine SLDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/s",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Half-Kneeling Banded Facepull to ER to OH Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "12-15",
+          "12-15",
+          "12-15"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Chest Supported Machine Row",
+         "note": "Overhand Grip; Wide Elbow Path",
+         "sets": 3,
+         "reps": [
+          "12",
+          "12",
+          "12-15",
+          "12-15"
+         ]
+        },
+        {
+         "name": "1-DB Concentration Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "High-Incline 2-DB Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Standing Cable Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 4",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB Box Step Down",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/side",
+          "8/side",
+          "6/side",
+          "6/side"
+         ]
+        },
+        {
+         "name": "Band Resisted Arms OIF Atl. Deadbug",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "2-DB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12",
+          "10-12",
+          "8-10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20sec/s",
+          "20sec/s",
+          "20s/s",
+          "25-30s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Landmine Lateral Squat",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "6/side",
+          "6/side"
+         ]
+        },
+        {
+         "name": "Wide Stance Lateral Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Low-Incline BB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "2-Leg Valslide Mountain Climber",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "12",
+          "15",
+          "15-18"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "OH Rope Tricep Extension",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-xingjian-block-2-1",
+  "name": "Xingjian · 4-Day Program · Block 2",
+  "days_per_week": 4,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (XINGJIAN Block 2)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB RDL",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10",
+          "10",
+          "8",
+          "8"
+         ]
+        },
+        {
+         "name": "Standing Cable Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Pulldown",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "4 × 8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Valslide Hamstring Curl",
+         "note": "Week 1: 3 hard to rest easy",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8",
+          "10",
+          "10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Row",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12",
+          "10-12",
+          "10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "SL Calf Raise",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12-15",
+          "12-15",
+          "15-18",
+          "15-18"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Seated Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "High-Incline 2-DB Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "12-15",
+          "12-15"
+         ]
+        },
+        {
+         "name": "Staggered Stance Cable Facepull",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "12-15",
+          "12-15"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Lateral Mini Band Monster Walk",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "BB Reverse Lunge",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/side, 6/side, 6/side, 6/side",
+          "8/side, 6/side, 6/side, 6/side",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "BB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "6, 5, 5, 5+DS",
+          "6, 5, 5, 5+DS",
+          "5, 3, 3, 3+DS",
+          "5, 3, 3, 3+DS"
+         ]
+        },
+        {
+         "name": "Split Stance 1-Arm Banded Y-Raise",
+         "note": "WITH T-Spine Rotation",
+         "sets": 3,
+         "reps": [
+          "8/s",
+          "8/s",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Lateral Box Step Up",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/side, 8/side, 6/side, 6/side",
+          "8/side, 8/side, 6/side, 6/side",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Staggered Stance Cable Fly",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12, 12, 15",
+          "12, 12, 15",
+          "12-15",
+          "12-15"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8, 8, 8+DS",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Rope Tricep Pushdown",
+         "note": "OR CROSS CABLE EXTENSION",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8",
+          "8",
+          "8"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "2-DB Lateral Raise",
+         "note": "",
+         "sets": 1,
+         "reps": [
+          "",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 3",
+     "warmup": [
+      {
+       "name": "Spinal Hygeine",
+       "prescription": "8"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Low-Incline OHP",
+       "prescription": ""
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL on Airex Pad 6/side",
+       "prescription": ""
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Trap Bar Deadlift",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "4",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Alt. Deadbug w/ DB Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "T-Bar Row",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10, 8, 8, 8",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Valslide Bodysaw",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB RDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Stag Stance Cable Facepull",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Chest Supported Machine Row",
+         "note": "Overhand Grip; Wide Elbow Path",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "1-DB Concentration Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "High-Incline 2-DB Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Standing Cable Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 4",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB Box Step Down",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/side",
+          "8/side",
+          "6/side",
+          "6/side"
+         ]
+        },
+        {
+         "name": "Band Resisted Arms OIF Atl. Deadbug",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "2-DB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12",
+          "10-12",
+          "8-10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20sec/s",
+          "20sec/s",
+          "20s/s",
+          "25-30s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Landmine Lateral Squat",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "6/side",
+          "6/side"
+         ]
+        },
+        {
+         "name": "Wide Stance Lateral Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Low-Incline BB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "2-Leg Valslide Mountain Climber",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "12",
+          "15",
+          "15-18"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "OH Rope Tricep Extension",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-derick-ngan-1",
+  "name": "Derick Ngan · 5-Day Program",
+  "days_per_week": 5,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Derick Ngan)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Standing Cable Chest Flys",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "8-10",
+          "12"
+         ]
+        },
+        {
+         "name": "Reverse Sled Drag",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "1 Lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10, 8, 8, 8+DS",
+          "10, 8, 8, 8+DS",
+          "8, 6, 6, 6+DS",
+          "8, 6, 6, 6"
+         ]
+        },
+        {
+         "name": "1-DB Concentration Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "2 × 8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12",
+          "10-12",
+          "10",
+          "10, 8, 8, 8"
+         ]
+        },
+        {
+         "name": "High-Incline 2-DB Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "8-10",
+          "8-10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "1 Lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        },
+        {
+         "name": "Slider Pike Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "25-30s/s",
+          "25-30s/s",
+          "30-40s/s",
+          "30-40s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "2-DB Lateral Rise",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10",
+          "8",
+          "10, 10-12, 8"
+         ]
+        },
+        {
+         "name": "2-DB Lateral Raise Swings - Half Reps",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "12-15",
+          "12-15"
+         ]
+        },
+        {
+         "name": "Wide Stance Lateral Cable Chop w/ Handle",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "8-10",
+          "8-10"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Banded Lat Stretch",
+       "prescription": "30sec/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "BB Trap Smash",
+       "prescription": "30sec/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB RDL",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10, 8, 8, 8",
+          "10, 8, 8, 8",
+          "8, 6, 6, 6",
+          "10, 8, 6, 6"
+         ]
+        },
+        {
+         "name": "Standing Cable Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "12, 12, 10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Pulldown",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10/side",
+          "10/side",
+          "10/side, 8/side, 8/side, 8+DS/side",
+          "10/side, 8/side, 8/side, 8+DS/side"
+         ]
+        },
+        {
+         "name": "Stability Ball Rollout",
+         "note": "Week 2: Straight Leg Sit-Up",
+         "sets": 3,
+         "reps": [
+          "8",
+          "10, 12, 12-15",
+          "10",
+          "10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Row",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12",
+          "12, 10-12, 10-12, 10-12",
+          "10",
+          "10, 8-10, 8-10, 8-10"
+         ]
+        },
+        {
+         "name": "Slider Hamstring Curls",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8",
+          "10",
+          "10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Rope Tricep Pushdown",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "12-15",
+          "8",
+          "12-15, 12, 10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "OH Rope Tricep Extension",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "8-10",
+          "8-10"
+         ]
+        },
+        {
+         "name": "Staggered Stance Cable Facepull",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 3",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Banded Lat Stretch",
+       "prescription": "30sec/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "BB Trap Smash",
+       "prescription": "30sec/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "BB Back Squats",
+         "note": "Squat to box or Bench",
+         "sets": 4,
+         "reps": [
+          "8",
+          "8",
+          "6",
+          "6"
+         ]
+        },
+        {
+         "name": "Overhead Banded Alternating Straight Leg Lowering",
+         "note": "Arms Straight out front over shoulders",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "10/side",
+          "10/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Seated Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Stability Ball Stir the Pot",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "6/way",
+          "6/way",
+          "8/way",
+          "8/way"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Reverse Lunge",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "6/side",
+          "6/side"
+         ]
+        },
+        {
+         "name": "Plate CB Straight Leg Sit-Up",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "12",
+          "15",
+          "15-18"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Heel Elevated 2-DB - 1.5 Rep Squats",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "10",
+          "10-12",
+          "12-15"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20-30sec/s",
+          "20-30sec/s",
+          "30-40sec/s",
+          "30-40sec/s"
+         ]
+        },
+        {
+         "name": "SL Calf Raise",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12-15",
+          "12-15",
+          "15-18",
+          "15-18"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 4",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "T-Bar Row",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12, 12, 10",
+          "10-12, 10-12, 10, 10",
+          "10, 10, 8, 8",
+          "10, 8-10, 8, 8"
+         ]
+        },
+        {
+         "name": "Slider Body Saw",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8",
+          "10",
+          "10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Low-Incline BB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12, 10, 8, 8",
+          "12, 10, 8, 8",
+          "10, 8, 6, 6",
+          "10, 8, 6, 6"
+         ]
+        },
+        {
+         "name": "Half-Kneeling Banded Facepull to ER to OH Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "8",
+          "10",
+          "10"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Pulldown",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12/s",
+          "12-15/s",
+          "15/s",
+          "15-18/s"
+         ]
+        },
+        {
+         "name": "Seated Machine Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10-12",
+          "12-15",
+          "12-15"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Stag Stance Cable Fly",
+         "note": "Pullover Fly Optional",
+         "sets": 3,
+         "reps": [
+          "15",
+          "15",
+          "15-18",
+          "15-18"
+         ]
+        },
+        {
+         "name": "Bicep of Choice",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12, 10-12, 12-15",
+          "10-12, 10-12, 12-15",
+          "10-12, 10-12, 12-15",
+          "10-12, 10-12, 12-15"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "Cable Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15-18",
+          "15-18",
+          "15",
+          "15"
+         ]
+        },
+        {
+         "name": "Tricep of Choice",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12, 10-12, 12-15",
+          "10-12, 10-12, 12-15",
+          "10-12, 10-12, 12-15",
+          "10-12, 10-12, 12-15"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 5 · Lower",
+     "warmup": [],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Trap Bar Deadlift",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8",
+          "8, 6, 6, 6",
+          "6, 5, 5, 5",
+          "6, 5, 5, 5"
+         ]
+        },
+        {
+         "name": "Band Resisted Arms OIF Atl. Deadbug",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "6/side",
+          "6/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "2-DB Box Step Down",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "6/side",
+          "6/side"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20-30sec/s",
+          "20-30sec/s",
+          "30-40sec/s",
+          "30-40sec/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Landmine Lateral Squat",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Wide Stance Lateral Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1/2 Lap",
+          "1/2 Lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        },
+        {
+         "name": "Seated Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-youngeun-na-1",
+  "name": "Youngeun Na · 2-Day Program",
+  "days_per_week": 2,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Youngeun Na)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Hypertrophy",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Plate Counterbalance Pistol Squat to Box",
+         "note": "Squat to box or Bench",
+         "sets": 4,
+         "reps": [
+          "8/side",
+          "8/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Overhead Banded Alternating Straight Leg Lowering",
+         "note": "Arms Straight out front over shoulders",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Row",
+         "note": "Row side knee up/forward",
+         "sets": 4,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Low-Incline 2-DB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10",
+          "10",
+          "8",
+          "8"
+         ]
+        },
+        {
+         "name": "Slider Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8-10",
+          "8-10",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "1/2 Lap = one way down turf, 1 Lap = Down & Back on turf",
+         "sets": 3,
+         "reps": [
+          "1/2 lap",
+          "1/2 lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        },
+        {
+         "name": "TRX Inverted Row",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "8-10",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Activated Low Plank",
+         "note": "Actively bring elbows towards feet during hold",
+         "sets": 3,
+         "reps": [
+          "10 sec",
+          "10-12 sec",
+          "12-15sec",
+          "15 sec"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Heel Elevated 2-DB Squat",
+         "note": "Stay tall",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "1-DB Straight Leg Sit-Up",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "12",
+          "12-15",
+          "12-15"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Front Foot Elevated 2-DB Reverse Lunge",
+         "note": "Use light or dark blue box under front foot",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "Perform on bench, start with bench pad at knee height",
+         "sets": 3,
+         "reps": [
+          "10-15s/s",
+          "15s/s, 20s/s, 20s/s",
+          "15-20s/s",
+          "15-20s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "2-DB RDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8",
+          "10",
+          "10"
+         ]
+        },
+        {
+         "name": "Wide Stance Rotational Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-akanksha-thareja-1",
+  "name": "Akanksha Thareja · 2-Day Program",
+  "days_per_week": 2,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Akanksha Thareja)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Plate Counterbalance Pistol Squat to Box",
+         "note": "Squat to box or Bench",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "4 × 8/side",
+          "10/side",
+          "4 × 10/side"
+         ]
+        },
+        {
+         "name": "Overhead Banded Alternating Straight Leg Lowering",
+         "note": "Arms Straight out front over shoulders",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Cable Row w/ T-Spine Rotation",
+         "note": "Row side knee on ground",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Low-Incline 1-DB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "8/side",
+          "4 × 8/side"
+         ]
+        },
+        {
+         "name": "Slider Hamstring Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8-10",
+          "8-10",
+          "10-12"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "1/2 Lap = one way down turf, 1 Lap = Down & Back on turf",
+         "sets": 3,
+         "reps": [
+          "1/2 lap",
+          "1/2 lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        },
+        {
+         "name": "TRX Inverted Row",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "8-10",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Activated Low Plank",
+         "note": "Actively bring elbows towards feet",
+         "sets": 3,
+         "reps": [
+          "10 sec",
+          "10-12 sec",
+          "12-15sec",
+          "15 sec"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Heel Elevated DB Goblet Squat",
+         "note": "Stay tall",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "1-DB Straight Leg Sit-Up",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "5/side",
+          "5/side, 6/side, 6/side",
+          "7/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Front Foot Elevated 2-DB Reverse Lunge",
+         "note": "Use light or dark blue box under front foot",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "Perform on bench, start with bench pad at knee height",
+         "sets": 3,
+         "reps": [
+          "10-15s/s",
+          "15s/s, 20s/s, 20s/s",
+          "15-20s/s",
+          "15-20s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "Kickstand 1-DB RDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Wide Stance Rotational Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-em-siegel-1",
+  "name": "Em Siegel · 2-Day Program",
+  "days_per_week": 2,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Em Siegel)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Lateral neck stretch",
+       "prescription": ""
+      },
+      {
+       "name": "Seated Wall Slides",
+       "prescription": ""
+      },
+      {
+       "name": "Neck Rotations",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Bent over IYT",
+       "prescription": ""
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Trap Bar Deadlift",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "6, 8, 6, 6",
+          "8, 6, 5-6, 5-6",
+          "8, 6, 5-6, 5-6",
+          "3 × 8"
+         ]
+        },
+        {
+         "name": "Overhead Banded Alternating Straight Leg Lowering",
+         "note": "Arms Straight out front over shoulders; Week 3: Stir the pot",
+         "sets": 3,
+         "reps": [
+          "6/s, 6/s, 8/s",
+          "8/s",
+          "5/way",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Half-Kneeling 1-Arm Pulldown",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12/s, 10-12/s, 10/s, 10/s",
+          "10/s, 10/s, 8/s, 8/s",
+          "10/side, 10/side, 8/side, 8/side",
+          ""
+         ]
+        },
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "High Incline if bus shoulder; Week 3: 1/2 Kn Landmine Press",
+         "sets": 4,
+         "reps": [
+          "12-15, 12-15, 10-12, 10-12",
+          "12, 12, 10-12, 10-12",
+          "3 × 8/side",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "2-DB Bench Press",
+         "note": "Week 4: C2) IYTs",
+         "sets": 3,
+         "reps": [
+          "12, 10-12, 8",
+          "",
+          "10, 8, 8, 8",
+          ""
+         ]
+        },
+        {
+         "name": "Copenhagen Side Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15s/s, 30s/s, 30s/s",
+          "",
+          "1 × 20",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "3pt 1-Arm DB Row on Bench",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/s",
+          "",
+          "3 × 10/s",
+          ""
+         ]
+        },
+        {
+         "name": "Walking Foot Series",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1/2 Lap/e",
+          "",
+          "1/2 Lap/e",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "1-Arm Suitcase Carry",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap/side",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Banded Inversion / Eversion",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15/side",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB Reverse Lunge",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/s, 8/s, 6/s, 6/s",
+          "3 × 6/s",
+          "8/side, 8/side, 6/side, 6/side",
+          ""
+         ]
+        },
+        {
+         "name": "PB Rollout",
+         "note": "Week 2: Slide Body saw; Week 3: Slide Body saw",
+         "sets": 3,
+         "reps": [
+          "8, 8-10, 8-10",
+          "8",
+          "8",
+          ""
+         ]
+        },
+        {
+         "name": "Banded Tricep Pushdown ISO to Tricep Pushdown",
+         "note": "15-20 sec hold",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "10",
+          "12",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8-10, 8-10, 10-12, 10-12",
+          "8, 7, 6",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Slider Hamstring Curls",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8, 8, 8-10, 8-10",
+          "8, 10, 10",
+          "3 × 10",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10, 10, 10, 8",
+          "12, 10-12, 10-12",
+          ""
+         ]
+        },
+        {
+         "name": "Reverse Sled Drag",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "",
+          "",
+          "1 LAP",
+          ""
+         ]
+        },
+        {
+         "name": "Straight Leg Seated Wall Slides",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "",
+          "",
+          "10",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Row",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10, 10, 10, 8",
+          "4 × 10-12",
+          ""
+         ]
+        },
+        {
+         "name": "Rope Tricep Extension",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "",
+          "4 × 8-10",
+          ""
+         ]
+        },
+        {
+         "name": "2-DB Lateral Raises",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "E",
+       "exercises": [
+        {
+         "name": "High Incline 2-DB Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "",
+          "12-15",
+          ""
+         ]
+        },
+        {
+         "name": "OH Rope Tricep Extension",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "",
+          "12-15",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-em-siegel-2",
+  "name": "Em Siegel · 2-Day Program · Block 2",
+  "days_per_week": 2,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Em Siegel, block 2)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Hypertrophy",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB RDL",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Tall Plank w/ Alt. Straight Leg Raise",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "5e",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "CB SL Squat to Box",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8e",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Mini Band Lateral Monster Walks",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12/s, 15/s, 18/s",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "1/2 Kneeling 1-Arm Cable Pulldown",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12/s",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Slider Eccentric Hamstring Curls",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Standing 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Reverse Sled Drag",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "2-Arm Cable Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10, 10, 10, 8",
+          "10-12",
+          ""
+         ]
+        },
+        {
+         "name": "Stag Stance Cable Facepull",
+         "note": "Week 3: Low-Incline 2-DB Row",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "",
+          "10",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-numaya-1",
+  "name": "Numaya · 2-Day Program",
+  "days_per_week": 2,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Numaya)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-KB Front Racked Squat to Box",
+         "note": "When Able - move to BB Squat to Box",
+         "sets": 4,
+         "reps": [
+          "8, 8, 10, 10",
+          "10, 10, 12, 12",
+          "10-12, 10-12, 12-15, 15",
+          "10-12, 10-12, 12-15, 15"
+         ]
+        },
+        {
+         "name": "Overhead Banded Alternating Straight Leg Lowering",
+         "note": "Arms Straight out front over shoulders",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "2-DB Walking Lunges",
+         "note": "1/2 Lap = one way down turf, 1 Lap = Down & Back on turf",
+         "sets": 3,
+         "reps": [
+          "1/2 lap",
+          "1/2 lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        },
+        {
+         "name": "Mid-Incline 1-DB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "4 × 10/side",
+          "8/side",
+          "4 × 8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Standing 2-DB Shoulder press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12-15, 12-15, 15, 15",
+          "12",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Reverse Sled Drag",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "1 Lap",
+          "1 Lap",
+          "1 Lap"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "2-DB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12",
+          "10-12",
+          "10",
+          "8"
+         ]
+        },
+        {
+         "name": "Side Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15sec/s",
+          "20sec/s",
+          "25sec/s",
+          "30sec/s"
+         ]
+        },
+        {
+         "name": "Half-Kneeling Wood Chops",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20sec/s",
+          "20sec/s",
+          "25sec/s",
+          "25sec/s"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "1-DB Split Squat to Airex Pad",
+         "note": "Stay tall",
+         "sets": 4,
+         "reps": [
+          "8",
+          "8",
+          "3 × 10",
+          "10"
+         ]
+        },
+        {
+         "name": "low plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20s",
+          "5/side, 6/side, 6/side",
+          "7/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Reverse Sled Drag",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Side Plant w/ 1-Arm Abduction",
+         "note": "Perform on bench, start with bench pad at knee height",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "15s/s, 20s/s, 20s/s",
+          "15-20s/s",
+          "15-20s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "Machine Assisted Pull-Ups",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "4 × 8",
+          "10",
+          "4 × 10"
+         ]
+        },
+        {
+         "name": "1-KB RDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "8/side",
+          "10/side",
+          "10/side"
+         ]
+        },
+        {
+         "name": "Wide Stance Rotational Cable Chop",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10/side",
+          "10/side",
+          "8/side",
+          "8/side"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "TRX Inverted Row",
+         "note": "Week 3: 3pt 1-DB Row",
+         "sets": 3,
+         "reps": [
+          "8-10",
+          "8-10",
+          "8-10",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Half-Kneeling Wood Chops",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "20sec/s",
+          "20sec/s",
+          "25sec/s",
+          "25sec/s"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "key": "excard-numaya-2",
+  "name": "Numaya · 3-Day Program · Block 2",
+  "days_per_week": 3,
+  "weeks": 4,
+  "goal": "From the EXOS_Adobe training card (Numaya, block 2)",
+  "level": "General",
+  "sport": "Any sport",
+  "emphasis": "Strength",
+  "content": {
+   "days": [
+    {
+     "name": "Day 1",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "1-DB Split Squat to Airex Pad",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8/side",
+          "8/side",
+          "8/side",
+          "8/side"
+         ]
+        },
+        {
+         "name": "Overhead Lateral Raises",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "10",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "12-15",
+          "10-12",
+          ""
+         ]
+        },
+        {
+         "name": "Slider Eccentric Curl",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "8",
+          "",
+          "10-12"
+         ]
+        },
+        {
+         "name": "Side Plank",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-15s/s",
+          "15s/s, 20s/s, 20s/s",
+          "15-20s/s",
+          "15-20s/s"
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "3pt 1-DB Row",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10/s",
+          "3 × 8/s",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Bear Crawl ISO",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "15 sec, 20 sec, 20-25 s, 25-30s",
+          "15 sec, 20 sec, 20-25 s, 25-30s",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Reverse Sled Drag",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "1 Lap",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10-12",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Suitcase Carry",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "2-Leg Calf Raise",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "15-20",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 2",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Standing PVC Shoulder Rotations x10",
+       "prescription": ""
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      },
+      {
+       "name": "Lateral Mini-Band Monster Walks x10/side",
+       "prescription": ""
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "2-DB RDL",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Tall Plank w/ Alt. Straight Leg Raise",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "5e",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Bench Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "CB SL Squat to Box",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8e",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Mini Band Lateral Monster Walks",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12/s, 15/s, 18/s",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "1/2 Kneeling 1-Arm Cable Pulldown",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12/s",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Slider Eccentric Hamstring Curls",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "8",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "Standing 2-DB Shoulder Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Reverse Sled Drag",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "2-Arm Cable Pullover",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "12-15",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Day 3",
+     "warmup": [
+      {
+       "name": "Half-Kneeling 1-Arm Windmill",
+       "prescription": "8/side"
+      },
+      {
+       "name": "90/90 Heel Tap",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Prone Swimmers",
+       "prescription": "10"
+      },
+      {
+       "name": "Alternating Deadbug",
+       "prescription": "8/side"
+      },
+      {
+       "name": "Single Leg RDL",
+       "prescription": "6/side"
+      }
+     ],
+     "blocks": [
+      {
+       "letter": "A",
+       "exercises": [
+        {
+         "name": "Low-Incline 2-DB Bench Press",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "10",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Sled Push",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "1 Lap",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Tall Plank w/ Alt Straight Leg Raise",
+         "note": "",
+         "sets": 3,
+         "reps": [
+          "6/side",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "B",
+       "exercises": [
+        {
+         "name": "KB Deadlift",
+         "note": "Landmine When Possible",
+         "sets": 4,
+         "reps": [
+          "8",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Seated 2-DB Shoulder Press",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "12",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Alt Deadbug",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "6/side",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "C",
+       "exercises": [
+        {
+         "name": "TRX Row",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "10-12",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Battle Rope",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          ":15",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Slider Eccentric Curls",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      },
+      {
+       "letter": "D",
+       "exercises": [
+        {
+         "name": "1-DB Split Squat to Airex Pad",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/side",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "3pt 1-Arm DB Row",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          "8/side",
+          "",
+          "",
+          ""
+         ]
+        },
+        {
+         "name": "Battle Ropes",
+         "note": "",
+         "sets": 4,
+         "reps": [
+          ":15",
+          "",
+          "",
+          ""
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+]

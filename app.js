@@ -401,7 +401,9 @@ async function loadTasks() {
       ...(data.daily || []).map((t) => ({
         id: String(t.id),
         name: t.name,
-        cad: "Today",
+        // Unfinished one-off tasks from earlier days carry over.
+        carried: t.day_key && t.day_key < todayKey ? t.day_key : null,
+        cad: t.day_key && t.day_key < todayKey ? `Added ${shortDate(t.day_key)}` : "Today",
         time: "",
         done: !!t.done,
         kind: "daily",
@@ -719,7 +721,7 @@ function renderLinks() {
 }
 function taskState(t) {
   if (t.done) return "done";
-  if (t.occ?.overdue) return "over";
+  if (t.occ?.overdue || t.carried) return "over";
   if (t.occ && t.occ.daysUntil > 0) return "open";
   const h = today.getHours();
   if (
@@ -795,7 +797,7 @@ async function toggleTask(e) {
   renderDashboard();
   const body =
     t.kind === "daily"
-      ? { kind: "daily_task", id: t.id, done: t.done }
+      ? { kind: "daily_task", id: t.id, done: t.done, dayKey: todayKey }
       : {
           kind: "recur_check",
           taskId: t.id,

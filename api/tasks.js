@@ -34,8 +34,12 @@ module.exports = async (req, res) => {
         return res
           .status(400)
           .json({ error: "day query param required (YYYY-MM-DD)" });
+      // One-off tasks stay on the list until they're checked off: today's,
+      // plus unfinished ones from earlier days (and ones finished today).
       const daily = await db.query(
-        "select id, name, done from daily_tasks where day_key = $1 order by id",
+        `select id, name, done, day_key from daily_tasks
+         where day_key = $1 or (day_key < $1 and (done = false or done_on = $1))
+         order by day_key, id`,
         [dayKey],
       );
       // Monthly cycles look back at most ~2 months for their checks.
@@ -101,9 +105,14 @@ module.exports = async (req, res) => {
       if (kind === "daily_task") {
         if (!id) return res.status(400).json({ error: "id required" });
         const name = clean(req.body.name, 200);
+        const doneDay = isDayKey(req.body.dayKey)
+          ? req.body.dayKey
+          : new Date().toISOString().slice(0, 10);
         await db.query(
-          "update daily_tasks set done=coalesce($1,done), name=coalesce($2,name) where id=$3",
-          [typeof done === "boolean" ? done : null, name || null, id],
+          `update daily_tasks set done=coalesce($1,done), name=coalesce($2,name),
+             done_on = case when $1 is true then $4 when $1 is false then null else done_on end
+           where id=$3`,
+          [typeof done === "boolean" ? done : null, name || null, id, doneDay],
         );
         return res.status(200).json({ ok: true });
       }
