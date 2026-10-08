@@ -135,12 +135,23 @@ const DRAFT_TYPES = [
     email: true,
   },
 ];
+// The last copy loaded from the server is kept in this browser, so a failed
+// load shows it (with a warning) instead of an empty board.
 async function loadEvents() {
   try {
     state.events = (await getJSON("/api/events")).events || [];
-  } catch {
+    state.eventsLoadError = "";
+    writeLocal("taskdash_events", state.events);
+  } catch (err) {
     state.events = readLocal("taskdash_events", []);
+    state.eventsLoadError = state.authRequired
+      ? ""
+      : err.message || "The server couldn't be reached";
   }
+  state.openDrafts = new Set(readLocal("taskdash_open_drafts", []));
+}
+function rememberOpenDrafts() {
+  writeLocal("taskdash_open_drafts", [...state.openDrafts]);
 }
 function normalizeEvent(raw) {
   const date = new Date(
@@ -287,8 +298,12 @@ function renderEvents() {
     .forEach((d) =>
       state.openDrafts.delete(d.closest(".event-card").dataset.id),
     );
+  rememberOpenDrafts();
   const list = state.events.map(normalizeEvent).sort((a, b) => a.date - b.date);
-  $("#eventBoard").innerHTML = list.length
+  const warning = state.eventsLoadError
+    ? `<div class="load-warning" role="status"><span><strong>Couldn't load your events from the server.</strong> ${list.length ? "Showing the copy last saved in this browser." : ""} ${esc(state.eventsLoadError)}</span><button class="secondary-btn" data-event-action="reload">Try again</button></div>`
+    : "";
+  $("#eventBoard").innerHTML = warning + (list.length
     ? list
         .map((e) => {
           const steps = eventSteps(e.raw),
@@ -296,7 +311,9 @@ function renderEvents() {
           return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done || s.skipped).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""} ${s.skipped ? "skipped" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${stepDateLabel(s, e.date)}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div>${stepStateHTML(s)}</div>`).join("")}${surveyTrackerHTML(e, steps)}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${draftPanelHTML(e.raw, steps)}</article>`;
         })
         .join("")
-    : '<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>';
+    : state.eventsLoadError
+      ? ""
+      : '<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>');
   renderEventPreview();
 }
 function openEventDialog() {
@@ -594,6 +611,12 @@ async function eventStepChange(e) {
   }
 }
 async function eventAction(e) {
+  if (e.target.closest('[data-event-action="reload"]')) {
+    await loadEvents();
+    renderEvents();
+    if (!state.eventsLoadError) toast("Events loaded");
+    return;
+  }
   const draftButton = e.target.closest("[data-draft-action]");
   if (draftButton) return draftAction(draftButton);
   const all = e.target.closest('[data-event-action="draft-all"]');

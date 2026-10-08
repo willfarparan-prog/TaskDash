@@ -103,7 +103,19 @@ const state = {
   ),
 };
 async function getJSON(url, opts) {
-  const r = await fetch(url, opts);
+  const method = String(opts?.method || "GET").toUpperCase();
+  let r;
+  try {
+    r = await fetch(url, opts);
+  } catch (err) {
+    if (method !== "GET") throw err;
+    await new Promise((done) => setTimeout(done, 600));
+    r = await fetch(url, opts); // one retry for a dropped connection
+  }
+  if (method === "GET" && r.status >= 500) {
+    await new Promise((done) => setTimeout(done, 600));
+    r = await fetch(url, opts);
+  }
   let data = {};
   try {
     data = await r.json();

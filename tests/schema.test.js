@@ -11,6 +11,7 @@ function loadDb(markerExists) {
     loaded: true,
     exports: {
       Pool: class {
+        on() {}
         async query(sql, params) {
           queries.push(String(sql).trim().slice(0, 40));
           if (/^select 1 from app_meta/.test(sql))

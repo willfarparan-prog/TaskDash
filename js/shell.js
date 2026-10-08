@@ -210,6 +210,19 @@ function wireControls() {
     else if (e.target.matches(".step-check")) eventStepChange(e);
   });
   $("#eventBoard").addEventListener("click", eventAction);
+  // <details> toggle doesn't bubble; capture it to remember open draft panels.
+  $("#eventBoard").addEventListener(
+    "toggle",
+    (e) => {
+      if (!e.target.matches(".draft-panel")) return;
+      const id = e.target.closest(".event-card")?.dataset.id;
+      if (!id) return;
+      if (e.target.open) state.openDrafts.add(id);
+      else state.openDrafts.delete(id);
+      rememberOpenDrafts();
+    },
+    true,
+  );
   $("#saveSettings").onclick = saveSettings;
   $("#clearLocal").onclick = clearLocal;
   $$(".link-search").forEach((input) => (input.oninput = renderLinks));

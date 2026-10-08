@@ -201,3 +201,17 @@
   flex: 1 1 220px;
   color: var(--muted);
 }
+
+.load-warning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border: 1px solid #f0c9c4;
+  border-radius: 12px;
+  background: var(--red-soft);
+  color: #7a1d15;
+  font-size: 13px;
+}
