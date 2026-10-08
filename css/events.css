@@ -138,3 +138,66 @@
   background: #fff0cb;
   color: #755100;
 }
+.step-state.skipped {
+  background: var(--teal-soft);
+  color: #00756c;
+}
+.step-state.waiting {
+  background: transparent;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+}
+.pipeline-step.skipped .step-name {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+/* Post-event survey response tracker */
+.survey-tracker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #faf9f7;
+  font-size: 13px;
+}
+.survey-tracker label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.survey-tracker input {
+  width: 72px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px 8px;
+  font: inherit;
+}
+.survey-rate {
+  font:
+    700 13px IBM Plex Mono,
+    monospace;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: #eee;
+}
+.survey-rate.low {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.survey-rate.ok {
+  background: var(--teal-soft);
+  color: #00756c;
+}
+.survey-verdict {
+  flex: 1 1 220px;
+  color: var(--muted);
+}

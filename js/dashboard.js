@@ -90,7 +90,7 @@ function renderEventPreview() {
     ? list
         .map((e) => {
           const steps = eventSteps(e.raw),
-            done = steps.filter((s) => s.done).length;
+            done = steps.filter((s) => s.done || s.skipped).length;
           return `<div class="preview-event"><header><strong>${esc(e.name)}</strong><span>${e.days >= 0 ? `${e.days}d out` : "past"}</span></header><div class="track"><i style="width:${steps.length ? (done / steps.length) * 100 : 0}%"></i></div><span>${done} of ${steps.length} SOP steps complete · ${fmtDate(e.date)}</span></div>`;
         })
         .join("")

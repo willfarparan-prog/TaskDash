@@ -43,17 +43,27 @@ const PIPE = [
     offset: 0,
     owner: "William",
   },
+  // Survey sends run on windows after the event; see js/survey-followup.js.
   {
     key: "survey",
     name: "Send Microsoft Forms NPS survey",
     offset: -3,
     owner: "William",
+    survey: true,
   },
   {
-    key: "response",
-    name: "Follow up if survey response is under 20%",
+    key: "survey-2",
+    name: "Resend survey if under 30% responded",
     offset: -7,
     owner: "William",
+    survey: true,
+  },
+  {
+    key: "survey-3",
+    name: "Final survey send if still under 30%",
+    offset: -15,
+    owner: "William",
+    survey: true,
   },
 ];
 // Messaging drafts generated for each event (see lib/eventDrafts.js).
@@ -108,6 +118,21 @@ const DRAFT_TYPES = [
     step: "survey",
     label: "NPS survey email",
     hint: "BCC all attendees · Microsoft Forms link",
+    email: true,
+  },
+  {
+    key: "npsReminderEmail",
+    step: "survey-2",
+    label: "Survey reminder email",
+    hint: "Only if under 30% responded · BCC attendees",
+    email: true,
+  },
+  {
+    key: "npsFinalEmail",
+    step: "survey-3",
+    label: "Final survey email",
+    hint: "Only if still under 30% · BCC attendees",
+    email: true,
   },
 ];
 async function loadEvents() {
@@ -125,7 +150,8 @@ function normalizeEvent(raw) {
     raw,
     name: raw.name,
     date,
-    days: Math.round((date - startOfDay(today)) / 864e5),
+    // Whole calendar days: compare midnights (the date itself is held at noon).
+    days: Math.round((startOfDay(date) - startOfDay(today)) / 864e5),
   };
 }
 function eventSteps(raw) {
@@ -137,20 +163,120 @@ function eventSteps(raw) {
     } catch {
       map = {};
     }
+  const done = Object.fromEntries(PIPE.map((s) => [s.key, !!map[s.key]]));
   return PIPE.filter(
     (s) => !s.vendor || raw.needs_vendor || raw.needsVendor,
   ).map((s) => {
     const due = new Date(ev.date);
     due.setDate(due.getDate() - s.offset);
-    const delta = Math.round((due - startOfDay(today)) / 864e5);
+    const delta = Math.round((startOfDay(due) - startOfDay(today)) / 864e5);
+    const survey = s.survey
+      ? SurveyFollowup.sendState(s.key, done, map._survey, -ev.days)
+      : null;
     return {
       ...s,
       due,
       delta,
       done: !!map[s.key],
+      // A resend that isn't needed (30%+ responded) counts as complete.
+      skipped: survey?.state === "skipped",
+      survey,
       compressed: ev.days >= 0 && ev.days < 14 && s.parallel,
     };
   });
+}
+function surveyStats(raw) {
+  let map = raw.pipeline_state || {};
+  if (typeof map === "string")
+    try {
+      map = JSON.parse(map);
+    } catch {
+      map = {};
+    }
+  return map._survey || {};
+}
+function stepDateLabel(s, eventDate) {
+  const send = s.survey && SurveyFollowup.SENDS.find((x) => x.key === s.key);
+  if (!send) return fmtDate(s.due, { short: true });
+  const from = new Date(eventDate);
+  from.setDate(from.getDate() + send.window[0]);
+  const label = fmtDate(from, { short: true }),
+    end = fmtDate(s.due, { short: true });
+  return from.getMonth() === s.due.getMonth()
+    ? `${label}–${s.due.getDate()}`
+    : `${label}–${end}`;
+}
+function stepStateHTML(s) {
+  if (s.done) return `<span class="step-state">DONE</span>`;
+  const st = s.survey?.state;
+  if (st === "skipped")
+    return `<span class="step-state skipped" title="${Math.round(s.survey.rate * 100)}% responded">NOT NEEDED</span>`;
+  if (st === "waiting")
+    return `<span class="step-state waiting">AFTER ${s.key === "survey-2" ? "1ST" : "2ND"} SEND</span>`;
+  if (st === "log") return `<span class="step-state now">LOG RESPONSES</span>`;
+  if (st === "now") return `<span class="step-state now">SEND NOW</span>`;
+  if (st === "overdue") return `<span class="step-state overdue">OVERDUE</span>`;
+  if (st === "upcoming") return `<span class="step-state">${s.survey.inDays}D</span>`;
+  return `<span class="step-state ${s.compressed ? "now" : s.delta < 0 ? "overdue" : ""}">${s.compressed ? "DO NOW" : s.delta < 0 ? "OVERDUE" : s.delta === 0 ? "TODAY" : `${s.delta}D`}</span>`;
+}
+// Logged after the first send: how many got the survey and how many answered.
+function surveyTrackerHTML(e, steps) {
+  if (e.days > 0) return "";
+  const stats = surveyStats(e.raw),
+    rate = SurveyFollowup.responseRate(stats),
+    pct = rate == null ? null : Math.round(rate * 100),
+    next = steps.find(
+      (s) => s.survey && !s.done && !s.skipped && s.key !== "survey",
+    ),
+    verdict =
+      rate == null
+        ? "Log how many were emailed and how many responded."
+        : rate < SurveyFollowup.RESEND_BELOW
+          ? next
+            ? `Under 30% — ${next.key === "survey-2" ? "resend" : "send the final survey"} ${next.survey?.state === "upcoming" ? `in ${next.survey.inDays} day${next.survey.inDays === 1 ? "" : "s"}` : "now"}.`
+            : "Under 30%, and every send is done."
+          : "30% or more responded — no more sends needed.";
+  return `<div class="survey-tracker"><strong>NPS survey</strong><label>Emailed<input type="number" min="0" inputmode="numeric" data-survey-field="sent" value="${attr(stats.sent ?? "")}" placeholder="${attr(e.raw.expected_attendance || "")}"></label><label>Responses<input type="number" min="0" inputmode="numeric" data-survey-field="responses" value="${attr(stats.responses ?? "")}"></label><span class="survey-rate ${rate == null ? "" : rate < SurveyFollowup.RESEND_BELOW ? "low" : "ok"}">${pct == null ? "—" : `${pct}%`}</span><span class="survey-verdict">${esc(verdict)}</span></div>`;
+}
+async function surveyStatsChange(e) {
+  const card = e.target.closest(".event-card"),
+    raw = state.events.find((x) => String(x.id) === card?.dataset.id);
+  if (!raw) return;
+  let map = raw.pipeline_state || {};
+  if (typeof map === "string")
+    try {
+      map = JSON.parse(map);
+    } catch {
+      map = {};
+    }
+  const value = e.target.value.trim(),
+    n = Math.max(0, Math.floor(Number(value)));
+  map._survey = {
+    ...(map._survey || {}),
+    [e.target.dataset.surveyField]: value === "" || !Number.isFinite(n) ? "" : n,
+  };
+  raw.pipeline_state = map;
+  // The redraw replaces the inputs; put focus back where Tab/click moved it.
+  setTimeout(() => {
+    const next = document.activeElement?.dataset?.surveyField,
+      sameCard = document.activeElement?.closest(".event-card") === card;
+    renderEvents();
+    if (next && sameCard)
+      document
+        .querySelector(
+          `.event-card[data-id="${CSS.escape(String(raw.id))}"] [data-survey-field="${next}"]`,
+        )
+        ?.focus();
+  });
+  try {
+    await getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pipelineState: map }),
+    });
+  } catch {
+    writeLocal("taskdash_events", state.events);
+  }
 }
 function renderEvents() {
   document
@@ -167,7 +293,7 @@ function renderEvents() {
         .map((e) => {
           const steps = eventSteps(e.raw),
             compressed = e.days >= 0 && e.days < 14;
-          return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${fmtDate(s.due, { short: true })}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div><span class="step-state ${s.done ? "" : s.compressed ? "now" : s.delta < 0 ? "overdue" : ""}">${s.done ? "DONE" : s.compressed ? "DO NOW" : s.delta < 0 ? "OVERDUE" : s.delta === 0 ? "TODAY" : `${s.delta}D`}</span></div>`).join("")}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${draftPanelHTML(e.raw, steps)}</article>`;
+          return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done || s.skipped).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""} ${s.skipped ? "skipped" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${stepDateLabel(s, e.date)}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div>${stepStateHTML(s)}</div>`).join("")}${surveyTrackerHTML(e, steps)}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${draftPanelHTML(e.raw, steps)}</article>`;
         })
         .join("")
     : '<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>';
@@ -305,7 +431,7 @@ function draftSlotHTML(raw, type, steps = eventSteps(raw)) {
     status = state.draftStatus[`${id}:${type.key}`] || "",
     step = steps.find((s) => s.key === type.step),
     due = step
-      ? ` · ${step.done ? "done" : `due ${fmtDate(step.due, { short: true })}`}`
+      ? ` · ${step.done ? "done" : step.skipped ? "not needed" : `due ${fmtDate(step.due, { short: true })}`}`
       : "";
   let body;
   if (status === "pending")

@@ -206,6 +206,7 @@ function wireControls() {
   $("#newEventBtn").onclick = openEventDialog;
   $("#eventBoard").addEventListener("change", (e) => {
     if (e.target.matches("[data-draft-text]")) saveDraftEdit(e);
+    else if (e.target.matches("[data-survey-field]")) surveyStatsChange(e);
     else if (e.target.matches(".step-check")) eventStepChange(e);
   });
   $("#eventBoard").addEventListener("click", eventAction);
