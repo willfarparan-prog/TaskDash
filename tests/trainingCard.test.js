@@ -16,8 +16,10 @@ const ex = (name, dayName, key) => {
 };
 
 test("each training card becomes stock programs with unique names", () => {
-  assert.equal(card.length, 14);
+  assert.equal(card.length, 13);
   const names = [...card, ...first].map((p) => p.name.toLowerCase());
+  assert.ok(!names.includes("rachel · 2-day program"));
+  assert.ok(!names.includes("akanksha thareja · 2-day program"));
   assert.equal(new Set(names).size, names.length);
   for (const p of card) {
     assert.equal(p.days_per_week, p.content.days.length);
@@ -84,13 +86,13 @@ test("the second library is imported once under its own marker", async () => {
   assert.equal(await seedStockPrograms(db), first.length);
   assert.equal(
     await seedStockPrograms(db, card, "stock_seed_trainingcard_v1"),
-    14,
+    13,
   );
   assert.equal(
     await seedStockPrograms(db, card, "stock_seed_trainingcard_v1"),
     0,
   );
-  assert.equal(names.length, first.length + 14);
+  assert.equal(names.length, first.length + 13);
 });
 
 test("unfinished one-off tasks carry over and finished ones stay for the day", async () => {
@@ -149,4 +151,32 @@ test("unfinished one-off tasks carry over and finished ones stay for the day", a
   assert.match(patch.sql, /done_on = case when \$1 is true then \$4/);
   assert.deepEqual(patch.params, [true, null, 4, "2026-10-08"]);
   require.cache[file] = realDb;
+});
+
+test("the Rachel/Akanksha merge only touches unedited copies, once", async () => {
+  delete require.cache[require.resolve("../lib/db")];
+  const { mergeDuplicateCardPrograms } = require("../lib/db");
+  const sql = [];
+  let marked = false;
+  const db = {
+    async query(text, params) {
+      sql.push({ text, params });
+      if (text.includes("into app_meta")) {
+        if (marked) return { rows: [] };
+        marked = true;
+        return { rows: [{ key: "x" }] };
+      }
+      return { rows: [], rowCount: 1 };
+    },
+  };
+  await mergeDuplicateCardPrograms(db);
+  await mergeDuplicateCardPrograms(db);
+  const writes = sql.filter((q) => !q.text.includes("app_meta"));
+  assert.equal(writes.length, 2);
+  for (const w of writes) assert.match(w.text, /updated_at = created_at/);
+  assert.match(writes[0].text, /^delete .*Rachel · 2-Day Program/s);
+  assert.deepEqual(
+    writes[1].params[0],
+    "Rachel & Akanksha Thareja · 2-Day Program",
+  );
 });

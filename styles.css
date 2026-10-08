@@ -3709,3 +3709,44 @@ body.live-open {
     gap: 3px;
   }
 }
+/* Stock library filters and card preview */
+.stock-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: flex-end;
+  margin: -4px 0 14px;
+}
+.stock-filters label {
+  display: grid;
+  gap: 4px;
+  font:
+    600 10px IBM Plex Mono,
+    monospace;
+  color: #5f5f5f;
+  text-transform: uppercase;
+}
+.stock-filters select {
+  min-width: 150px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  text-transform: none;
+  color: var(--ink);
+}
+.program-preview {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #4f4f4f;
+}
+.program-preview b {
+  font:
+    700 10px IBM Plex Mono,
+    monospace;
+  color: var(--red);
+  margin-right: 4px;
+}

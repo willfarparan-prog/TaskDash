@@ -78,6 +78,7 @@ const state = {
   mailFilter: "all",
   calendarOffset: 0,
   activeProgram: null,
+  stockFilters: { days: "", emphasis: "", source: "" },
   errors: [],
   programHistory: { undo: [], redo: [], pending: null },
   scheduler: {
@@ -330,6 +331,16 @@ function wireControls() {
   $("#bookingList").addEventListener("click", cancelBooking);
   $("#newProgramBtn").onclick = () => openProgramDialog();
   $("#programSearch").oninput = renderPrograms;
+  $("#stockFilters").onchange = (e) => {
+    const key = e.target.dataset.stockFilter;
+    if (key) state.stockFilters[key] = e.target.value;
+    renderPrograms();
+  };
+  $("#stockFilters").onclick = (e) => {
+    if (e.target.dataset.stockFilter !== "clear") return;
+    state.stockFilters = { days: "", emphasis: "", source: "" };
+    renderPrograms();
+  };
   $("#programFilters").onclick = (e) => {
     const b = e.target.closest("[data-filter]");
     if (!b) return;
@@ -666,10 +677,7 @@ function renderDashboard() {
   $("#taskProgress").style.width =
     `${state.tasks.length ? (done / state.tasks.length) * 100 : 0}%`;
   $("#metricClients").textContent = state.clients.length;
-  // "Active training plans": client programs, not the stock library.
-  $("#metricPrograms").textContent = state.programs.filter(
-    (p) => !p.is_stock && p.status !== "archived",
-  ).length;
+  $("#metricPrograms").textContent = activeClientPrograms();
   const live = state.connections.filter((c) => c.status === "connected").length,
     readiness = state.connections.length
       ? Math.round((live / state.connections.length) * 100)
@@ -1479,7 +1487,7 @@ function renderPrograms() {
         state.programFilter === "clients"
           ? !p.is_stock
           : state.programFilter === "stock"
-            ? p.is_stock
+            ? p.is_stock && stockFilterMatch(p)
             : (p.status || "draft") === state.programFilter;
       return (
         filter &&
@@ -1493,16 +1501,67 @@ function renderPrograms() {
   $("#programActiveCount").textContent = clients.filter(
     (p) => p.status === "active",
   ).length;
+  renderStockFilters(stock);
   $("#programGrid").innerHTML = list.length
     ? list.map(programCardHTML).join("")
     : `<div class="empty-state"><strong>${state.programFilter === "stock" ? "No stock templates yet." : "No programs match this view."}</strong><br>${state.programFilter === "stock" ? "Open a client program and choose “Save as stock template.”" : "Create a program or use a stock template for a client."}</div>`;
-  $("#metricPrograms").textContent = clients.filter(
-    (p) => p.status !== "archived",
-  ).length;
+  $("#metricPrograms").textContent = activeClientPrograms();
+}
+// "Active training plans": client programs, not the stock library.
+const activeClientPrograms = () =>
+  state.programs.filter((p) => !p.is_stock && p.status !== "archived").length;
+// Where a stock template came from, for the library's Source filter.
+function stockSource(p) {
+  if (p.source_program_id) return "My templates";
+  if (/^From the EXOS_Adobe training card/.test(p.goal || ""))
+    return "Training cards";
+  return "TC Nexus library";
+}
+// Stock filters: days per week, emphasis and source.
+function stockFilterMatch(p) {
+  const f = state.stockFilters,
+    days = Number(p.days_per_week) || 0;
+  return (
+    (!f.days || (f.days === "5+" ? days >= 5 : days === Number(f.days))) &&
+    (!f.emphasis || p.emphasis === f.emphasis) &&
+    (!f.source || stockSource(p) === f.source)
+  );
+}
+function renderStockFilters(stock) {
+  const box = $("#stockFilters"),
+    f = state.stockFilters;
+  box.hidden = state.programFilter !== "stock";
+  if (box.hidden) return;
+  const select = (key, label, options) =>
+    `<label>${label}<select data-stock-filter="${key}"><option value="">Any</option>${options
+      .map(
+        (o) =>
+          `<option value="${attr(o)}" ${f[key] === o ? "selected" : ""}>${esc(o)}</option>`,
+      )
+      .join("")}</select></label>`;
+  const uniq = (list) => [...new Set(list.filter(Boolean))].sort();
+  box.innerHTML =
+    select("days", "Days / week", ["1", "2", "3", "4", "5+"]) +
+    select("emphasis", "Emphasis", uniq(stock.map((p) => p.emphasis))) +
+    select("source", "Source", uniq(stock.map(stockSource))) +
+    (f.days || f.emphasis || f.source
+      ? '<button class="text-btn" data-stock-filter="clear">Clear filters</button>'
+      : "");
+}
+// First few lifts of day 1, so a template can be judged without opening it.
+function programPreview(p) {
+  const day = normalizeProgramContent(p).days[0];
+  if (!day) return "";
+  const lifts = (day.blocks || [])
+    .flatMap((b) => b.exercises.map((x) => x.name))
+    .filter(Boolean);
+  return lifts.length
+    ? `<p class="program-preview"><b>${esc(day.name || "Day 1")}</b> ${esc(lifts.slice(0, 3).join(" · "))}${lifts.length > 3 ? ` +${lifts.length - 3} more` : ""}</p>`
+    : "";
 }
 function programCardHTML(p) {
   const tags = [p.level, p.sport, p.emphasis].filter(Boolean);
-  return `<article class="program-card ${p.is_stock ? "stock" : ""}" data-id="${p.id}"><div class="program-card-top"></div><div class="program-card-body"><span class="status">${p.is_stock ? "STOCK TEMPLATE" : esc((p.status || "draft").toUpperCase())}</span><h3>${esc(p.name)}</h3><p>${esc(p.is_stock ? tags.join(" · ") || "Ready to reuse" : p.client_name || "Not linked to a client")}</p><dl><div><dt>Days</dt><dd>${p.days_per_week || 3}</dd></div><div><dt>Weeks</dt><dd>${p.weeks || 4}</dd></div><div><dt>Updated</dt><dd>${shortDate(p.updated_at || p.created_at)}</dd></div></dl><footer><button class="secondary-btn" data-action="edit">Open</button>${p.is_stock ? '<button class="primary-btn" data-action="use">Use for client</button>' : '<button class="primary-btn" data-action="print">Print</button>'}</footer></div></article>`;
+  return `<article class="program-card ${p.is_stock ? "stock" : ""}" data-id="${p.id}"><div class="program-card-top"></div><div class="program-card-body"><span class="status">${p.is_stock ? "STOCK TEMPLATE" : esc((p.status || "draft").toUpperCase())}</span><h3>${esc(p.name)}</h3><p>${esc(p.is_stock ? tags.join(" · ") || "Ready to reuse" : p.client_name || "Not linked to a client")}</p>${p.is_stock ? programPreview(p) : ""}<dl><div><dt>Days</dt><dd>${p.days_per_week || 3}</dd></div><div><dt>Weeks</dt><dd>${p.weeks || 4}</dd></div><div><dt>Updated</dt><dd>${shortDate(p.updated_at || p.created_at)}</dd></div></dl><footer><button class="secondary-btn" data-action="edit">Open</button>${p.is_stock ? '<button class="primary-btn" data-action="use">Use for client</button>' : '<button class="primary-btn" data-action="print">Print</button>'}</footer></div></article>`;
 }
 function clientChoice(value) {
   if (!value || value === "Not linked")
