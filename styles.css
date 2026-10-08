@@ -79,7 +79,7 @@ textarea:focus-visible {
 }
 .brand-lockup small {
   display: block;
-  color: #8f8f8f;
+  color: var(--muted);
   font-size: 10px;
   letter-spacing: 0.2em;
   margin-top: 5px;
@@ -108,7 +108,7 @@ textarea:focus-visible {
 }
 .rail-label {
   padding: 27px 20px 11px;
-  color: #777;
+  color: #8f8f8f;
   font:
     600 10px/1 IBM Plex Mono,
     monospace;
@@ -201,7 +201,7 @@ textarea:focus-visible {
   font-size: 13px;
 }
 .sidebar-footer small {
-  color: #777;
+  color: #8f8f8f;
   font-size: 11px;
 }
 .main-shell {
@@ -303,7 +303,7 @@ textarea:focus-visible {
   font-size: 14px;
 }
 .search input::placeholder {
-  color: #777;
+  color: #8f8f8f;
 }
 .search kbd {
   font:
@@ -457,7 +457,7 @@ textarea:focus-visible {
 }
 .section-heading p {
   margin: 5px 0 0;
-  color: #8b8b8b;
+  color: var(--muted);
   font-size: 13px;
 }
 .section-heading.inverse h2 {
@@ -581,7 +581,7 @@ textarea:focus-visible {
 }
 .metric-card small {
   font-size: 11px;
-  color: #96928c;
+  color: var(--muted);
 }
 .metric-chip {
   position: absolute;
@@ -693,7 +693,7 @@ textarea:focus-visible {
 }
 .task-row.done .task-name {
   text-decoration: line-through;
-  color: #999;
+  color: var(--muted);
 }
 .task-name {
   font-size: 14px;
@@ -703,7 +703,7 @@ textarea:focus-visible {
   font:
     500 10px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
 }
 .task-status {
   font:
@@ -712,7 +712,7 @@ textarea:focus-visible {
   padding: 4px 6px;
   border-radius: 4px;
   background: #eee;
-  color: #777;
+  color: #6b6b6b;
 }
 .task-status.over {
   background: var(--red-soft);
@@ -725,7 +725,7 @@ textarea:focus-visible {
 .row-delete {
   border: 0;
   background: transparent;
-  color: #aaa;
+  color: #767676;
   font-size: 19px;
   cursor: pointer;
 }
@@ -753,7 +753,7 @@ textarea:focus-visible {
   font:
     600 9px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
   text-transform: uppercase;
 }
 .agenda-line {
@@ -772,7 +772,7 @@ textarea:focus-visible {
 }
 .agenda-body span {
   font-size: 11px;
-  color: #888;
+  color: var(--muted);
 }
 .text-btn {
   padding: 5px 0;
@@ -802,7 +802,7 @@ textarea:focus-visible {
 }
 .preview-event span {
   font-size: 11px;
-  color: #888;
+  color: var(--muted);
 }
 .preview-event .track {
   height: 5px;
@@ -849,7 +849,7 @@ textarea:focus-visible {
 .ready-row em {
   margin-left: auto;
   font-size: 11px;
-  color: #888;
+  color: var(--muted);
   font-style: normal;
 }
 .connection-banner {
@@ -909,7 +909,7 @@ textarea:focus-visible {
   font:
     600 9px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
 }
 .cal-day-head.today {
   background: var(--ink);
@@ -927,7 +927,7 @@ textarea:focus-visible {
   font:
     500 9px IBM Plex Mono,
     monospace;
-  color: #999;
+  color: var(--muted);
 }
 .cal-day {
   position: relative;
@@ -1042,7 +1042,7 @@ textarea:focus-visible {
 }
 .program-card p {
   margin: 0;
-  color: #888;
+  color: var(--muted);
   font-size: 12px;
 }
 .program-card dl {
@@ -1054,7 +1054,7 @@ textarea:focus-visible {
 }
 .program-card dt {
   font-size: 9px;
-  color: #999;
+  color: var(--muted);
   text-transform: uppercase;
 }
 .program-card dd {
@@ -1138,7 +1138,7 @@ textarea:focus-visible {
 .data-table th {
   text-align: left;
   background: #f8f7f5;
-  color: #888;
+  color: var(--muted);
   font:
     600 9px IBM Plex Mono,
     monospace;
@@ -1236,7 +1236,7 @@ textarea:focus-visible {
 }
 .inbox-sources > small {
   display: block;
-  color: #888;
+  color: var(--muted);
   line-height: 1.55;
   padding: 8px;
 }
@@ -1282,13 +1282,13 @@ a.mail-row:hover .mail-subject {
 }
 .mail-snippet {
   display: block;
-  color: #888;
+  color: var(--muted);
   font-weight: 400;
   margin-top: 3px;
 }
 .mail-time {
   font-size: 10px;
-  color: #999;
+  color: var(--muted);
   text-align: right;
 }
 .rule-strip {
@@ -1313,7 +1313,7 @@ a.mail-row:hover .mail-subject {
 }
 .rule-strip span {
   font-size: 11px;
-  color: #999;
+  color: var(--muted);
 }
 .event-board {
   display: flex;
@@ -1339,7 +1339,7 @@ a.mail-row:hover .mail-subject {
 }
 .event-meta {
   font-size: 12px;
-  color: #888;
+  color: var(--muted);
 }
 .event-days {
   background: var(--ink);
@@ -1357,7 +1357,7 @@ a.mail-row:hover .mail-subject {
   font:
     600 9px IBM Plex Mono,
     monospace;
-  color: #999;
+  color: var(--muted);
 }
 .compressed-alert {
   margin: 0 20px 16px;
@@ -1397,13 +1397,13 @@ a.mail-row:hover .mail-subject {
 }
 .pipeline-step.done .step-name {
   text-decoration: line-through;
-  color: #999;
+  color: var(--muted);
 }
 .step-date {
   font:
     500 10px IBM Plex Mono,
     monospace;
-  color: #777;
+  color: #6b6b6b;
 }
 .step-name {
   font-size: 13px;
@@ -1411,7 +1411,7 @@ a.mail-row:hover .mail-subject {
 }
 .step-owner {
   font-size: 11px;
-  color: #999;
+  color: var(--muted);
 }
 .step-state {
   font:
@@ -1420,7 +1420,7 @@ a.mail-row:hover .mail-subject {
   border-radius: 4px;
   padding: 4px 6px;
   background: #eee;
-  color: #777;
+  color: #6b6b6b;
 }
 .step-state.overdue {
   background: var(--red-soft);
@@ -1487,7 +1487,7 @@ a.mail-row:hover .mail-subject {
 }
 .connection-card p {
   margin: 3px 0 0;
-  color: #888;
+  color: var(--muted);
   font-size: 11px;
 }
 .connection-card .conn-status {
@@ -1527,7 +1527,7 @@ a.mail-row:hover .mail-subject {
   margin: 0;
 }
 .settings-card > p {
-  color: #777;
+  color: #6b6b6b;
   margin: 0;
 }
 .settings-card label {
@@ -1546,11 +1546,11 @@ a.mail-row:hover .mail-subject {
   background: #fff;
 }
 .settings-card label input:disabled {
-  color: #777;
+  color: #6b6b6b;
   background: #f0eeeb;
 }
 .settings-card > small {
-  color: #888;
+  color: var(--muted);
 }
 .toggle-row {
   display: flex;
@@ -1584,7 +1584,7 @@ a.mail-row:hover .mail-subject {
 }
 .settings-save span {
   font-size: 12px;
-  color: #aaa;
+  color: #767676;
 }
 .modal {
   width: min(580px, calc(100vw - 28px));
@@ -1665,7 +1665,7 @@ a.mail-row:hover .mail-subject {
 }
 .empty-state {
   text-align: center;
-  color: #888;
+  color: var(--muted);
   padding: 44px 18px;
   border: 1px dashed var(--line);
   border-radius: 9px;
@@ -1731,7 +1731,7 @@ a.mail-row:hover .mail-subject {
 }
 .context-links small {
   grid-column: 1;
-  color: #8f8f8f;
+  color: var(--muted);
   font:
     500 9px IBM Plex Mono,
     monospace;
@@ -1743,7 +1743,7 @@ a.mail-row:hover .mail-subject {
   grid-column: 2;
   grid-row: 1/3;
   align-self: center;
-  color: #f17a70;
+  color: var(--red);
 }
 .link-filters {
   display: flex;
@@ -1818,7 +1818,7 @@ a.mail-row:hover .mail-subject {
 }
 .quick-link-card small {
   font-size: 10px;
-  color: #85817c;
+  color: var(--muted);
   line-height: 1.35;
   margin: 5px 0 8px;
   display: -webkit-box;
@@ -1830,7 +1830,7 @@ a.mail-row:hover .mail-subject {
   font:
     600 8px IBM Plex Mono,
     monospace;
-  color: #777;
+  color: #6b6b6b;
   text-transform: uppercase;
   font-style: normal;
   letter-spacing: 0.04em;
@@ -1859,7 +1859,7 @@ a.mail-row:hover .mail-subject {
     600 9px IBM Plex Mono,
     monospace;
   letter-spacing: 0.12em;
-  color: #777;
+  color: #6b6b6b;
 }
 .booking-link-bar a {
   color: var(--ink);
@@ -1932,7 +1932,7 @@ a.mail-row:hover .mail-subject {
 }
 .schedule-day.off {
   background: #f4f2ef;
-  color: #999;
+  color: var(--muted);
 }
 .schedule-toggle {
   display: flex;
@@ -1961,7 +1961,7 @@ a.mail-row:hover .mail-subject {
 }
 .schedule-range span {
   font-size: 11px;
-  color: #999;
+  color: var(--muted);
 }
 .schedule-day em {
   text-align: right;
@@ -1973,7 +1973,7 @@ a.mail-row:hover .mail-subject {
   text-transform: uppercase;
 }
 .schedule-day.off em {
-  color: #999;
+  color: var(--muted);
 }
 .scheduler-save {
   position: sticky;
@@ -1990,7 +1990,7 @@ a.mail-row:hover .mail-subject {
   z-index: 5;
 }
 .scheduler-save span {
-  color: #aaa;
+  color: #767676;
   font-size: 12px;
 }
 .preview-day {
@@ -2010,7 +2010,7 @@ a.mail-row:hover .mail-subject {
   font-size: 13px;
 }
 .preview-day small {
-  color: #888;
+  color: var(--muted);
 }
 .preview-slots {
   display: flex;
@@ -2049,12 +2049,12 @@ a.mail-row:hover .mail-subject {
 }
 .booking-row span {
   font-size: 11px;
-  color: #777;
+  color: #6b6b6b;
   margin-top: 2px;
 }
 .booking-row small {
   font-size: 9px;
-  color: #999;
+  color: var(--muted);
   margin-top: 5px;
 }
 .booking-row .row-delete {
@@ -2372,13 +2372,13 @@ a.mail-row:hover .mail-subject {
   margin: 6px 0 1px;
 }
 .program-summary small {
-  color: #777;
+  color: #8f8f8f;
 }
 .program-card.stock .program-card-top {
   background: var(--teal);
 }
 .program-card.stock .status {
-  color: #008a80;
+  color: #00796f;
 }
 .program-edit-head {
   display: flex;
@@ -2403,7 +2403,7 @@ a.mail-row:hover .mail-subject {
   margin: 5px 0;
 }
 .program-edit-head p {
-  color: #777;
+  color: #6b6b6b;
   margin: 0;
 }
 .program-meta {
@@ -2417,7 +2417,7 @@ a.mail-row:hover .mail-subject {
 .program-meta label {
   font-size: 10px;
   font-weight: 800;
-  color: #777;
+  color: #6b6b6b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -2488,7 +2488,7 @@ a.mail-row:hover .mail-subject {
 }
 .warmup-row b {
   font-size: 11px;
-  color: #999;
+  color: var(--muted);
   text-align: center;
 }
 .warmup-row input,
@@ -2503,7 +2503,7 @@ a.mail-row:hover .mail-subject {
 .exercise-row > button {
   border: 0;
   background: transparent;
-  color: #aaa;
+  color: #767676;
   font-size: 18px;
   cursor: pointer;
 }
@@ -2525,7 +2525,7 @@ a.mail-row:hover .mail-subject {
   font:
     700 8px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
   text-transform: uppercase;
   padding: 0 3px 6px;
 }
@@ -2684,7 +2684,7 @@ a.mail-row:hover .mail-subject {
     justify-content: space-between;
     margin-top: 10px;
     font-size: 8px;
-    color: #777;
+    color: #6b6b6b;
   }
 }
 
@@ -2831,7 +2831,7 @@ a.mail-row:hover .mail-subject {
 .row-edit {
   border: 0;
   background: transparent;
-  color: #aaa;
+  color: #767676;
   font-size: 15px;
   cursor: pointer;
 }
@@ -2864,7 +2864,7 @@ a.mail-row:hover .mail-subject {
   font:
     500 10px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
 }
 #dialogFields > .task-manager,
 #dialogFields > .task-manager-add,
@@ -2896,7 +2896,7 @@ a.mail-row:hover .mail-subject {
   font:
     600 9px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
   text-transform: uppercase;
 }
 .mail-account.work {
@@ -2954,7 +2954,7 @@ a.mail-row:hover .mail-subject {
 }
 .profile-head p {
   margin: 0;
-  color: #777;
+  color: #6b6b6b;
 }
 .profile-head .mini-avatar {
   width: 44px;
@@ -2975,7 +2975,7 @@ a.mail-row:hover .mail-subject {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  color: #777;
+  color: #6b6b6b;
 }
 .first-session {
   font:
@@ -3023,12 +3023,12 @@ a.mail-row:hover .mail-subject {
   box-shadow: inset 0 0 0 4px #fff;
 }
 .onboarding-step.done strong {
-  color: #999;
+  color: var(--muted);
   text-decoration: line-through;
 }
 .onboarding-step small {
   display: block;
-  color: #888;
+  color: var(--muted);
   font:
     500 10px IBM Plex Mono,
     monospace;
@@ -3089,7 +3089,7 @@ a.mail-row:hover .mail-subject {
   font:
     500 10px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
   text-transform: uppercase;
 }
 .plan-meals {
@@ -3122,7 +3122,7 @@ a.mail-row:hover .mail-subject {
 }
 .plan-meal small {
   display: block;
-  color: #888;
+  color: var(--muted);
   margin-top: 5px;
 }
 .plan-notes {
@@ -3196,7 +3196,7 @@ a.mail-row:hover .mail-subject {
   font:
     500 10px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
 }
 .onboard-ring {
   width: 34px;
@@ -3320,7 +3320,7 @@ body.live-open {
   margin-bottom: 10px;
 }
 .live-warmup em {
-  color: #888;
+  color: var(--muted);
   font-style: normal;
 }
 .live-block {
@@ -3390,7 +3390,7 @@ body.live-open {
   font:
     600 10px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
 }
 .live-set input {
   width: 74px;
@@ -3403,7 +3403,7 @@ body.live-open {
   background: #fff;
 }
 .live-set i {
-  color: #999;
+  color: var(--muted);
   font-style: normal;
 }
 .live-check {
@@ -3412,7 +3412,7 @@ body.live-open {
   border-radius: 9px;
   border: 1.5px solid #bbb;
   background: #fff;
-  color: #bbb;
+  color: #767676;
   font-size: 18px;
   cursor: pointer;
 }
@@ -3464,7 +3464,7 @@ body.live-open {
   margin: 8px 0;
 }
 .muted-note {
-  color: #888;
+  color: var(--muted);
   font-size: 13px;
 }
 .log-history {
@@ -3489,7 +3489,7 @@ body.live-open {
   font:
     600 10px IBM Plex Mono,
     monospace;
-  color: #888;
+  color: var(--muted);
 }
 @media (max-width: 900px) {
   .live-head {
@@ -3519,7 +3519,7 @@ body.live-open {
   cursor: pointer;
 }
 .doc-filters button b {
-  color: #999;
+  color: var(--muted);
   font-weight: 600;
   margin-left: 3px;
 }
@@ -3595,7 +3595,7 @@ body.live-open {
   align-items: center;
   margin-top: 5px;
   font-size: 12px;
-  color: #777;
+  color: #6b6b6b;
 }
 .doc-tag {
   color: #2a6f9b;
@@ -3749,4 +3749,59 @@ body.live-open {
     monospace;
   color: var(--red);
   margin-right: 4px;
+}
+/* Client profile page */
+.back-link {
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+#view-client .client-profile {
+  margin-top: 0;
+}
+.client-email {
+  display: block;
+  color: #6b6b6b;
+}
+/* On phones the client table becomes a stack of cards. */
+@media (max-width: 640px) {
+  .clients-table {
+    min-width: 0;
+  }
+  .clients-table thead {
+    display: none;
+  }
+  .clients-table,
+  .clients-table tbody {
+    display: block;
+  }
+  .clients-table tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #ece9e5;
+  }
+  .clients-table td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .clients-table td:first-child,
+  .clients-table td:nth-child(2),
+  .clients-table td:last-child {
+    grid-column: 1 / -1;
+  }
+  .clients-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font:
+      600 9px IBM Plex Mono,
+      monospace;
+    color: #6b6b6b;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .clients-table .row-actions {
+    justify-content: flex-start;
+  }
 }

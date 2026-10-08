@@ -271,20 +271,38 @@ function go(view) {
   toggleRail(false);
 }
 function routeFromHash() {
-  const view = location.hash.slice(1) || "dashboard";
-  state.view = $(`#view-${view}`) ? view : "dashboard";
+  const hash = decodeURIComponent(location.hash.slice(1)) || "dashboard";
+  // Client profiles have their own address: #client/<id>.
+  const client = /^client\/(.+)$/.exec(hash);
+  if (client) {
+    if (client[1] !== state.activeClient) openClientProfile(client[1]);
+    else {
+      state.view = "client";
+      renderRoute();
+    }
+    return;
+  }
+  state.view = document.getElementById(`view-${hash}`) ? hash : "dashboard";
   renderRoute();
 }
 function renderRoute() {
   $$(".view").forEach((v) =>
     v.classList.toggle("active", v.id === `view-${state.view}`),
   );
+  // A client's page sits under Clients in the sidebar.
+  const section = state.view === "client" ? "clients" : state.view;
   $$(".nav-item").forEach((b) =>
-    b.classList.toggle("active", b.dataset.view === state.view),
+    b.classList.toggle("active", b.dataset.view === section),
   );
-  const active = $(`#view-${state.view}`);
-  $("#crumbTitle").textContent = active?.dataset.title || "Dashboard";
-  document.title = `${active?.dataset.title || "Dashboard"} · Task Dash`;
+  const active = $(`#view-${state.view}`),
+    title =
+      state.view === "client"
+        ? state.clients.find((c) => String(c.id) === state.activeClient)
+            ?.name || "Client"
+        : active?.dataset.title || "Dashboard";
+  $("#crumbTitle").textContent = title;
+  document.title = `${title} · Task Dash`;
+  if (state.view === "client") renderClientProfile();
   if (state.view === "calendar") renderCalendar();
   if (state.view === "scheduler") renderScheduler();
   if (state.view === "resources") renderLinks();
@@ -2171,7 +2189,7 @@ function renderClients() {
           const last = [...sessions].sort((a, b) =>
             String(b.session_date).localeCompare(String(a.session_date)),
           )[0];
-          return `<tr data-id="${c.id}"><td><button class="client-name client-link" data-action="profile" aria-label="Open ${attr(c.name)}"><span class="mini-avatar">${initials(c.name)}</span><div><strong>${esc(c.name)}</strong><small style="display:block;color:#999">${esc(c.email || "No email")}</small>${onboardingChipHTML(c)}</div></button></td><td><span class="service-pill">${esc(c.service_type || "PT consult")}</span></td><td>${last ? shortDate(last.session_date) : "—"}</td><td><strong>${sessions.length}</strong></td><td>${c.next_follow_up ? shortDate(c.next_follow_up) : "—"}</td><td><div class="row-actions"><button class="session-btn" data-action="session">＋ Session</button><button class="text-btn" data-action="edit" aria-label="Edit ${attr(c.name)}">Edit</button><button class="text-btn danger-text" data-action="delete" aria-label="Delete ${attr(c.name)}">Delete</button></div></td></tr>`;
+          return `<tr data-id="${c.id}"><td><button class="client-name client-link" data-action="profile" aria-label="Open ${attr(c.name)}"><span class="mini-avatar">${initials(c.name)}</span><div><strong>${esc(c.name)}</strong><small class="client-email">${esc(c.email || "No email")}</small>${onboardingChipHTML(c)}</div></button></td><td><span class="service-pill">${esc(c.service_type || "PT consult")}</span></td><td data-label="Last session">${last ? shortDate(last.session_date) : "—"}</td><td data-label="Sessions"><strong>${sessions.length}</strong></td><td data-label="Next step">${c.next_follow_up ? shortDate(c.next_follow_up) : "—"}</td><td><div class="row-actions"><button class="session-btn" data-action="session">＋ Session</button><button class="text-btn" data-action="edit" aria-label="Edit ${attr(c.name)}">Edit</button><button class="text-btn danger-text" data-action="delete" aria-label="Delete ${attr(c.name)}">Delete</button></div></td></tr>`;
         })
         .join("")
     : '<tr><td colspan="6"><div class="empty-state compact">No clients match this view.</div></td></tr>';
@@ -2732,14 +2750,20 @@ function markProgramPrinted(programId) {
   if (c?.onboarding && !c.onboarding.programPrinted)
     setOnboardingStep(c, "programPrinted", true);
 }
+// Opens (or refreshes) a client's own page at #client/<id>.
 async function openClientProfile(id) {
-  state.activeClient = String(id);
-  state.clientMealPlans = [];
-  state.clientWorkouts = [];
-  state.activeMealPlan = null;
-  go("clients");
-  renderClientProfile();
-  $("#clientProfile").scrollIntoView({ behavior: "smooth", block: "start" });
+  id = String(id);
+  if (id !== state.activeClient) {
+    state.activeClient = id;
+    state.clientMealPlans = [];
+    state.clientWorkouts = [];
+    state.activeMealPlan = null;
+    document.scrollingElement.scrollTop = 0;
+  }
+  state.view = "client";
+  if (location.hash !== `#client/${id}`) location.hash = `client/${id}`;
+  renderRoute();
+  toggleRail(false);
   try {
     state.clientMealPlans =
       (await getJSON(`/api/meal-plans?clientId=${encodeURIComponent(id)}`))
@@ -2762,12 +2786,12 @@ function renderClientProfile() {
     c = state.clients.find((x) => String(x.id) === state.activeClient);
   if (!box) return;
   if (!c) {
-    box.hidden = true;
+    box.innerHTML =
+      '<div class="empty-state">This client isn\'t in your roster. They may have been deleted.</div>';
     return;
   }
-  box.hidden = false;
   const st = onboardingStatus(c);
-  box.innerHTML = `<div class="profile-head"><div class="client-name"><span class="mini-avatar">${initials(c.name)}</span><div><span class="kicker">CLIENT PROFILE</span><h2>${esc(c.name)}</h2><p>${esc(c.service_type || "PT consult")} · ${esc(c.email || "No email")}${c.phone ? ` · ${esc(c.phone)}` : ""}</p></div></div><div class="profile-head-actions"><button class="secondary-btn" data-profile="edit">Edit client</button><button class="icon-btn" data-profile="close" aria-label="Close profile">×</button></div></div>${
+  box.innerHTML = `<div class="profile-head"><div class="client-name"><span class="mini-avatar">${initials(c.name)}</span><div><span class="kicker">CLIENT PROFILE</span><h2>${esc(c.name)}</h2><p>${esc(c.service_type || "PT consult")} · ${esc(c.email || "No email")}${c.phone ? ` · ${esc(c.phone)}` : ""}</p></div></div><div class="profile-head-actions"><button class="secondary-btn" data-profile="edit">Edit client</button></div></div>${
     st
       ? `<section class="onboarding"><div class="builder-label"><span>NEW-CLIENT CHECKLIST · ${st.done} OF ${st.total} DONE</span><span class="first-session ${c.first_session && String(c.first_session).slice(0, 10) <= todayKey && st.done < st.total ? "late" : ""}">${esc(firstSessionLabel(c))}</span></div><div class="onboarding-bar"><i style="width:${(st.done / st.total) * 100}%"></i></div>${st.steps.map((step, i) => onboardingStepHTML(c, step, i)).join("")}<button class="text-btn" data-profile="untrack">Stop tracking this checklist</button></section>`
       : `<section class="onboarding empty"><p>The new-client checklist isn't on for this client.</p><button class="secondary-btn" data-profile="track">Start new-client checklist</button></section>`
@@ -2813,10 +2837,6 @@ async function clientProfileAction(e) {
   const b = e.target.closest("[data-profile]");
   if (!b || e.type !== "click") return;
   const a = b.dataset.profile;
-  if (a === "close") {
-    state.activeClient = null;
-    renderClientProfile();
-  }
   if (a === "edit") openClientEditDialog(c);
   if (a === "track") setOnboardingTracking(c, true);
   if (a === "untrack" && confirm(`Stop tracking the checklist for ${c.name}?`))
