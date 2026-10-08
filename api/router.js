@@ -31,7 +31,8 @@ async function router(req, res) {
   // Record any 5xx a handler sends, so failures show on the Connections page.
   const json = res.json.bind(res);
   res.json = (body) => {
-    if (res.statusCode >= 500) reportError(route, body?.error || "Server error");
+    if (res.statusCode >= 500)
+      reportError(route, body?.error || "Server error");
     return json(body);
   };
   try {

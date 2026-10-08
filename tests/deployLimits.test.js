@@ -52,7 +52,11 @@ test("the router answers unknown routes with 404 and passes the query on", async
   await router({ query: { __route: "nope" }, headers: {} }, missing);
   assert.equal(missing.statusCode, 404);
   // A signed-out request reaches the handler with __route removed.
-  const req = { query: { __route: "tasks", day: "2026-10-08" }, headers: {}, method: "GET" };
+  const req = {
+    query: { __route: "tasks", day: "2026-10-08" },
+    headers: {},
+    method: "GET",
+  };
   const res = fakeRes();
   await router(req, res);
   assert.equal(res.statusCode, 401);
@@ -70,9 +74,7 @@ test("server-only folders are not served as static files", () => {
   const publicFiles = new Set([
     "index.html",
     "book.html",
-    "app.js",
     "book.js",
-    "styles.css",
     "book.css",
     "task-schedule.js",
     "meal-intake.js",
@@ -85,12 +87,13 @@ test("server-only folders are not served as static files", () => {
   for (const name of readdirSync(root)) {
     if (name.startsWith(".") || name === "api" || ignored.includes(name))
       continue;
-    if (statSync(join(root, name)).isDirectory())
+    if (statSync(join(root, name)).isDirectory()) {
+      if (["js", "css"].includes(name)) continue; // browser code, public by design
       assert.ok(
         blocked.includes(`/${name}/:path*`),
         `${name}/ is publicly served`,
       );
-    else if (
+    } else if (
       /\.(js|json|sql|html|css)$/.test(name) &&
       !["package.json", "package-lock.json", "vercel.json"].includes(name)
     )

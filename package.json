@@ -6,7 +6,7 @@
   "scripts": {
     "check": "node scripts/check.js && node --test tests/*.test.js",
     "test": "node --test tests/*.test.js",
-    "format": "npx --yes prettier@3 --write \"*.{js,css,html}\" \"api/**/*.js\" \"lib/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\""
+    "format": "npx --yes prettier@3 --write \"*.{js,html}\" \"js/**/*.js\" \"css/**/*.css\" \"api/**/*.js\" \"lib/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\""
   },
   "engines": {
     "node": "22.x"

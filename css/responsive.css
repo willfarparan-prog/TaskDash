@@ -1,0 +1,290 @@
+/* Tablet and phone layouts for the shell and core pages. */
+@media (max-width: 1180px) {
+  .brief-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .brief-copy {
+    grid-column: 1/-1;
+  }
+  .program-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .connection-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .context-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .quick-link-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  .owner-gate {
+    margin-inline: 18px;
+  }
+  :root {
+    --sidebar: 244px;
+  }
+  .sidebar {
+    transform: translateX(-100%);
+    transition: 0.2s;
+  }
+  .sidebar.open {
+    transform: none;
+  }
+  .main-shell {
+    margin-left: 0;
+  }
+  .mobile-menu {
+    display: block;
+  }
+  .mobile-scrim.show {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 25;
+  }
+  .search {
+    display: none;
+  }
+  .topbar {
+    padding: 0 18px;
+  }
+  .content-shell {
+    padding: 30px 18px 70px;
+  }
+  .dashboard-grid,
+  .scheduler-layout {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-grid .schedule-panel {
+    position: static;
+  }
+  .events-preview,
+  .readiness-panel {
+    grid-column: auto;
+  }
+  .split-intro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .inbox-layout {
+    grid-template-columns: 1fr;
+  }
+  .inbox-sources {
+    display: flex;
+    overflow: auto;
+  }
+  .inbox-sources > small,
+  .inbox-sources hr {
+    display: none;
+  }
+  .source-filter {
+    width: auto;
+    white-space: nowrap;
+  }
+  .rule-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .rule-strip article:last-child {
+    grid-column: 1/-1;
+  }
+  .connections-grid,
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+  .quick-links-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .quick-links-heading .table-search {
+    width: 100%;
+  }
+}
+@media (max-width: 620px) {
+  .owner-gate {
+    margin-inline: 13px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .owner-gate a {
+    width: 100%;
+    text-align: center;
+  }
+  .owner-gate-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .top-actions .primary-btn {
+    font-size: 0;
+    width: 42px;
+    padding: 0;
+  }
+  .top-actions .primary-btn span {
+    font-size: 18px;
+  }
+  .breadcrumb {
+    min-width: 0;
+    flex: 1;
+  }
+  .content-shell {
+    padding-inline: 13px;
+  }
+  .page-intro h1 {
+    font-size: 38px;
+  }
+  .intro-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .brief-card {
+    padding: 19px;
+  }
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .brief-grid,
+  .program-grid,
+  .connections-grid,
+  .connection-summary,
+  .context-links,
+  .quick-link-grid,
+  .booking-rules-grid {
+    grid-template-columns: 1fr;
+  }
+  .brief-copy {
+    grid-column: auto;
+  }
+  .dashboard-grid {
+    gap: 12px;
+  }
+  .event-preview-list {
+    grid-template-columns: 1fr;
+  }
+  .mail-row {
+    grid-template-columns: 8px minmax(90px, 0.6fr) minmax(0, 1fr);
+  }
+  .mail-time {
+    display: none;
+  }
+  .rule-strip {
+    grid-template-columns: 1fr;
+  }
+  .rule-strip article:last-child {
+    grid-column: auto;
+  }
+  .pipeline-step {
+    grid-template-columns: 22px 86px minmax(0, 1fr);
+  }
+  .step-state {
+    grid-column: 3;
+  }
+  .modal-body {
+    grid-template-columns: 1fr;
+  }
+  .modal-body label.full {
+    grid-column: auto;
+  }
+  .settings-save,
+  .scheduler-save {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .connection-card {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+  .connection-card .conn-status {
+    grid-column: 2;
+    width: max-content;
+  }
+  .quick-links-panel {
+    padding: 18px 14px;
+  }
+  .booking-link-bar,
+  .connection-banner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .schedule-day {
+    grid-template-columns: 1fr;
+  }
+  .schedule-day em {
+    text-align: left;
+  }
+  .schedule-range {
+    justify-content: space-between;
+  }
+  .schedule-range input {
+    flex: 1;
+  }
+  .sidebar-footer {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+}
+@media print {
+  body {
+    background: #fff;
+  }
+  .sidebar,
+  .topbar,
+  .page-intro,
+  .toolbar,
+  .toast,
+  .editor-actions {
+    display: none !important;
+  }
+  .main-shell {
+    margin: 0;
+  }
+  .content-shell {
+    padding: 0;
+  }
+  .view {
+    display: none !important;
+  }
+  #view-programs {
+    display: block !important;
+  }
+  .program-grid {
+    display: none;
+  }
+  .editor-panel {
+    display: block !important;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  .program-day textarea {
+    border: 0;
+    min-height: 0;
+    resize: none;
+    padding: 0;
+    font-size: 13px;
+  }
+  .day-tabs {
+    display: none;
+  }
+  .print-header {
+    display: block !important;
+  }
+  .panel {
+    border: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .table-toolbar {
+    flex-wrap: wrap;
+  }
+  .table-toolbar .table-search,
+  .table-toolbar select {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}

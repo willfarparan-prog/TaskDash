@@ -1,0 +1,140 @@
+/* Event board and SOP pipeline. */
+.rule-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: var(--ink);
+  color: #fff;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+.rule-strip article {
+  padding: 16px;
+  border-right: 1px solid #333;
+}
+.rule-strip article:last-child {
+  border: 0;
+}
+.rule-strip strong {
+  display: block;
+  font-size: 17px;
+}
+.rule-strip span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.event-board {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.event-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  overflow: hidden;
+}
+.event-card > header {
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+.event-card h2 {
+  margin: 3px 0;
+  font-size: 22px;
+}
+.event-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+.event-days {
+  background: var(--ink);
+  color: #fff;
+  min-width: 86px;
+  border-radius: 9px;
+  padding: 10px;
+  text-align: center;
+}
+.event-days strong {
+  display: block;
+  font-size: 23px;
+}
+.event-days span {
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  color: var(--muted);
+}
+.compressed-alert {
+  margin: 0 20px 16px;
+  background: #fff0cb;
+  color: #755100;
+  border: 1px solid #ead292;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+.pipeline {
+  border-top: 1px solid var(--line);
+  padding: 10px 20px 18px;
+}
+.pipeline-step {
+  display: grid;
+  grid-template-columns: 24px 112px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid #eee;
+}
+.pipeline-step:last-child {
+  border: 0;
+}
+.step-check {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #aaa;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.step-check:checked {
+  background: var(--green);
+  border: 5px solid #dff6eb;
+}
+.pipeline-step.done .step-name {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.step-date {
+  font:
+    500 10px IBM Plex Mono,
+    monospace;
+  color: #6b6b6b;
+}
+.step-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+.step-owner {
+  font-size: 11px;
+  color: var(--muted);
+}
+.step-state {
+  font:
+    700 9px IBM Plex Mono,
+    monospace;
+  border-radius: 4px;
+  padding: 4px 6px;
+  background: #eee;
+  color: #6b6b6b;
+}
+.step-state.overdue {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.step-state.now {
+  background: #fff0cb;
+  color: #755100;
+}

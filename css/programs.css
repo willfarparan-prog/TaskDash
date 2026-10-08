@@ -1,0 +1,186 @@
+/* Toolbars, the program library and cards, the editor panel, stock filters. */
+.toolbar,
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.segmented {
+  background: #dfdcd8;
+  border-radius: 8px;
+  padding: 3px;
+  display: flex;
+}
+.segmented button {
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+  padding: 8px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.segmented button.active {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.table-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0 10px;
+  min-height: 40px;
+}
+.table-search input {
+  border: 0;
+  outline: 0;
+  min-width: 200px;
+}
+.program-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.program-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  overflow: hidden;
+  transition: 0.18s;
+}
+.program-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.program-card-top {
+  height: 9px;
+  background: var(--red);
+}
+.program-card-body {
+  padding: 18px;
+}
+.program-card .status {
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  color: var(--teal);
+  letter-spacing: 0.1em;
+}
+.program-card h3 {
+  font-size: 19px;
+  margin: 8px 0 4px;
+}
+.program-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.program-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 17px 0;
+  padding: 12px 0;
+  border-block: 1px solid #eee;
+}
+.program-card dt {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.program-card dd {
+  font-weight: 800;
+  margin: 3px 0 0;
+}
+.program-card footer {
+  display: flex;
+  gap: 7px;
+}
+.program-card footer button {
+  flex: 1 1 auto;
+  height: 35px;
+  padding: 0 12px;
+}
+.editor-panel {
+  margin-top: 18px;
+}
+.day-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.day-tabs button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 7px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12px;
+}
+.day-tabs button.active {
+  background: var(--ink);
+  color: #fff;
+}
+.program-day textarea {
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 14px;
+  line-height: 1.6;
+}
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Stock library filters and card preview */
+.stock-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: flex-end;
+  margin: -4px 0 14px;
+}
+.stock-filters label {
+  display: grid;
+  gap: 4px;
+  font:
+    600 10px IBM Plex Mono,
+    monospace;
+  color: #5f5f5f;
+  text-transform: uppercase;
+}
+.stock-filters select {
+  min-width: 150px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  text-transform: none;
+  color: var(--ink);
+}
+.program-preview {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #4f4f4f;
+}
+.program-preview b {
+  font:
+    700 10px IBM Plex Mono,
+    monospace;
+  color: var(--red);
+  margin-right: 4px;
+}

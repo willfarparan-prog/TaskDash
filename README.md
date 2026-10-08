@@ -37,7 +37,11 @@ Microsoft is not connected automatically. It remains a separate, visible connect
 
 ## Runtime
 
-The frontend is a buildless static app (`index.html`, `styles.css`, `app.js`) deployed on Vercel. Node serverless functions in `api/` use Postgres through the `neon` or `DATABASE_URL` environment variable.
+The frontend is a buildless static app deployed on Vercel: `index.html` loads one script per feature from `js/` (in order; `js/core.js` first, since the others use its helpers and state) and one stylesheet per feature from `css/` (order matters for the cascade). The booking page is `book.html`/`book.js`/`book.css`.
+
+The API is a single Vercel function: `vercel.json` rewrites every `/api/<route>` to `api/router.js`, which loads the matching handler from `lib/routes/`. Add a route by creating `lib/routes/<name>.js` and listing it in the router; `tests/deployLimits.test.js` checks they match. Handlers use Postgres through the `neon` or `DATABASE_URL` environment variable. Server errors and browser errors are recorded in `app_errors` and listed on the Connections page.
+
+`npm run check` syntax-checks every file and runs the unit tests; `npm run format` applies Prettier; `npm run smoke` drives the real app in Chrome against a fake API (see `scripts/smoke.js`).
 
 Required environment variables:
 

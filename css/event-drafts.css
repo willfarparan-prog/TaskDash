@@ -1,0 +1,208 @@
+/* Event messaging drafts. */
+/* Event messaging drafts */
+.draft-panel {
+  border-top: 1px solid var(--line);
+  background: #faf9f7;
+}
+.draft-panel > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+}
+.draft-panel > summary::-webkit-details-marker {
+  display: none;
+}
+.draft-panel > summary::after {
+  content: "▾";
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.draft-panel[open] > summary::after {
+  transform: rotate(180deg);
+}
+.draft-panel > summary em {
+  margin-left: auto;
+  font:
+    600 11px IBM Plex Mono,
+    monospace;
+  font-style: normal;
+  color: var(--muted);
+}
+.draft-list {
+  display: grid;
+  gap: 12px;
+  padding: 0 20px 4px;
+}
+.draft {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.draft > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.draft > header strong {
+  display: block;
+  font-size: 14px;
+}
+.draft > header small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+.draft-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.draft textarea {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  background: #fff;
+}
+.draft textarea:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+.draft-status {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 6px 0;
+}
+.draft-status.error {
+  color: var(--red);
+}
+.draft-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px 16px;
+}
+@media (max-width: 640px) {
+  .draft > header {
+    flex-direction: column;
+  }
+  .draft-actions {
+    justify-content: flex-start;
+  }
+}
+.inbox-connect {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 14px;
+  text-decoration: none;
+}
+.task-heading-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quick-task .smart-add {
+  background: var(--red);
+  white-space: nowrap;
+}
+.quick-task button + button {
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+.task-tools {
+  display: flex;
+  gap: 2px;
+}
+.row-edit {
+  border: 0;
+  background: transparent;
+  color: #767676;
+  font-size: 15px;
+  cursor: pointer;
+}
+.row-edit:hover,
+.row-delete:hover {
+  color: var(--ink);
+}
+.task-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 55vh;
+  overflow: auto;
+  margin-bottom: 12px;
+}
+.task-manager-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 9px 11px;
+  border: 1px solid #e6e2de;
+  border-radius: 8px;
+}
+.task-manager-row strong {
+  display: block;
+  font-size: 14px;
+}
+.task-manager-row span {
+  font:
+    500 10px IBM Plex Mono,
+    monospace;
+  color: var(--muted);
+}
+#dialogFields > .task-manager,
+#dialogFields > .task-manager-add,
+#dialogFields > .empty-state {
+  grid-column: 1 / -1;
+}
+.source-dot.work {
+  background: #00a99d;
+}
+.inbox-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid #ecd9b8;
+  border-radius: 9px;
+  background: #fdf7ec;
+  font-size: 13px;
+}
+.inbox-notice .inbox-connect {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+.mail-account {
+  display: block;
+  margin-top: 3px;
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.mail-account.work {
+  color: #00857b;
+}
+@media (max-width: 640px) {
+  .inbox-notice {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

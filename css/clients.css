@@ -1,0 +1,84 @@
+/* Client metrics and the roster table. */
+.client-metrics {
+  margin-bottom: 16px;
+}
+.table-panel {
+  padding: 0;
+  overflow: hidden;
+}
+.table-toolbar {
+  padding: 17px 18px;
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+}
+.table-toolbar select,
+.settings-card select {
+  height: 40px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0 10px;
+}
+.data-table-wrap {
+  overflow: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+.data-table th {
+  text-align: left;
+  background: #f8f7f5;
+  color: var(--muted);
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #ece9e5;
+  font-size: 13px;
+}
+.data-table tr:last-child td {
+  border-bottom: 0;
+}
+.client-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.mini-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+}
+.service-pill {
+  display: inline-block;
+  background: var(--teal-soft);
+  color: #00776e;
+  border-radius: 4px;
+  padding: 4px 7px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.session-btn {
+  border: 0;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+}

@@ -1,0 +1,225 @@
+/* Scheduler: booking link, hours and booked visits. */
+.booking-link-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: #eee9e3;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 13px 15px;
+  margin-bottom: 14px;
+}
+.booking-link-bar span,
+.booking-link-bar a {
+  display: block;
+}
+.booking-link-bar span {
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  letter-spacing: 0.12em;
+  color: #6b6b6b;
+}
+.booking-link-bar a {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+  text-decoration-color: color-mix(in srgb, var(--red) 55%, transparent);
+  text-underline-offset: 3px;
+}
+.scheduler-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(310px, 0.75fr);
+  gap: 15px;
+  align-items: start;
+}
+.scheduler-main,
+.scheduler-side {
+  display: grid;
+  gap: 15px;
+}
+.booking-rules-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 11px;
+}
+.booking-rules-grid label,
+.booking-copy-fields label {
+  font-size: 12px;
+  font-weight: 750;
+}
+.booking-rules-grid input,
+.booking-rules-grid select,
+.booking-copy-fields input,
+.booking-copy-fields textarea {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+}
+.booking-rules-grid input,
+.booking-rules-grid select,
+.booking-copy-fields input {
+  height: 43px;
+}
+.booking-copy-fields {
+  display: grid;
+  gap: 12px;
+}
+.booking-copy-fields textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+.schedule-hours {
+  display: grid;
+  gap: 7px;
+}
+.schedule-day {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(235px, 1.15fr) 95px;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border: 1px solid #e8e4df;
+  border-radius: 9px;
+  background: #fff;
+}
+.schedule-day.off {
+  background: #f4f2ef;
+  color: var(--muted);
+}
+.schedule-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.schedule-toggle input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--red);
+}
+.schedule-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.schedule-range input {
+  width: 105px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0 7px;
+  background: #fff;
+}
+.schedule-range span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.schedule-day em {
+  text-align: right;
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  color: var(--green);
+  font-style: normal;
+  text-transform: uppercase;
+}
+.schedule-day.off em {
+  color: var(--muted);
+}
+.scheduler-save {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 11px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  box-shadow: var(--shadow);
+  z-index: 5;
+}
+.scheduler-save span {
+  color: #767676;
+  font-size: 12px;
+}
+.preview-day {
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+.preview-day:last-child {
+  border-bottom: 0;
+}
+.preview-day > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.preview-day strong {
+  font-size: 13px;
+}
+.preview-day small {
+  color: var(--muted);
+}
+.preview-slots {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.preview-slots span,
+.preview-slots em {
+  background: #f0ede9;
+  border-radius: 5px;
+  padding: 5px 7px;
+  font-size: 10px;
+  font-style: normal;
+}
+.booking-list {
+  display: grid;
+}
+.booking-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+.booking-row:last-child {
+  border-bottom: 0;
+}
+.booking-row strong,
+.booking-row span,
+.booking-row small {
+  display: block;
+}
+.booking-row strong {
+  font-size: 13px;
+}
+.booking-row span {
+  font-size: 11px;
+  color: #6b6b6b;
+  margin-top: 2px;
+}
+.booking-row small {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.booking-row .row-delete {
+  align-self: start;
+}
+.primary-btn:disabled,
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

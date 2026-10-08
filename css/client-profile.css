@@ -1,0 +1,377 @@
+/* Client page, new-client checklist and meal plans; phone client cards. */
+/* Client profile, new-client checklist and meal plans */
+.client-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.client-link:hover strong {
+  text-decoration: underline;
+}
+.onboard-chip {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--red-soft);
+  color: var(--red);
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+}
+.onboard-chip.complete {
+  background: #e2f4ea;
+  color: #237a52;
+}
+.client-profile {
+  margin-top: 16px;
+  padding: 20px 22px;
+}
+.profile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.profile-head h2 {
+  font-size: 24px;
+  margin: 3px 0;
+}
+.profile-head p {
+  margin: 0;
+  color: #6b6b6b;
+}
+.profile-head .mini-avatar {
+  width: 44px;
+  height: 44px;
+  font-size: 13px;
+}
+.profile-head-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.onboarding,
+.meal-plans {
+  margin-top: 14px;
+}
+.onboarding.empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: #6b6b6b;
+}
+.first-session {
+  font:
+    600 10px IBM Plex Mono,
+    monospace;
+  color: #555;
+}
+.first-session.late {
+  color: var(--red);
+}
+.onboarding-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: #ece9e5;
+  margin: 4px 0 8px;
+  overflow: hidden;
+}
+.onboarding-bar i {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+.onboarding-step {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid #e6e2de;
+  border-radius: 9px;
+  margin-bottom: 7px;
+  background: #fff;
+}
+.onboarding-step input {
+  appearance: none;
+  width: 19px;
+  height: 19px;
+  border: 1.5px solid #aaa;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.onboarding-step input:checked {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 4px #fff;
+}
+.onboarding-step.done strong {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.onboarding-step small {
+  display: block;
+  color: var(--muted);
+  font:
+    500 10px IBM Plex Mono,
+    monospace;
+  margin-top: 2px;
+}
+.step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.step-link {
+  border: 1px solid var(--line);
+  background: #f8f7f5;
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+}
+.step-link:hover {
+  border-color: var(--ink);
+}
+.plan-history {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0;
+}
+.plan-history button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 6px;
+  padding: 4px 9px;
+  cursor: pointer;
+}
+.plan-history button.active {
+  background: var(--ink);
+  color: #fff;
+}
+.plan-totals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 10px 0;
+}
+.plan-totals div {
+  border: 1px solid #e6e2de;
+  border-radius: 9px;
+  padding: 10px 12px;
+}
+.plan-totals strong {
+  display: block;
+  font-size: 22px;
+}
+.plan-totals span {
+  font:
+    500 10px IBM Plex Mono,
+    monospace;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.plan-meals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+}
+.plan-meal {
+  border: 1px solid #e6e2de;
+  border-radius: 9px;
+  padding: 11px 12px;
+  background: #fff;
+}
+.plan-meal header span {
+  display: block;
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  color: var(--red);
+}
+.plan-meal p {
+  margin: 6px 0;
+  font-size: 13px;
+}
+.plan-meal footer {
+  font:
+    600 10px IBM Plex Mono,
+    monospace;
+  color: #555;
+}
+.plan-meal small {
+  display: block;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.plan-notes {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #444;
+}
+.plan-notes p {
+  white-space: pre-wrap;
+}
+.plan-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+.multi-field {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.multi-field legend {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.chip-check {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px !important;
+  cursor: pointer;
+}
+.chip-check:has(input:checked) {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.chip-check input {
+  display: none;
+}
+.onboarding-queue {
+  margin-top: 12px;
+}
+.onboard-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e6e2de;
+  border-radius: 9px;
+  background: #fff;
+  margin-bottom: 7px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.onboard-row:hover {
+  border-color: #bcb7b0;
+}
+.onboard-row small {
+  display: block;
+  font:
+    500 10px IBM Plex Mono,
+    monospace;
+  color: var(--muted);
+}
+.onboard-ring {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--red);
+  display: grid;
+  place-items: center;
+  font:
+    700 10px IBM Plex Mono,
+    monospace;
+  color: var(--red);
+}
+@media (max-width: 640px) {
+  .onboarding-step {
+    grid-template-columns: 22px minmax(0, 1fr);
+  }
+  .step-actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+  .plan-totals {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .profile-head {
+    flex-direction: column;
+  }
+}
+.modal-body .multi-field {
+  grid-column: 1 / -1;
+}
+
+/* Client profile page */
+.back-link {
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+#view-client .client-profile {
+  margin-top: 0;
+}
+.client-email {
+  display: block;
+  color: #6b6b6b;
+}
+/* On phones the client table becomes a stack of cards. */
+@media (max-width: 640px) {
+  .clients-table {
+    min-width: 0;
+  }
+  .clients-table thead {
+    display: none;
+  }
+  .clients-table,
+  .clients-table tbody {
+    display: block;
+  }
+  .clients-table tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #ece9e5;
+  }
+  .clients-table td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .clients-table td:first-child,
+  .clients-table td:nth-child(2),
+  .clients-table td:last-child {
+    grid-column: 1 / -1;
+  }
+  .clients-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font:
+      600 9px IBM Plex Mono,
+      monospace;
+    color: #6b6b6b;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .clients-table .row-actions {
+    justify-content: flex-start;
+  }
+}

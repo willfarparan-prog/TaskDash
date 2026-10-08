@@ -1,0 +1,345 @@
+/* Program builder and the printed program sheet. */
+.program-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  background: var(--ink);
+  padding: 10px;
+  border-radius: 13px;
+  margin-bottom: 15px;
+}
+.program-summary article {
+  background: #181818;
+  border: 1px solid #303030;
+  border-radius: 9px;
+  padding: 15px;
+  color: #fff;
+}
+.program-summary span {
+  font:
+    700 9px IBM Plex Mono,
+    monospace;
+  letter-spacing: 0.1em;
+  color: #999;
+}
+.program-summary strong {
+  display: block;
+  font-size: 27px;
+  margin: 6px 0 1px;
+}
+.program-summary small {
+  color: #8f8f8f;
+}
+.program-card.stock .program-card-top {
+  background: var(--teal);
+}
+.program-card.stock .status {
+  color: #00796f;
+}
+.program-edit-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+}
+.editor-history {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.editor-history .secondary-btn {
+  white-space: nowrap;
+}
+.editor-history .secondary-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.program-edit-head h2 {
+  font-size: 26px;
+  margin: 5px 0;
+}
+.program-edit-head p {
+  color: #6b6b6b;
+  margin: 0;
+}
+.program-meta {
+  display: grid;
+  grid-template-columns: 2fr 1.25fr 0.55fr 0.7fr;
+  gap: 10px;
+  padding: 17px 0;
+  border-block: 1px solid var(--line);
+  margin-top: 16px;
+}
+.program-meta label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #6b6b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.program-meta input,
+.program-meta select {
+  display: block;
+  width: 100%;
+  height: 41px;
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  padding: 0 10px;
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.program-meta .wide {
+  grid-column: 1/-1;
+}
+.program-builder {
+  margin-top: 12px;
+}
+.day-edit-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.day-edit-title > input {
+  font-size: 20px;
+  font-weight: 800;
+  border: 0;
+  border-bottom: 2px solid var(--line);
+  padding: 5px 2px;
+  max-width: 260px;
+}
+.builder-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f3f1ee;
+  border-radius: 7px;
+  padding: 8px 10px;
+  margin: 10px 0 6px;
+}
+.builder-label span {
+  font:
+    700 9px IBM Plex Mono,
+    monospace;
+  letter-spacing: 0.1em;
+}
+.builder-label button {
+  border: 0;
+  background: transparent;
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.warmup-row {
+  display: grid;
+  grid-template-columns: 28px minmax(200px, 1.5fr) minmax(120px, 0.6fr) 32px;
+  gap: 7px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.warmup-row b {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+.warmup-row input,
+.exercise-row input {
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 8px;
+  min-width: 0;
+}
+.warmup-row button,
+.exercise-row > button {
+  border: 0;
+  background: transparent;
+  color: #767676;
+  font-size: 18px;
+  cursor: pointer;
+}
+.training-block {
+  margin: 18px 0;
+  overflow: auto;
+}
+.exercise-head,
+.exercise-row {
+  display: grid;
+  grid-template-columns:
+    42px minmax(210px, 2fr) 55px repeat(8, minmax(58px, 0.55fr))
+    28px;
+  gap: 6px;
+  align-items: center;
+  min-width: 900px;
+}
+.exercise-head {
+  font:
+    700 8px IBM Plex Mono,
+    monospace;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 0 3px 6px;
+}
+.exercise-row {
+  padding: 7px 3px;
+  border-top: 1px solid #eee;
+}
+.exercise-row > b {
+  width: 31px;
+  height: 31px;
+  border-radius: 5px;
+  background: var(--red);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+}
+.exercise-row > div {
+  display: grid;
+  gap: 4px;
+}
+.exercise-row .exercise-note {
+  height: 29px;
+  font-size: 10px;
+  background: #faf9f7;
+}
+.exercise-row > [data-ex-rep] {
+  text-align: center;
+}
+.add-block {
+  margin-top: 6px;
+}
+.danger-text {
+  color: var(--red);
+  margin-right: auto;
+}
+.program-print-sheet {
+  display: none;
+}
+@media (max-width: 900px) {
+  .program-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .program-toolbar .segmented {
+    overflow: auto;
+  }
+  .program-meta {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 620px) {
+  .program-summary {
+    grid-template-columns: 1fr;
+  }
+  .program-meta {
+    grid-template-columns: 1fr;
+  }
+  .program-meta .wide {
+    grid-column: auto;
+  }
+  .editor-actions {
+    flex-wrap: wrap;
+  }
+}
+@media print {
+  @page {
+    size: landscape;
+    margin: 0.35in;
+  }
+  .program-summary,
+  .program-grid,
+  .program-edit-head,
+  .program-meta,
+  .program-builder {
+    display: none !important;
+  }
+  .program-print-sheet {
+    display: block !important;
+  }
+  .print-program-cover {
+    border-bottom: 4px solid #d52b1e;
+    padding: 0 0 12px;
+    margin-bottom: 14px;
+  }
+  .print-program-cover span {
+    font:
+      700 9px IBM Plex Mono,
+      monospace;
+    color: #d52b1e;
+  }
+  .print-program-cover h1 {
+    font-size: 26px;
+    margin: 4px 0;
+  }
+  .print-program-cover p {
+    margin: 0;
+    color: #555;
+  }
+  .print-program-day {
+    break-after: page;
+  }
+  .print-program-day:last-child {
+    break-after: auto;
+  }
+  .print-program-day > header {
+    background: #111;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+  }
+  .print-program-day h2 {
+    margin: 0;
+    font-size: 21px;
+  }
+  .print-program-day section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .print-program-day section ol {
+    display: flex;
+    gap: 30px;
+    padding-left: 22px;
+  }
+  .print-program-day table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+  .print-program-day th {
+    background: #eee;
+    text-transform: uppercase;
+    font-size: 8px;
+  }
+  .print-program-day th,
+  .print-program-day td {
+    border: 1px solid #bbb;
+    padding: 6px;
+    vertical-align: top;
+  }
+  .print-program-day th small,
+  .print-program-day td small {
+    display: block;
+  }
+  .print-program-day td > i {
+    display: block;
+    height: 17px;
+    border-top: 1px solid #bbb;
+    margin-top: 4px;
+  }
+  .print-program-day footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 8px;
+    color: #6b6b6b;
+  }
+}

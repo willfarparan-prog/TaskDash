@@ -65,7 +65,7 @@ test("event facts state times, dates and missing values plainly", () => {
 
 test("front-end draft list matches the server's draft types", () => {
   const { DRAFTS } = require("../lib/eventDrafts");
-  const app = readFileSync(join(__dirname, "..", "app.js"), "utf8");
+  const app = readFileSync(join(__dirname, "..", "js", "events.js"), "utf8");
   const block = app.slice(
     app.indexOf("const DRAFT_TYPES"),
     app.indexOf("];", app.indexOf("const DRAFT_TYPES")),

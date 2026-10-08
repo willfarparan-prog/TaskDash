@@ -1,0 +1,100 @@
+/* Calendar week view. */
+.calendar-panel {
+  overflow: auto;
+}
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.calendar-head > div {
+  text-align: center;
+}
+.week-calendar {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(110px, 1fr));
+  min-width: 860px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.cal-corner,
+.cal-day-head {
+  height: 58px;
+  background: #f7f5f2;
+  border-bottom: 1px solid var(--line);
+  padding: 9px;
+  text-align: center;
+}
+.cal-day-head {
+  border-left: 1px solid var(--line);
+}
+.cal-day-head strong {
+  display: block;
+  font-size: 17px;
+}
+.cal-day-head span {
+  font:
+    600 9px IBM Plex Mono,
+    monospace;
+  color: var(--muted);
+}
+.cal-day-head.today {
+  background: var(--ink);
+  color: #fff;
+}
+.time-axis {
+  position: relative;
+  height: 660px;
+  background: #faf9f7;
+}
+.time-axis span {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font:
+    500 9px IBM Plex Mono,
+    monospace;
+  color: var(--muted);
+}
+.cal-day {
+  position: relative;
+  height: 660px;
+  border-left: 1px solid var(--line);
+  background: repeating-linear-gradient(
+    to bottom,
+    #fff 0,
+    #fff 54px,
+    #eee 55px
+  );
+}
+.cal-event {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  background: var(--teal-soft);
+  border-left: 3px solid var(--teal);
+  border-radius: 5px;
+  padding: 4px 6px;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 1.2;
+}
+.cal-event.adobe {
+  background: var(--red-soft);
+  border-color: var(--red);
+}
+.cal-event.exos {
+  background: #eee9fb;
+  border-color: #826fd2;
+}
+.cal-event strong {
+  display: block;
+  font-size: 10px;
+}
+/* Booked visits stand out in amber. */
+.cal-event.booking {
+  background: #fff0cb;
+  border-color: #b47b00;
+}

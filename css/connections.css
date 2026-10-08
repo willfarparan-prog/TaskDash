@@ -1,0 +1,122 @@
+/* Connections status, usage and the error log. */
+.connection-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  background: var(--ink);
+  padding: 11px;
+  border-radius: 13px;
+  margin-bottom: 15px;
+}
+.dark-stat {
+  padding: 16px;
+  background: #171717;
+  border: 1px solid #2b2b2b;
+  border-radius: 9px;
+  color: #fff;
+}
+.dark-stat strong {
+  display: block;
+  font-size: 28px;
+  margin: 8px 0 2px;
+}
+.dark-stat small {
+  color: #888;
+  font-size: 10px;
+}
+.connections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
+}
+.connection-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 13px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 17px;
+}
+.connection-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+.connection-card h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.connection-card p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.connection-card .conn-status {
+  font:
+    700 9px IBM Plex Mono,
+    monospace;
+  padding: 5px 7px;
+  border-radius: 4px;
+  background: #eee;
+}
+.connection-card .conn-status.live {
+  background: #def5e9;
+  color: #147149;
+}
+.connection-card .conn-status.attention {
+  background: #fff0cb;
+  color: #765200;
+}
+.run-log {
+  padding: 0;
+  overflow: hidden;
+}
+.run-log .section-heading {
+  padding: 18px 20px 0;
+}
+
+/* Connections: recent errors */
+.error-log {
+  display: grid;
+  gap: 6px;
+}
+.error-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 9px 12px;
+  border: 1px solid #f0d4cf;
+  border-radius: 8px;
+  background: #fff8f6;
+}
+.error-row span {
+  font:
+    600 10px IBM Plex Mono,
+    monospace;
+  color: var(--red);
+}
+.error-row p {
+  margin: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.error-row time {
+  font-size: 11px;
+  color: #6b6b6b;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .error-row {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}
