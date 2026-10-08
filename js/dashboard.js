@@ -61,6 +61,7 @@ function renderDashboard() {
   $("#dailyBrief").innerHTML =
     `<strong>${overdue ? "Start with the overdue work." : "Your operating queue is under control."}</strong><ul>${next || "<li>No open tasks on today’s list.</li>"}${nextEvent ? `<li><strong>${esc(nextEvent.name)}</strong> is ${nextEvent.days === 0 ? "today" : `in ${nextEvent.days} days`}.</li>` : ""}</ul>`;
   renderOnboardingQueue();
+  renderWrapupQueue();
   renderAgenda();
   renderEventPreview();
   renderReadiness();

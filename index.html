@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="/css/event-drafts.css" />
     <link rel="stylesheet" href="/css/event-report.css" />
     <link rel="stylesheet" href="/css/consult.css" />
+    <link rel="stylesheet" href="/css/wrapup.css" />
     <link rel="stylesheet" href="/css/client-profile.css" />
     <link rel="stylesheet" href="/css/live-session.css" />
     <link rel="stylesheet" href="/css/docs.css" />
@@ -263,6 +264,7 @@
                 </div>
                 <div class="task-list" id="taskList"></div>
                 <div class="onboarding-queue" id="onboardingQueue" hidden></div>
+                <div class="onboarding-queue" id="wrapupQueue" hidden></div>
               </article>
               <article class="panel schedule-panel">
                 <div class="section-heading">
@@ -879,6 +881,7 @@
               <p>Adjust your dashboard without changing the underlying SOP.</p>
             </div>
             <div class="settings-grid">
+              <article class="panel settings-card wrapup-settings" id="wrapupSettingsCard"></article>
               <article class="panel settings-card">
                 <span class="kicker">ACCOUNT</span>
                 <h2>Owner account</h2>
@@ -948,6 +951,7 @@
       </main>
     </div>
     <div class="live-session" id="liveSession" hidden></div>
+    <dialog id="wrapUpDialog" class="modal wrapup"></dialog>
     <dialog id="formDialog" class="modal">
       <form method="dialog" id="dialogForm">
         <div class="modal-head">
@@ -992,6 +996,8 @@
     <script src="/js/consult-intake.js" defer></script>
     <script src="/js/consult-program-core.js" defer></script>
     <script src="/js/consult.js" defer></script>
+    <script src="/js/wrapup-core.js" defer></script>
+    <script src="/js/wrapup.js" defer></script>
     <script src="/js/docs.js" defer></script>
     <script src="/js/inbox.js" defer></script>
     <script src="/js/survey-followup.js" defer></script>

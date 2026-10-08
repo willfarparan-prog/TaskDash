@@ -349,7 +349,7 @@ async function liveClick(e) {
     } catch (err) {
       return toast(err.message || "Could not finish the session");
     }
-    closeLiveSession("Session finished and logged");
+    closeLiveSession("Session finished and logged", state.live?.log?.session_id);
   }
 }
 function queueLiveSave() {
@@ -419,7 +419,7 @@ async function saveLiveSession(finish = false) {
     if (finish) throw err;
   }
 }
-function closeLiveSession(message) {
+function closeLiveSession(message, wrapSessionId) {
   const L = state.live;
   clearInterval(state.liveClock);
   $("#liveSession").hidden = true;
@@ -432,6 +432,9 @@ function closeLiveSession(message) {
       renderDashboard();
       if (String(state.activeClient) === String(L.client.id))
         renderClientProfile();
+      // A finished session goes straight to its wrap-up steps.
+      if (wrapSessionId && wrapupSession(wrapSessionId))
+        openWrapUp(wrapSessionId);
     });
   }
 }

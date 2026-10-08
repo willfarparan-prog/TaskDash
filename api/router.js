@@ -20,6 +20,7 @@ const ROUTES = {
   links: () => require("../lib/routes/links"),
   "meal-plans": () => require("../lib/routes/meal-plans"),
   programs: () => require("../lib/routes/programs"),
+  settings: () => require("../lib/routes/settings"),
   tasks: () => require("../lib/routes/tasks"),
   workouts: () => require("../lib/routes/workouts"),
 };

@@ -182,6 +182,13 @@ function wireControls() {
       recordProgramEdit(pending);
   });
   $("#newClientBtn").onclick = openClientDialog;
+  $("#wrapUpDialog").addEventListener("click", wrapupClick);
+  $("#wrapUpDialog").addEventListener("change", wrapupChange);
+  $("#wrapupSettingsCard").addEventListener("click", wrapupSettingsClick);
+  $("#wrapupQueue").addEventListener("click", (e) => {
+    const row = e.target.closest("[data-wrapup]");
+    if (row) openWrapUp(row.dataset.wrapup);
+  });
   $("#newConsultBtn").onclick = () => openNewConsultDialog();
   $("#consultView").addEventListener("input", consultInput);
   $("#consultView").addEventListener("change", consultInput);
@@ -280,11 +287,13 @@ async function refreshAll() {
     loadLinks(),
     loadScheduler(),
     loadDocs(),
+    loadWrapupSettings(),
   ]);
   renderEverything();
   $("#refreshBtn").classList.remove("loading");
 }
 function renderEverything() {
+  renderWrapupSettings();
   renderAuthGate();
   renderDashboard();
   renderCalendar();

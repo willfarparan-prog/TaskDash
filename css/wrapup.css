@@ -1,0 +1,140 @@
+/* Session wrap-up window, profile section and settings card */
+.modal.wrapup {
+  width: min(680px, calc(100vw - 28px));
+  max-height: calc(100vh - 28px);
+  overflow: auto;
+}
+.modal.wrapup .modal-head small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.wu-body {
+  display: grid;
+  gap: 12px;
+  padding: 16px 22px;
+}
+.wu-length {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.wu-length label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.wu-length select {
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+}
+.wu-gaps {
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #fff0cb;
+  color: #5c3f00;
+  font-size: 13px;
+}
+.wu-step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.wu-step.done {
+  background: #f3fbf9;
+  border-color: var(--teal);
+}
+.wu-check input {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+.wu-main strong {
+  display: block;
+  font-size: 14px;
+}
+.wu-main small {
+  display: block;
+  color: #00756c;
+  font-size: 12px;
+}
+.wu-text {
+  margin: 8px 0 0;
+  padding: 9px 11px;
+  border: 1px dashed #bdb7b0;
+  border-radius: 8px;
+  background: #faf9f7;
+  font:
+    12.5px/1.5 IBM Plex Mono,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.wu-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+}
+.wrapup-section {
+  margin: 14px 0;
+}
+
+/* Settings card */
+.wrapup-settings {
+  grid-column: 1 / -1;
+}
+.wrapup-settings label {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.wrapup-settings input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+}
+.ws-rates {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+.ws-rate {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+.ws-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+@media (max-width: 640px) {
+  .ws-rate {
+    grid-template-columns: 1fr 1fr;
+  }
+  .wu-step {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+}

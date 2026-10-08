@@ -143,12 +143,14 @@ function clientAction(e) {
         notes: v.notes,
         nextSession: v.next || null,
       };
+      let loggedId = null;
       try {
-        await getJSON("/api/clients?resource=sessions", {
+        const logged = await getJSON("/api/clients?resource=sessions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
+        loggedId = logged.id;
         await loadClients();
       } catch {
         state.sessions.push({
@@ -163,6 +165,8 @@ function clientAction(e) {
       renderClients();
       renderDashboard();
       toast("Session logged");
+      if (v.type === "Personal training" && loggedId && wrapupSession(loggedId))
+        setTimeout(() => openWrapUp(loggedId), 120);
     },
   });
 }
@@ -318,7 +322,7 @@ function renderClientProfile() {
     st
       ? `<section class="onboarding"><div class="builder-label"><span>NEW-CLIENT CHECKLIST · ${st.done} OF ${st.total} DONE</span><span class="first-session ${c.first_session && String(c.first_session).slice(0, 10) <= todayKey && st.done < st.total ? "late" : ""}">${esc(firstSessionLabel(c))}</span></div><div class="onboarding-bar"><i style="width:${(st.done / st.total) * 100}%"></i></div>${st.steps.map((step, i) => onboardingStepHTML(c, step, i)).join("")}<button class="text-btn" data-profile="untrack">Stop tracking this checklist</button></section>`
       : `<section class="onboarding empty"><p>The new-client checklist isn't on for this client.</p><button class="secondary-btn" data-profile="track">Start new-client checklist</button></section>`
-  }${consultSectionHTML(c)}${trainingSectionHTML(c)}<section class="meal-plans"><div class="builder-label"><span>MEAL PLAN</span><button class="step-link" data-profile="intake">${state.clientMealPlans.length ? "＋ New meal plan" : "Fill in questionnaire + generate"}</button></div>${mealPlanSectionHTML(c)}</section>`;
+  }${consultSectionHTML(c)}${wrapupSectionHTML(c)}${trainingSectionHTML(c)}<section class="meal-plans"><div class="builder-label"><span>MEAL PLAN</span><button class="step-link" data-profile="intake">${state.clientMealPlans.length ? "＋ New meal plan" : "Fill in questionnaire + generate"}</button></div>${mealPlanSectionHTML(c)}</section>`;
 }
 function onboardingStepHTML(c, step, i) {
   const programs = clientPrograms(c);
@@ -337,7 +341,7 @@ function onboardingStepHTML(c, step, i) {
   if (step.key === "mealPlan")
     actions = `<button class="step-link" data-profile="intake">${clientPlanCount(c) ? "New plan" : "Questionnaire + generate"}</button>`;
   if (step.key === "ptLogger")
-    actions = `<a class="step-link" href="${attr(workAccountUrl(PT_LOGGER_URL))}" target="_blank" rel="noopener noreferrer">Open the logger ↗</a>`;
+    actions = `<button class="step-link" data-profile="copy-logger-row">Copy new-client row</button><a class="step-link" href="${attr(workAccountUrl(state.wrapupSettings.logger.url || PT_LOGGER_URL))}" target="_blank" rel="noopener noreferrer">Open the logger ↗</a>`;
   return `<div class="onboarding-step ${step.done ? "done" : ""}"><input type="checkbox" data-step="${step.key}" aria-label="${attr(step.title)}" ${step.done ? "checked" : ""}><div><strong>${i + 1}. ${esc(step.title)}</strong>${detail ? `<small>${esc(detail)}</small>` : ""}</div><div class="step-actions">${actions}</div></div>`;
 }
 function mealPlanSectionHTML(c) {
@@ -395,6 +399,8 @@ async function clientProfileAction(e) {
     setTimeout(() => window.print(), 100);
   }
   if (a === "intake") openMealIntakeDialog(c);
+  if (a === "wrapup") openWrapUp(b.dataset.session);
+  if (a === "copy-logger-row") copyLoggerRow(c);
   if (a === "start-consult") startConsultFor(c);
   if (a === "open-consult") location.hash = `consult/${b.dataset.consultId}`;
   if (a === "add-stock") openAttachProgramDialog(c, "stock");
@@ -537,6 +543,15 @@ function openClientEditDialog(c) {
         "",
         c.first_session ? String(c.first_session).slice(0, 10) : "",
       ],
+      ["packageSize", "Package size (sessions)", "number", "e.g. 10", c.package_size ?? ""],
+      [
+        "packageStart",
+        "Package started",
+        "date",
+        "",
+        c.package_start ? String(c.package_start).slice(0, 10) : "",
+      ],
+      ["sessionMinutes", "Usual session length (minutes)", "number", "e.g. 50", c.session_minutes ?? ""],
       [
         "nextFollowUp",
         "Next follow-up",
@@ -556,6 +571,9 @@ function openClientEditDialog(c) {
       const name = v.name.trim();
       if (!name) throw new Error("A client needs a name");
       const body = {
+        packageSize: v.packageSize ? Number(v.packageSize) : null,
+        packageStart: v.packageStart || null,
+        sessionMinutes: v.sessionMinutes ? Number(v.sessionMinutes) : null,
         name,
         email: v.email.trim(),
         phone: v.phone.trim(),

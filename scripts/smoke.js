@@ -6,6 +6,7 @@ const http = require("http");
 const { readFileSync, existsSync, statSync } = require("fs");
 const { join, extname } = require("path");
 const { chromium } = require("playwright-core");
+const Wrapup = require("../js/wrapup-core");
 
 const ROOT = join(__dirname, "..");
 const TYPES = {
@@ -62,6 +63,8 @@ function fakeApi() {
         status: "active",
         onboarding: {},
         first_session: day(2),
+        package_size: 10,
+        package_start: day(-30),
       },
     ],
     sessions: [],
@@ -155,7 +158,24 @@ function fakeApi() {
           db.clients.push(c);
           return json(route, c, 201);
         }
+        case "GET settings":
+          return json(route, {
+            settings: { wrapup: Wrapup.cleanSettings(db.wrapupSettings || {}) },
+          });
+        case "PUT settings":
+          db.wrapupSettings = body.value;
+          return json(route, { key: body.key, value: Wrapup.cleanSettings(body.value) });
         case "PATCH clients": {
+          if (q.resource === "wrapup") {
+            const ses = db.sessions.find((x) => String(x.id) === q.id);
+            if (body.step) {
+              ses.wrapup = { ...(ses.wrapup || {}) };
+              if (body.done) ses.wrapup[body.step] = body.dayKey;
+              else delete ses.wrapup[body.step];
+            }
+            if (body.lengthMinutes) ses.length_minutes = body.lengthMinutes;
+            return json(route, ses);
+          }
           const c = db.clients.find((x) => String(x.id) === q.id);
           if (q.resource === "onboarding") {
             c.onboarding = { ...(c.onboarding || {}) };
@@ -182,6 +202,7 @@ function fakeApi() {
         }
         case "POST consults": {
           if (q.action === "complete") {
+            db.lastComplete = body;
             const c = db.consults.find((x) => String(x.id) === q.id);
             Object.assign(c, {
               answers: body.answers,
@@ -313,12 +334,15 @@ function fakeApi() {
           Object.assign(w, { entries: body.entries, notes: body.notes });
           if (body.finish && w.status !== "finished") {
             w.status = "finished";
-            db.sessions.push({
+            const session = {
               id: db.seq++,
               client_id: w.client_id,
               session_type: "Personal training",
               session_date: body.dayKey,
-            });
+              wrapup: {},
+            };
+            db.sessions.push(session);
+            w.session_id = session.id;
           }
           return json(route, w);
         }
@@ -561,7 +585,68 @@ async function main() {
         throw new Error(`set saved as ${JSON.stringify(first)}`);
     });
 
+    await step("finishing a session opens its wrap-up: Workday line, rows, steps", async () => {
+      await page.waitForSelector("#wrapUpDialog[open] .wu-step");
+      const head = await page.textContent("#wrapUpDialog .modal-head h2");
+      if (!head.includes("Jordan Lee") || !head.includes("1/10"))
+        throw new Error(`wrap-up heading: ${head}`);
+      const workday = await page.textContent('[data-wu-text="workday"]');
+      if (
+        workday !==
+        "Jordan Lee: 10 sessions - 50min (1/10) - $44.65\n\nOverride Rate: 18.90"
+      )
+        throw new Error(`Workday text: ${JSON.stringify(workday)}`);
+      const sf = await page.textContent('[data-wu-text="sf"]');
+      if (!sf.includes("Jordan Lee") || !sf.includes("1/10") || !sf.includes("\t"))
+        throw new Error(`SF row: ${JSON.stringify(sf)}`);
+      // Tick two steps, close, and the dashboard still lists the session.
+      await page.check('[data-wu-step="sf"]');
+      await page.waitForSelector('[data-wu-step="sf"]:checked');
+      await page.check('[data-wu-step="logger"]');
+      await page.waitForSelector('[data-wu-step="logger"]:checked');
+      const ses = api.db.sessions[0];
+      if (!ses.wrapup.sf || !ses.wrapup.logger || ses.wrapup.workday)
+        throw new Error(`wrapup ${JSON.stringify(ses.wrapup)}`);
+      await page.click('#wrapUpDialog [data-wu="close"] >> nth=-1');
+      await page.waitForSelector("#wrapUpDialog", { state: "hidden" });
+      await page.click('.nav-item[data-view="dashboard"]');
+      await page.waitForSelector("#wrapupQueue .onboard-row");
+      const ring = await page.textContent("#wrapupQueue .onboard-ring");
+      if (ring.trim() !== "2/4") throw new Error(`queue ring ${ring}`);
+      // Finish it from the dashboard: the queue empties.
+      await page.click("#wrapupQueue .onboard-row");
+      await page.waitForSelector("#wrapUpDialog[open]");
+      await page.check('[data-wu-step="workday"]');
+      await page.check('[data-wu-step="signed"]');
+      await page.waitForFunction(
+        () => document.querySelectorAll("#wrapUpDialog .wu-step.done").length === 4,
+      );
+      await page.click('#wrapUpDialog [data-wu="close"] >> nth=-1');
+      await page.waitForSelector("#wrapupQueue", { state: "hidden" });
+      if (Object.keys(api.db.sessions[0].wrapup).length !== 4)
+        throw new Error("not all steps were saved");
+    });
+
+    await step("wrap-up settings: rates are saved for every device", async () => {
+      await page.click('.nav-item[data-view="settings"]');
+      await page.waitForSelector('#wrapupSettingsCard [data-rate-field="pay"]');
+      await page.fill('#wrapupSettingsCard [data-rate-field="pay"]', "46.5");
+      await page.click('#wrapupSettingsCard [data-ws-action="add-rate"]');
+      await page.waitForSelector("#wrapupSettingsCard .ws-rate >> nth=1");
+      await page.fill('#wrapupSettingsCard .ws-rate >> nth=1 >> [data-rate-field="minutes"]', "30");
+      await page.fill('#wrapupSettingsCard .ws-rate >> nth=1 >> [data-rate-field="pay"]', "30");
+      await page.click('#wrapupSettingsCard [data-ws-action="save"]');
+      await page.waitForFunction(
+        () => document.querySelector("#wrapupSettingsState")?.textContent === "Saved",
+      );
+      const rates = api.db.wrapupSettings.rates;
+      if (rates.length !== 2 || String(rates[0].pay) !== "46.5" || String(rates[1].minutes) !== "30")
+        throw new Error(`saved rates ${JSON.stringify(rates)}`);
+    });
+
     await step("attach a stock program from the client's profile", async () => {
+      await page.evaluate(() => (location.hash = "client/1"));
+      await page.waitForSelector('#view-client.active [data-profile="add-stock"]');
       const stock = api.db.programs.find((p) => p.is_stock);
       const before = JSON.stringify(stock);
       await page.click('[data-profile="add-stock"]');
@@ -625,6 +710,10 @@ async function main() {
       await page.waitForSelector('.live-ex strong:text("Smoke Face Pull")');
       await page.click('[data-live="finish"]');
       await page.waitForSelector("#liveSession", { state: "hidden" });
+      // Finishing a session opens its wrap-up; set it aside for now.
+      await page.waitForSelector("#wrapUpDialog[open]");
+      await page.keyboard.press("Escape");
+      await page.waitForSelector("#wrapUpDialog", { state: "hidden" });
 
       const logged = api.db.workouts.at(-1).entries;
       if (!logged.some((e) => e.name === "Smoke Face Pull"))
@@ -727,8 +816,13 @@ async function main() {
       await page.waitForSelector('#dialogForm [name="daysPerWeek"]');
       await page.selectOption('#dialogForm [name="daysPerWeek"]', "4");
       await page.selectOption('#dialogForm [name="sessionMinutes"]', "45");
+      await page.fill('#dialogForm [name="packageSize"]', "10");
       await page.click("#dialogSubmit");
       await page.waitForSelector("#consultNext .match-card");
+      if (api.db.lastComplete.packageSize !== 10)
+        throw new Error("package size wasn't sent when saying Yes");
+      if (!(await page.locator('#consultNext [data-consult="logger-row"]').count()))
+        throw new Error("no PT Session Logger row button");
       const client = api.db.clients.find((c) => c.name === "Consult Prospect");
       if (client.service_type !== "Personal training" || !client.onboarding)
         throw new Error(`client ${JSON.stringify(client)}`);
