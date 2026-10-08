@@ -22,3 +22,19 @@ test("rewritten API routes point at functions that handle them", () => {
     assert.match(source, new RegExp(`resource === "${resource}"`), r.source);
   }
 });
+
+// Vercel serves every file in the repo; server-only folders (client data in
+// db/, server code in lib/) must be redirected away before that happens.
+test("server-only folders are not served as static files", () => {
+  const config = JSON.parse(readFileSync(join(__dirname, "..", "vercel.json"), "utf8"));
+  const blocked = (config.redirects || []).map((r) => r.source);
+  const root = join(__dirname, "..");
+  const publicFiles = new Set(["index.html", "book.html", "app.js", "book.js", "styles.css", "book.css", "task-schedule.js", "meal-intake.js"]);
+  for (const name of readdirSync(root)) {
+    if (name.startsWith(".") || ["node_modules", "api"].includes(name)) continue;
+    if (statSync(join(root, name)).isDirectory())
+      assert.ok(blocked.includes(`/${name}/:path*`), `${name}/ is publicly served`);
+    else if (/\.(js|json|sql|html|css)$/.test(name) && !["package.json", "package-lock.json", "vercel.json"].includes(name))
+      assert.ok(publicFiles.has(name), `${name} would be public; add it to the list or move it`);
+  }
+});
