@@ -70,6 +70,10 @@
           <button class="nav-item" data-view="resources">
             <span class="nav-icon">↗</span><span>Resource hub</span>
           </button>
+          <button class="nav-item" data-view="docs">
+            <span class="nav-icon">▤</span><span>Docs</span
+            ><b class="nav-badge" id="docsBadge" hidden>0</b>
+          </button>
           <button class="nav-item" data-view="calendar">
             <span class="nav-icon">▣</span><span>Calendar</span>
           </button>
@@ -333,6 +337,30 @@
             </article>
           </section>
 
+          <section class="view" id="view-docs" data-title="Docs">
+            <div class="page-intro split-intro">
+              <div>
+                <div class="eyebrow"><i></i>FROM YOUR MANAGER</div>
+                <h1>Docs</h1>
+                <p>
+                  Policies, SOPs, event plans and reports in one place. Add a
+                  file or link and Claude suggests how to file it.
+                </p>
+              </div>
+              <button class="primary-btn" id="addDocBtn">＋ Add doc</button>
+            </div>
+            <article class="panel docs-panel">
+              <div class="table-toolbar">
+                <label class="table-search"
+                  ><span>⌕</span
+                  ><input id="docSearch" placeholder="Search titles, tags, summaries"
+                /></label>
+              </div>
+              <div class="doc-filters" id="docFilters"></div>
+              <div class="doc-list" id="docList"></div>
+            </article>
+          </section>
+
           <section class="view" id="view-resources" data-title="Resource hub">
             <div class="page-intro">
               <div class="eyebrow"><i></i>WORK SHORTCUTS</div>
@@ -361,6 +389,7 @@
                     placeholder="Find a tracker, SOP, form…"
                 /></label>
               </div>
+              <div class="pinned-docs" id="pinnedDocs" hidden></div>
               <div class="context-links resource-context"></div>
               <div class="link-filters resource-filters"></div>
               <div class="quick-link-grid resource-grid">

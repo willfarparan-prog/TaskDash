@@ -4,6 +4,8 @@ const { getPool, ensureWorkspaceSchema, trackUsage } = require("../lib/db");
 const { requireOwnerSession } = require("../lib/session");
 
 module.exports = async (req, res) => {
+  // Docs share this function (Hobby allows 12); vercel.json rewrites /api/docs here.
+  if (req.query.resource === "docs") return require("../lib/docsApi")(req, res);
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "GET") {

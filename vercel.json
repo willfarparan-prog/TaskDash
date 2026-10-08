@@ -32,6 +32,9 @@
     },
     "api/clients.js": {
       "maxDuration": 300
+    },
+    "api/links.js": {
+      "maxDuration": 60
     }
   },
   "rewrites": [
@@ -42,6 +45,10 @@
     {
       "source": "/api/workouts",
       "destination": "/api/clients?resource=workouts"
+    },
+    {
+      "source": "/api/docs",
+      "destination": "/api/links?resource=docs"
     }
   ]
 }

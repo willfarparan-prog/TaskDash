@@ -15,9 +15,10 @@ test("the api folder stays within the Hobby plan's 12 functions", () => {
 
 test("rewritten API routes point at functions that handle them", () => {
   const config = JSON.parse(readFileSync(join(__dirname, "..", "vercel.json"), "utf8"));
-  const clients = readFileSync(join(__dirname, "..", "api", "clients.js"), "utf8");
   for (const r of config.rewrites || []) {
-    const resource = new URL(r.destination, "https://x").searchParams.get("resource");
-    assert.match(clients, new RegExp(`resource === "${resource}"`));
+    const target = new URL(r.destination, "https://x"),
+      resource = target.searchParams.get("resource"),
+      source = readFileSync(join(__dirname, "..", `${target.pathname}.js`), "utf8");
+    assert.match(source, new RegExp(`resource === "${resource}"`), r.source);
   }
 });

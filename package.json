@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
+    "@vercel/blob": "^2.8.1",
+    "fflate": "^0.8.3",
     "pg": "^8.11.3"
   }
 }
