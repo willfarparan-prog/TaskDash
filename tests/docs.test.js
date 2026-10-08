@@ -171,3 +171,23 @@ test("links must be https and files over 4 MB are turned away", async () => {
   });
   assert.equal(big.code, 413);
 });
+
+test("only safe file types open in the browser; the rest download", () => {
+  delete require.cache[require.resolve("../lib/docsApi.js")];
+  const { servedAs } = require("../lib/docsApi.js");
+  assert.deepEqual(servedAs({ content_type: "application/pdf" }), {
+    contentType: "application/pdf",
+    disposition: "inline",
+  });
+  for (const type of [
+    "text/html",
+    "image/svg+xml",
+    "application/javascript",
+    "",
+    "TEXT/HTML; charset=utf-8",
+  ])
+    assert.deepEqual(servedAs({ content_type: type }), {
+      contentType: "application/octet-stream",
+      disposition: "attachment",
+    });
+});

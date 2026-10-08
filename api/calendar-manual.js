@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const { getPool, ensureWorkspaceSchema, trackUsage } = require("../lib/db");
 const { requireOwnerSession } = require("../lib/session");
 const { WORK_EMAIL, getVerifiedGoogleToken } = require("../lib/google");
+const { clean } = require("../lib/validate");
 const {
   DEFAULT_SCHEDULE,
   normalizeSchedule,
@@ -11,10 +12,6 @@ const {
 } = require("../lib/scheduler");
 
 const json = (res, status, value) => res.status(status).json(value);
-const clean = (value, max = 500) =>
-  String(value || "")
-    .trim()
-    .slice(0, max);
 
 async function getSchedule(db) {
   const result = await db.query(

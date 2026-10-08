@@ -1,12 +1,7 @@
 const { getPool, ensureWorkspaceSchema, trackUsage } = require("../lib/db");
 const { requireOwnerSession } = require("../lib/session");
+const { clamp, clean } = require("../lib/validate");
 
-const clamp = (value, min, max, fallback) =>
-  Math.max(min, Math.min(Number(value) || fallback, max));
-const clean = (value, max) =>
-  String(value || "")
-    .trim()
-    .slice(0, max);
 const status = (value, fallback = "draft") =>
   ["draft", "active", "archived"].includes(value) ? value : fallback;
 function defaultContent(days, weeks) {

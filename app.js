@@ -217,6 +217,18 @@ async function init() {
   renderShellDate();
   await refreshAll();
   routeFromHash();
+  watchForNewDay();
+}
+// "Today" is fixed when the page loads, so a tab left open overnight reloads
+// itself on the new day — but never mid-session or with a form open.
+function watchForNewDay() {
+  const check = () => {
+    if (document.hidden || ymd(new Date()) === todayKey) return;
+    if (state.live || $("#formDialog").open) return;
+    location.reload();
+  };
+  document.addEventListener("visibilitychange", check);
+  setInterval(check, 5 * 60 * 1000);
 }
 function wireNavigation() {
   $("#sideNav").addEventListener("click", (e) => {
@@ -615,10 +627,20 @@ function renderShellDate() {
     })
     .toUpperCase();
 }
+// Overdue first, then due, then open; finished tasks sink to the bottom.
+const TASK_ORDER = { over: 0, due: 1, open: 2, done: 3 };
+const byUrgency = (a, b) => TASK_ORDER[taskState(a)] - TASK_ORDER[taskState(b)];
+// The time note is dropped when the task name already says it ("— AM").
+const taskWhen = (t) =>
+  t.time && !String(t.name).includes(t.time) ? t.time : t.time ? "" : t.cad;
 function renderDashboard() {
-  const visible = state.settings.showCompleted
-      ? state.tasks
-      : state.tasks.filter((t) => !t.done),
+  const visible = (
+      state.settings.showCompleted
+        ? state.tasks
+        : state.tasks.filter((t) => !t.done)
+    )
+      .slice()
+      .sort(byUrgency),
     done = state.tasks.filter((t) => t.done).length,
     remaining = state.tasks.length - done,
     overdue = state.tasks.filter(
@@ -629,7 +651,9 @@ function renderDashboard() {
     ).length;
   $("#attentionCount").textContent = overdue || remaining;
   $("#attentionLabel").textContent = overdue
-    ? `${overdue} overdue · ${remaining} open`
+    ? overdue === remaining
+      ? `${overdue} overdue`
+      : `${overdue} overdue · ${remaining} open`
     : `${remaining} task${remaining === 1 ? "" : "s"} remaining`;
   $("#sessionCount").textContent = sessionsToday;
   $("#eventCount").textContent = state.events.length;
@@ -637,8 +661,9 @@ function renderDashboard() {
   $("#taskProgress").style.width =
     `${state.tasks.length ? (done / state.tasks.length) * 100 : 0}%`;
   $("#metricClients").textContent = state.clients.length;
+  // "Active training plans": client programs, not the stock library.
   $("#metricPrograms").textContent = state.programs.filter(
-    (p) => p.status !== "archived",
+    (p) => !p.is_stock && p.status !== "archived",
   ).length;
   const live = state.connections.filter((c) => c.status === "connected").length,
     readiness = state.connections.length
@@ -652,11 +677,12 @@ function renderDashboard() {
     : '<div class="empty-state compact">Nothing is due today.</div>';
   const next = state.tasks
       .filter((t) => !t.done)
+      .sort(byUrgency)
       .slice(0, 3)
-      .map(
-        (t) =>
-          `<li><strong>${esc(t.name)}</strong> · ${esc(t.time || t.cad)}</li>`,
-      )
+      .map((t) => {
+        const when = taskWhen(t);
+        return `<li><strong>${esc(t.name)}</strong>${when ? ` · ${esc(when)}` : ""}</li>`;
+      })
       .join(""),
     nextEvent = state.events
       .map(normalizeEvent)

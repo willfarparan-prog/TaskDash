@@ -53,8 +53,13 @@ test("server-only folders are not served as static files", () => {
     "task-schedule.js",
     "meal-intake.js",
   ]);
+  // Gitignored paths (node_modules/, tmp/, .env…) are never deployed.
+  const ignored = readFileSync(join(root, ".gitignore"), "utf8")
+    .split("\n")
+    .map((l) => l.trim().replace(/\/$/, ""))
+    .filter(Boolean);
   for (const name of readdirSync(root)) {
-    if (name.startsWith(".") || ["node_modules", "api"].includes(name))
+    if (name.startsWith(".") || name === "api" || ignored.includes(name))
       continue;
     if (statSync(join(root, name)).isDirectory())
       assert.ok(

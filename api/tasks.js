@@ -6,12 +6,8 @@ const crypto = require("crypto");
 const { requireOwnerSession } = require("../lib/session");
 const { getPool, ensureWorkspaceSchema, trackUsage } = require("../lib/db");
 const { normalizeSchedule } = require("../task-schedule");
+const { clean, isDate: isDayKey } = require("../lib/validate");
 
-const clean = (value, max) =>
-  String(value || "")
-    .trim()
-    .slice(0, max);
-const isDayKey = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""));
 const RECUR_COLUMNS =
   "id, name, cadence, weekday, month_day, to_char(anchor_date,'YYYY-MM-DD') as anchor_date, lead_days, time_label, sort, link_label, link_url, source, to_char(created_at at time zone 'America/Los_Angeles','YYYY-MM-DD') as created_day";
 
@@ -97,11 +93,9 @@ module.exports = async (req, res) => {
         if (!text || !isDayKey(dayKey))
           return res.status(400).json({ error: "text and dayKey required" });
         if (!process.env.ANTHROPIC_API_KEY)
-          return res
-            .status(503)
-            .json({
-              error: "Smart add needs ANTHROPIC_API_KEY on the server.",
-            });
+          return res.status(503).json({
+            error: "Smart add needs ANTHROPIC_API_KEY on the server.",
+          });
         const { parseTask } = require("../lib/taskParse");
         const parsed = await parseTask(text, dayKey);
         trackUsage("Claude API", "Parse task schedule", "ok", parsed.usage);

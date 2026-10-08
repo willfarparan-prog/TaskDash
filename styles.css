@@ -320,6 +320,15 @@ textarea:focus-visible {
   gap: 9px;
   align-items: center;
 }
+.intro-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+/* Short action buttons keep their label on one line. */
+.intro-actions .secondary-btn,
+.program-card footer button {
+  white-space: nowrap;
+}
 .icon-btn,
 .secondary-btn,
 .primary-btn,
@@ -610,6 +619,12 @@ textarea:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.8fr);
   gap: 16px;
+}
+/* The agenda stays in view beside a long task list instead of stretching. */
+.dashboard-grid .schedule-panel {
+  align-self: start;
+  position: sticky;
+  top: 90px;
 }
 .events-preview {
   grid-column: 1;
@@ -1051,8 +1066,9 @@ textarea:focus-visible {
   gap: 7px;
 }
 .program-card footer button {
-  flex: 1;
+  flex: 1 1 auto;
   height: 35px;
+  padding: 0 12px;
 }
 .editor-panel {
   margin-top: 18px;
@@ -2102,6 +2118,9 @@ textarea:focus-visible {
   .scheduler-layout {
     grid-template-columns: 1fr;
   }
+  .dashboard-grid .schedule-panel {
+    position: static;
+  }
   .events-preview,
   .readiness-panel {
     grid-column: auto;
@@ -2178,13 +2197,15 @@ textarea:focus-visible {
   }
   .intro-actions {
     width: 100%;
-    overflow: auto;
+    justify-content: flex-start;
   }
   .brief-card {
     padding: 19px;
   }
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .brief-grid,
-  .metric-grid,
   .program-grid,
   .connections-grid,
   .connection-summary,

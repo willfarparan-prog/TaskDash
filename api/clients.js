@@ -1,5 +1,6 @@
 const { getPool, ensureWorkspaceSchema, trackUsage } = require("../lib/db");
 const { requireOwnerSession } = require("../lib/session");
+const { isDate } = require("../lib/validate");
 
 // New-client checklist steps; `onboarding` maps a step to the date it was done.
 const ONBOARDING_STEPS = [
@@ -10,7 +11,6 @@ const ONBOARDING_STEPS = [
   "mealPlan",
   "ptLogger",
 ];
-const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""));
 
 module.exports = async (req, res) => {
   // The Hobby plan allows 12 functions, so meal plans and live-session logs
