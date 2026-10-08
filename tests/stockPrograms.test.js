@@ -65,7 +65,12 @@ test("weeks 3-4 show a changed set count next to the reps", () => {
   const press = byKey("tcnexus-row-37").content.days[0].blocks[1].exercises[0];
   assert.equal(press.name, "1-DB Bench Press");
   assert.equal(press.sets, 3);
-  assert.deepEqual(press.reps, ["8/side", "8/side", "4 × 6/side", "4 × 6/side"]);
+  assert.deepEqual(press.reps, [
+    "8/side",
+    "8/side",
+    "4 × 6/side",
+    "4 × 6/side",
+  ]);
 });
 
 function fakeDb(existingNames = []) {

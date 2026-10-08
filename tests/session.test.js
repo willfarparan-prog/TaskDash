@@ -25,7 +25,9 @@ test("tampered or unsigned cookies are rejected", () => {
   assert.equal(isOwnerSession({ headers: {} }), false);
   // Old two-part cookies (no issue time) are no longer accepted.
   assert.equal(
-    isOwnerSession(reqWith(`taskdash_session=${encodeURIComponent(OWNER_EMAIL + ".abc")}`)),
+    isOwnerSession(
+      reqWith(`taskdash_session=${encodeURIComponent(OWNER_EMAIL + ".abc")}`),
+    ),
     false,
   );
 });

@@ -54,23 +54,43 @@ test("work and personal priority mail are merged, newest first", async (t) => {
             id,
             internalDate: String(m.time),
             snippet: "hi",
-            payload: { headers: [{ name: "From", value: m.from }, { name: "Subject", value: "S" }] },
+            payload: {
+              headers: [
+                { name: "From", value: m.from },
+                { name: "Subject", value: "S" },
+              ],
+            },
           };
         })()
       : { messages: items.map((m) => ({ id: m.id })) };
     return { ok: true, json: async () => body };
   });
   const handler = load({
-    owner: { access_token: "owner-token", scope: "x gmail.readonly", account_email: "willfarparan@gmail.com" },
-    work: { access_token: "work-token", scope: "calendar.events gmail.readonly", account_email: "william.farparan@teamexos.com" },
+    owner: {
+      access_token: "owner-token",
+      scope: "x gmail.readonly",
+      account_email: "willfarparan@gmail.com",
+    },
+    work: {
+      access_token: "work-token",
+      scope: "calendar.events gmail.readonly",
+      account_email: "william.farparan@teamexos.com",
+    },
   });
   const { code, body } = await call(handler);
   assert.equal(code, 200);
-  assert.deepEqual(body.connections, { google: true, work: true, microsoft: false });
-  assert.deepEqual(body.messages.map((m) => [m.source, m.from]), [
-    ["work", "Michelle"],
-    ["google", "Kelly"],
-  ]);
+  assert.deepEqual(body.connections, {
+    google: true,
+    work: true,
+    microsoft: false,
+  });
+  assert.deepEqual(
+    body.messages.map((m) => [m.source, m.from]),
+    [
+      ["work", "Michelle"],
+      ["google", "Kelly"],
+    ],
+  );
   assert.deepEqual(body.notices, []);
 });
 
@@ -80,8 +100,16 @@ test("a work account connected for calendar only asks to reconnect", async (t) =
     json: async () => ({ messages: [] }),
   }));
   const handler = load({
-    owner: { access_token: "o", scope: "gmail.readonly", account_email: "willfarparan@gmail.com" },
-    work: { access_token: "w", scope: "calendar.events", account_email: "william.farparan@teamexos.com" },
+    owner: {
+      access_token: "o",
+      scope: "gmail.readonly",
+      account_email: "willfarparan@gmail.com",
+    },
+    work: {
+      access_token: "w",
+      scope: "calendar.events",
+      account_email: "william.farparan@teamexos.com",
+    },
   });
   const { body } = await call(handler);
   assert.equal(body.connections.work, false);

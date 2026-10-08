@@ -61,13 +61,29 @@ test("finishing a live session logs it to the client's history once", async () =
   delete require.cache[require.resolve("../lib/workoutsApi.js")];
   const handler = require("../lib/workoutsApi.js");
   const entries = [
-    { key: "A1", name: "Trap Bar Deadlift", sets: [{ weight: "185", reps: "6", done: true }, { weight: "", reps: "", done: false }] },
-    { key: "A2", name: "Depth Drop to VJ", sets: [{ weight: "", reps: "", done: false }] },
+    {
+      key: "A1",
+      name: "Trap Bar Deadlift",
+      sets: [
+        { weight: "185", reps: "6", done: true },
+        { weight: "", reps: "", done: false },
+      ],
+    },
+    {
+      key: "A2",
+      name: "Depth Drop to VJ",
+      sets: [{ weight: "", reps: "", done: false }],
+    },
   ];
   const first = await call(handler, {
     method: "PATCH",
     query: { id: "5" },
-    body: { entries, notes: "Strong pulls", finish: true, dayKey: "2026-10-07" },
+    body: {
+      entries,
+      notes: "Strong pulls",
+      finish: true,
+      dayKey: "2026-10-07",
+    },
   });
   assert.equal(first.code, 200);
   assert.equal(first.body.status, "finished");
@@ -78,6 +94,10 @@ test("finishing a live session logs it to the client's history once", async () =
   assert.ok(minutes >= 49 && minutes <= 51);
   assert.match(notes, /Day 2 · Week 1 · 1 exercise logged\nStrong pulls/);
   // A second finish (double click) doesn't log another session.
-  await call(handler, { method: "PATCH", query: { id: "5" }, body: { entries, finish: true } });
+  await call(handler, {
+    method: "PATCH",
+    query: { id: "5" },
+    body: { entries, finish: true },
+  });
   assert.equal(sessions.length, 1);
 });

@@ -38,7 +38,8 @@ const TOOLS = [
         },
         monthDay: {
           type: "integer",
-          description: "For Monthly: day of the month 1-31, or 0 for the last day.",
+          description:
+            "For Monthly: day of the month 1-31, or 0 for the last day.",
         },
         leadDays: {
           type: "integer",

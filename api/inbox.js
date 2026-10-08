@@ -114,7 +114,11 @@ module.exports = async (req, res) => {
         messages = messages.concat(await priorityMail(token, account.source));
         connections[account.source] = true;
       } catch (err) {
-        trackUsage("Google Gmail", `Load priority inbox (${account.source})`, "error");
+        trackUsage(
+          "Google Gmail",
+          `Load priority inbox (${account.source})`,
+          "error",
+        );
         notices.push({
           account: account.kind,
           text: `${account.email}: ${err.message}`,

@@ -39,11 +39,11 @@ module.exports = async (req, res) => {
         ]
       : account === "owner"
         ? [
-          "openid",
-          "email",
-          "profile",
-          "https://www.googleapis.com/auth/calendar.readonly",
-          "https://www.googleapis.com/auth/gmail.readonly",
+            "openid",
+            "email",
+            "profile",
+            "https://www.googleapis.com/auth/calendar.readonly",
+            "https://www.googleapis.com/auth/gmail.readonly",
           ]
         : ["openid", "email", "profile"];
   const nonce = crypto.randomBytes(18).toString("base64url");

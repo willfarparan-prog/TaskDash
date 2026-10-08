@@ -33,17 +33,84 @@
   // copies them into recur_tasks once so they can be edited or deleted;
   // the ids are kept so past check-offs still match.
   const BUILTIN_TASKS = [
-    { id: "wr-am", name: "Reset weight room — AM", cadence: "Weekdays", timeLabel: "AM" },
-    { id: "inbox", name: "Check inboxes — Exos · Adobe · Wellness", cadence: "Weekdays", timeLabel: "Shift start" },
-    { id: "wr-pm", name: "Reset weight room — PM", cadence: "Weekdays", timeLabel: "PM" },
-    { id: "workday", name: "Log hours — Workday", cadence: "Weekdays", timeLabel: "EOD" },
-    { id: "board", name: "Write workout on board", cadence: "Weekly", weekday: 1, timeLabel: "Mon" },
-    { id: "lab", name: "Strength Lab programming", cadence: "Weekly", weekday: 5, leadDays: 2, timeLabel: "Wed–Fri" },
-    { id: "glove", name: "White Glove Walkthrough", cadence: "Weekly", weekday: 5, leadDays: 1, timeLabel: "By 2:00p" },
-    { id: "meeting", name: "Exos team meeting", cadence: "Weekly", weekday: 5, timeLabel: "Fri" },
-    { id: "news", name: "Newsletter draft → Kelly", cadence: "Monthly", monthDay: 15, leadDays: 3, timeLabel: "By the 15th" },
-    { id: "fdt", name: "FDT badge report", cadence: "Monthly", monthDay: 0, leadDays: 6, timeLabel: "Last week" },
-    { id: "class", name: "Update class schedule", cadence: "Monthly", monthDay: 0, leadDays: 6, timeLabel: "End of month" },
+    {
+      id: "wr-am",
+      name: "Reset weight room — AM",
+      cadence: "Weekdays",
+      timeLabel: "AM",
+    },
+    {
+      id: "inbox",
+      name: "Check inboxes — Exos · Adobe · Wellness",
+      cadence: "Weekdays",
+      timeLabel: "Shift start",
+    },
+    {
+      id: "wr-pm",
+      name: "Reset weight room — PM",
+      cadence: "Weekdays",
+      timeLabel: "PM",
+    },
+    {
+      id: "workday",
+      name: "Log hours — Workday",
+      cadence: "Weekdays",
+      timeLabel: "EOD",
+    },
+    {
+      id: "board",
+      name: "Write workout on board",
+      cadence: "Weekly",
+      weekday: 1,
+      timeLabel: "Mon",
+    },
+    {
+      id: "lab",
+      name: "Strength Lab programming",
+      cadence: "Weekly",
+      weekday: 5,
+      leadDays: 2,
+      timeLabel: "Wed–Fri",
+    },
+    {
+      id: "glove",
+      name: "White Glove Walkthrough",
+      cadence: "Weekly",
+      weekday: 5,
+      leadDays: 1,
+      timeLabel: "By 2:00p",
+    },
+    {
+      id: "meeting",
+      name: "Exos team meeting",
+      cadence: "Weekly",
+      weekday: 5,
+      timeLabel: "Fri",
+    },
+    {
+      id: "news",
+      name: "Newsletter draft → Kelly",
+      cadence: "Monthly",
+      monthDay: 15,
+      leadDays: 3,
+      timeLabel: "By the 15th",
+    },
+    {
+      id: "fdt",
+      name: "FDT badge report",
+      cadence: "Monthly",
+      monthDay: 0,
+      leadDays: 6,
+      timeLabel: "Last week",
+    },
+    {
+      id: "class",
+      name: "Update class schedule",
+      cadence: "Monthly",
+      monthDay: 0,
+      leadDays: 6,
+      timeLabel: "End of month",
+    },
   ];
   // How far back a missed cycle can still show as overdue.
   const CARRY_DAYS = { Weekly: 7, Biweekly: 14, Monthly: 31 };
@@ -87,9 +154,10 @@
           ? int(raw.monthDay ?? raw.month_day, 0, 31, 1)
           : null,
       anchorDate: cadence === "Biweekly" && anchor ? ymd(anchor) : null,
-      leadDays: cadence === "Daily" || cadence === "Weekdays"
-        ? 0
-        : int(raw.leadDays ?? raw.lead_days, 0, 14, 0),
+      leadDays:
+        cadence === "Daily" || cadence === "Weekdays"
+          ? 0
+          : int(raw.leadDays ?? raw.lead_days, 0, 14, 0),
       timeLabel: String(raw.timeLabel ?? raw.time_label ?? "")
         .trim()
         .slice(0, 40),
@@ -142,7 +210,11 @@
   // Returns { periodKey, due, overdue, done, daysUntil } or null.
   function occurrenceOn(rule, today, checkKeys = [], createdAt = null) {
     const r = normalizeSchedule(rule);
-    const day = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const day = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
     const carry = CARRY_DAYS[r.cadence];
     const created = createdAt ? parseYmd(createdAt) : null;
     if (carry) {
@@ -181,7 +253,9 @@
       text += ` on ${DOW[r.weekday]}`;
     if (r.cadence === "Monthly")
       text +=
-        r.monthDay === 0 ? " on the last day" : ` on the ${ordinal(r.monthDay)}`;
+        r.monthDay === 0
+          ? " on the last day"
+          : ` on the ${ordinal(r.monthDay)}`;
     if (r.leadDays) text += ` · shows ${r.leadDays}d early`;
     return text;
   }

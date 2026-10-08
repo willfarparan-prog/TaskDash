@@ -337,7 +337,11 @@ module.exports = async (req, res) => {
           error: "title, date, start, end are required",
         });
       const time = /^([01]\d|2[0-3]):[0-5]\d$/;
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !time.test(start) || !time.test(end))
+      if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        !time.test(start) ||
+        !time.test(end)
+      )
         return json(res, 400, { error: "Use a valid date and times." });
       if (end <= start)
         return json(res, 400, { error: "End time must be after start time." });
@@ -375,7 +379,8 @@ module.exports = async (req, res) => {
               },
             );
             // 404/410 means the event is already gone, which is fine.
-            calendarRemoved = del.ok || del.status === 404 || del.status === 410;
+            calendarRemoved =
+              del.ok || del.status === 404 || del.status === 410;
           }
         } catch (_) {
           calendarRemoved = false;

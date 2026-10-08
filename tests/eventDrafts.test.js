@@ -36,7 +36,11 @@ function mockClaude(reply) {
   });
   return new Promise((resolve) =>
     server.listen(0, () =>
-      resolve({ server, seen, url: `http://127.0.0.1:${server.address().port}` }),
+      resolve({
+        server,
+        seen,
+        url: `http://127.0.0.1:${server.address().port}`,
+      }),
     ),
   );
 }
@@ -62,17 +66,32 @@ test("event facts state times, dates and missing values plainly", () => {
 test("front-end draft list matches the server's draft types", () => {
   const { DRAFTS } = require("../lib/eventDrafts");
   const app = readFileSync(join(__dirname, "..", "app.js"), "utf8");
-  const block = app.slice(app.indexOf("const DRAFT_TYPES"), app.indexOf("];", app.indexOf("const DRAFT_TYPES")));
+  const block = app.slice(
+    app.indexOf("const DRAFT_TYPES"),
+    app.indexOf("];", app.indexOf("const DRAFT_TYPES")),
+  );
   const uiKeys = [...block.matchAll(/key: "(\w+)"/g)].map((m) => m[1]);
-  assert.deepEqual(uiKeys, DRAFTS.map((d) => d.key));
+  assert.deepEqual(
+    uiKeys,
+    DRAFTS.map((d) => d.key),
+  );
   const uiSteps = [...block.matchAll(/step: "([\w-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(uiSteps, DRAFTS.map((d) => d.step));
+  assert.deepEqual(
+    uiSteps,
+    DRAFTS.map((d) => d.step),
+  );
 });
 
 test("catering draft only applies when catering is requested", () => {
   const { draftSpec } = require("../lib/eventDrafts");
-  assert.equal(draftSpec("cateringEmail").needs({ catering_needed: false }), false);
-  assert.equal(draftSpec("cateringEmail").needs({ catering_needed: true }), true);
+  assert.equal(
+    draftSpec("cateringEmail").needs({ catering_needed: false }),
+    false,
+  );
+  assert.equal(
+    draftSpec("cateringEmail").needs({ catering_needed: true }),
+    true,
+  );
   assert.equal(draftSpec("nope"), null);
 });
 
@@ -98,7 +117,10 @@ test("generateDraft sends the event and returns only the text", async () => {
     assert.match(sent.url, /\/v1\/messages/);
     assert.equal(sent.body.model, "claude-opus-5-5");
     assert.equal(sent.body.fallbacks, "default");
-    assert.match(sent.headers["anthropic-beta"], /server-side-fallback-2026-07-01/);
+    assert.match(
+      sent.headers["anthropic-beta"],
+      /server-side-fallback-2026-07-01/,
+    );
     assert.equal(sent.body.system[0].cache_control.type, "ephemeral");
     assert.match(sent.body.system[0].text, /Hi Sahar,/); // examples are the style guide
     assert.match(sent.body.messages[0].content, /Event name: Recovery Lab/);

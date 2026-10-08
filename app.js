@@ -157,14 +157,57 @@ const PIPE = [
 ];
 // Messaging drafts generated for each event (see lib/eventDrafts.js).
 const DRAFT_TYPES = [
-  { key: "roomEmail", step: "room", label: "Room & equipment request", hint: "Email to Sahar Rasheed", email: true },
-  { key: "flyerPrompt", step: "flyer", label: "Flyer / poster prompt", hint: "Paste into Nano Banana or Adobe Firefly" },
-  { key: "cateringEmail", step: "catering", label: "Catering request", hint: "Email to Joshua Dougherty", email: true, needsCatering: true },
-  { key: "slack1", step: "slack-1", label: "Initial Slack post", hint: "#sf-wellness-center" },
-  { key: "slack2", step: "slack-2", label: "Secondary Slack post", hint: "#sf-wellness-center" },
-  { key: "slack3", step: "slack-3", label: "Third Slack post", hint: "#sf-wellness-center" },
-  { key: "slackDayOf", step: "day-of", label: "Day-of Slack post", hint: "Morning of the event" },
-  { key: "npsEmail", step: "survey", label: "NPS survey email", hint: "BCC all attendees · Microsoft Forms link" },
+  {
+    key: "roomEmail",
+    step: "room",
+    label: "Room & equipment request",
+    hint: "Email to Sahar Rasheed",
+    email: true,
+  },
+  {
+    key: "flyerPrompt",
+    step: "flyer",
+    label: "Flyer / poster prompt",
+    hint: "Paste into Nano Banana or Adobe Firefly",
+  },
+  {
+    key: "cateringEmail",
+    step: "catering",
+    label: "Catering request",
+    hint: "Email to Joshua Dougherty",
+    email: true,
+    needsCatering: true,
+  },
+  {
+    key: "slack1",
+    step: "slack-1",
+    label: "Initial Slack post",
+    hint: "#sf-wellness-center",
+  },
+  {
+    key: "slack2",
+    step: "slack-2",
+    label: "Secondary Slack post",
+    hint: "#sf-wellness-center",
+  },
+  {
+    key: "slack3",
+    step: "slack-3",
+    label: "Third Slack post",
+    hint: "#sf-wellness-center",
+  },
+  {
+    key: "slackDayOf",
+    step: "day-of",
+    label: "Day-of Slack post",
+    hint: "Morning of the event",
+  },
+  {
+    key: "npsEmail",
+    step: "survey",
+    label: "NPS survey email",
+    hint: "BCC all attendees · Microsoft Forms link",
+  },
 ];
 document.addEventListener("DOMContentLoaded", init);
 async function init() {
@@ -403,7 +446,10 @@ async function loadTasks() {
         name: t.name,
         // Unfinished one-off tasks from earlier days carry over.
         carried: t.day_key && t.day_key < todayKey ? t.day_key : null,
-        cad: t.day_key && t.day_key < todayKey ? `Added ${shortDate(t.day_key)}` : "Today",
+        cad:
+          t.day_key && t.day_key < todayKey
+            ? `Added ${shortDate(t.day_key)}`
+            : "Today",
         time: "",
         done: !!t.done,
         kind: "daily",
@@ -497,7 +543,8 @@ async function loadInbox() {
     const d = await getJSON("/api/inbox");
     state.mail = d.messages || [];
     state.inboxConnections = d.connections || {};
-    state.inboxNotices = d.notices || (d.notice ? [{ account: "owner", text: d.notice }] : []);
+    state.inboxNotices =
+      d.notices || (d.notice ? [{ account: "owner", text: d.notice }] : []);
     state.inboxError = "";
   } catch (e) {
     state.mail = [];
@@ -550,8 +597,7 @@ async function loadScheduler() {
       days: state.scheduler.days,
       ownerReady: true,
     };
-    state.scheduler.publicUrl =
-      data.publicUrl || PUBLIC_BOOKING_URL;
+    state.scheduler.publicUrl = data.publicUrl || PUBLIC_BOOKING_URL;
   } catch {
     state.scheduler.ownerReady = false;
   }
@@ -919,7 +965,13 @@ function openTaskDialog(draft = {}) {
         REPEAT_OPTIONS,
         optionFor(REPEAT_OPTIONS, draft.repeat || "Once"),
       ],
-      ["weekday", "Day of the week", "select", WEEKDAY_OPTIONS, optionFor(WEEKDAY_OPTIONS, weekday)],
+      [
+        "weekday",
+        "Day of the week",
+        "select",
+        WEEKDAY_OPTIONS,
+        optionFor(WEEKDAY_OPTIONS, weekday),
+      ],
       ["anchorDate", "First due date", "date", "", anchor],
       [
         "monthDay",
@@ -1003,7 +1055,10 @@ async function saveTaskForm(draft, form) {
       json("PATCH", { kind: "recur_task", id: draft.id, ...schedule }),
     );
   } else {
-    await getJSON("/api/tasks", json("POST", { type: "recur_task", ...schedule }));
+    await getJSON(
+      "/api/tasks",
+      json("POST", { type: "recur_task", ...schedule }),
+    );
   }
   // A task that switched between one-off and repeating leaves its old record.
   if (draft.kind === "daily" && v.repeat !== "Once")
@@ -1011,10 +1066,9 @@ async function saveTaskForm(draft, form) {
       method: "DELETE",
     });
   if (draft.kind === "recur" && v.repeat === "Once")
-    await getJSON(
-      `/api/tasks?id=${encodeURIComponent(draft.id)}&kind=recur`,
-      { method: "DELETE" },
-    );
+    await getJSON(`/api/tasks?id=${encodeURIComponent(draft.id)}&kind=recur`, {
+      method: "DELETE",
+    });
   await loadTasks();
   renderDashboard();
   toast(draft.kind ? "Task updated" : "Task added");
@@ -1060,7 +1114,9 @@ function openTaskManager() {
           (t) =>
             `<div class="task-manager-row" data-id="${attr(t.id)}"><div><strong>${esc(t.name)}</strong><span>${esc(TaskSchedule.describe(t))}${t.time_label || t.timeLabel ? ` · ${esc(t.time_label || t.timeLabel)}` : ""}</span></div><button type="button" class="row-edit" aria-label="Edit ${attr(t.name)}">✎</button><button type="button" class="row-delete" aria-label="Delete ${attr(t.name)}">×</button></div>`,
         )
-        .join("")}</div><button type="button" class="secondary-btn task-manager-add">＋ New task</button>`
+        .join(
+          "",
+        )}</div><button type="button" class="secondary-btn task-manager-add">＋ New task</button>`
     : '<div class="empty-state compact">No repeating tasks yet.</div><button type="button" class="secondary-btn task-manager-add">＋ New task</button>';
   $("#dialogSubmit").textContent = "Done";
   $("#dialogFields").onclick = async (e) => {
@@ -1144,10 +1200,9 @@ function renderCalendar() {
     ? "Connected"
     : "Connect";
   $("#calendarConnect").disabled = state.calendarConnected;
-  $("#workCalendarWeekBanner strong").textContent =
-    state.workCalendarConnected
-      ? "Work Google calendar connected"
-      : "Connect work Google calendar";
+  $("#workCalendarWeekBanner strong").textContent = state.workCalendarConnected
+    ? "Work Google calendar connected"
+    : "Connect work Google calendar";
   $("#workCalendarWeekBanner span").textContent = state.workCalendarConnected
     ? `${WORK_EMAIL} · events show in purple`
     : `Only ${WORK_EMAIL} is allowed`;
@@ -1198,7 +1253,8 @@ function openBlockDialog() {
     ],
     submit: async (v) => {
       if (!v.title.trim()) throw new Error("Give the block a title");
-      if (v.end <= v.start) throw new Error("End time must be after start time");
+      if (v.end <= v.start)
+        throw new Error("End time must be after start time");
       await getJSON("/api/calendar-manual", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1482,7 +1538,10 @@ function openProgramDialog(client = null) {
         });
         await loadPrograms();
       } catch (err) {
-        if (state.authRequired || /\((400|401|403)\)|required/i.test(err.message))
+        if (
+          state.authRequired ||
+          /\((400|401|403)\)|required/i.test(err.message)
+        )
           throw err; // a rejection, not an outage: let the dialog show it
         saved = local;
         state.programs.unshift(saved);
@@ -1513,7 +1572,9 @@ function openProgram(id, { draft, day = 0 } = {}) {
   if (String(id) !== state.activeProgram || $("#programEditor").hidden)
     state.programHistory = { undo: [], redo: [], pending: null };
   state.activeProgram = String(id);
-  const saved = state.programs.find((x) => String(x.id) === state.activeProgram);
+  const saved = state.programs.find(
+    (x) => String(x.id) === state.activeProgram,
+  );
   if (!saved) return;
   const p = draft ? { ...saved, ...draft } : saved;
   const plan = normalizeProgramContent(p),
@@ -2173,7 +2234,10 @@ function docKindLabel(d) {
     if (/drive\.google\.com/.test(d.url)) return "DRIVE";
     return "LINK";
   }
-  const ext = String(d.file_name || "").split(".").pop().toUpperCase();
+  const ext = String(d.file_name || "")
+    .split(".")
+    .pop()
+    .toUpperCase();
   return ext && ext.length <= 5 ? ext : "FILE";
 }
 function renderDocs() {
@@ -2183,7 +2247,8 @@ function renderDocs() {
     q = ($("#docSearch")?.value || "").trim().toLowerCase(),
     f = state.docFilter,
     counts = {};
-  for (const d of state.docs) if (d.category) counts[d.category] = (counts[d.category] || 0) + 1;
+  for (const d of state.docs)
+    if (d.category) counts[d.category] = (counts[d.category] || 0) + 1;
   $("#docsBadge").hidden = !inbox.length;
   $("#docsBadge").textContent = inbox.length;
   const chip = (key, label, n) =>
@@ -2192,7 +2257,11 @@ function renderDocs() {
     chip("all", "All", state.docs.length),
     chip("inbox", "Needs filing", inbox.length),
     chip("pinned", "Pinned", state.docs.filter((d) => d.pinned).length),
-    chip("actions", "Has action items", state.docs.filter((d) => (d.action_items || []).length).length),
+    chip(
+      "actions",
+      "Has action items",
+      state.docs.filter((d) => (d.action_items || []).length).length,
+    ),
     ...Object.keys(counts)
       .sort()
       .map((c) => chip(`cat:${c}`, c, counts[c])),
@@ -2205,7 +2274,14 @@ function renderDocs() {
         (f === "actions" && (d.action_items || []).length) ||
         f === `cat:${d.category}`) &&
       (!q ||
-        [d.title, d.summary, d.category, d.from_person, d.file_name, ...(d.tags || [])]
+        [
+          d.title,
+          d.summary,
+          d.category,
+          d.from_person,
+          d.file_name,
+          ...(d.tags || []),
+        ]
           .join(" ")
           .toLowerCase()
           .includes(q)),
@@ -2230,7 +2306,9 @@ function docCardHTML(d) {
 async function docAction(e) {
   const b = e.target.closest("[data-doc-action]");
   if (!b) return;
-  const d = state.docs.find((x) => String(x.id) === b.closest("[data-doc]").dataset.doc);
+  const d = state.docs.find(
+    (x) => String(x.id) === b.closest("[data-doc]").dataset.doc,
+  );
   if (!d) return;
   const a = b.dataset.docAction,
     patch = (body) =>
@@ -2241,7 +2319,9 @@ async function docAction(e) {
       });
   if (a === "open")
     window.open(
-      d.kind === "file" ? `/api/docs?file=${encodeURIComponent(d.id)}` : workAccountUrl(d.url),
+      d.kind === "file"
+        ? `/api/docs?file=${encodeURIComponent(d.id)}`
+        : workAccountUrl(d.url),
       "_blank",
       "noopener",
     );
@@ -2262,14 +2342,24 @@ async function docAction(e) {
     b.textContent = "✦ Re-sort";
   }
   if (a === "pin") {
-    Object.assign(d, await patch({ pinned: !d.pinned }).catch(() => ({ pinned: !d.pinned })));
+    Object.assign(
+      d,
+      await patch({ pinned: !d.pinned }).catch(() => ({ pinned: !d.pinned })),
+    );
     renderDocs();
     renderLinks();
   }
   if (a === "delete") {
-    if (!confirm(`Delete “${d.title}”?${d.kind === "file" ? " The stored file is deleted too." : ""}`)) return;
+    if (
+      !confirm(
+        `Delete “${d.title}”?${d.kind === "file" ? " The stored file is deleted too." : ""}`,
+      )
+    )
+      return;
     try {
-      await getJSON(`/api/docs?id=${encodeURIComponent(d.id)}`, { method: "DELETE" });
+      await getJSON(`/api/docs?id=${encodeURIComponent(d.id)}`, {
+        method: "DELETE",
+      });
     } catch {}
     state.docs = state.docs.filter((x) => x !== d);
     renderDocs();
@@ -2283,11 +2373,19 @@ async function docAction(e) {
       await getJSON("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "daily_task", dayKey: day, name: `${item.text} — ${d.title}`.slice(0, 200) }),
+        body: JSON.stringify({
+          type: "daily_task",
+          dayKey: day,
+          name: `${item.text} — ${d.title}`.slice(0, 200),
+        }),
       });
       if (day === todayKey) await loadTasks();
       renderDashboard();
-      toast(day === todayKey ? "Added to today's tasks" : `Added to your tasks for ${shortDate(day)}`);
+      toast(
+        day === todayKey
+          ? "Added to today's tasks"
+          : `Added to your tasks for ${shortDate(day)}`,
+      );
     } catch (err) {
       toast(err.message || "Could not add the task");
     }
@@ -2299,20 +2397,41 @@ function openAddDocDialog() {
     kicker: "DOCS",
     title: "Add a doc",
     fields: [
-      ["file", "Upload a file (PDF, Word, Excel, PowerPoint — up to 4 MB)", "file", ""],
-      ["url", "…or paste a Google Doc / Drive link", "url", "https://docs.google.com/…"],
+      [
+        "file",
+        "Upload a file (PDF, Word, Excel, PowerPoint — up to 4 MB)",
+        "file",
+        "",
+      ],
+      [
+        "url",
+        "…or paste a Google Doc / Drive link",
+        "url",
+        "https://docs.google.com/…",
+      ],
       ["title", "Title (optional)", "text", "Claude will suggest one"],
       ["from", "From", "text", "Who sent it?", lastFrom],
-      ["note", "Note (optional)", "textarea", "What did your manager say about it?"],
+      [
+        "note",
+        "Note (optional)",
+        "textarea",
+        "What did your manager say about it?",
+      ],
     ],
     submit: async (v) => {
       const file = $("#dialogForm").elements.file.files[0],
         url = v.url.trim();
       if (!file && !url) throw new Error("Choose a file or paste a link");
       if (file && file.size > 4 * 1024 * 1024)
-        throw new Error("That file is over 4 MB. Save it to Google Drive and paste the link instead.");
+        throw new Error(
+          "That file is over 4 MB. Save it to Google Drive and paste the link instead.",
+        );
       writeLocal("taskdash_doc_from", v.from.trim());
-      const meta = { title: v.title.trim(), from: v.from.trim(), note: v.note.trim() };
+      const meta = {
+        title: v.title.trim(),
+        from: v.from.trim(),
+        note: v.note.trim(),
+      };
       $("#dialogSubmit").textContent = "Reading the doc…";
       const r = file
         ? await getJSON(`/api/docs?dayKey=${todayKey}`, {
@@ -2344,13 +2463,34 @@ function openDocReview(d, suggestion) {
     cats = state.docCategories.length ? state.docCategories : ["Other"],
     items = s.action_items || d.action_items || [];
   openDialog({
-    kicker: suggestion && !suggestion.error ? "CLAUDE'S SUGGESTION · REVIEW" : "FILE THIS DOC",
+    kicker:
+      suggestion && !suggestion.error
+        ? "CLAUDE'S SUGGESTION · REVIEW"
+        : "FILE THIS DOC",
     title: "Where does this go?",
     fields: [
       ["title", "Title", "text", "", s.title || d.title],
-      ["category", "Category", "select", cats, s.category || d.category || cats.at(-1)],
-      ["summary", "Summary", "textarea", "What it is and why it matters", s.summary || d.summary || ""],
-      ["tags", "Tags (comma separated)", "text", "events, michelle, q4", (s.tags || d.tags || []).join(", ")],
+      [
+        "category",
+        "Category",
+        "select",
+        cats,
+        s.category || d.category || cats.at(-1),
+      ],
+      [
+        "summary",
+        "Summary",
+        "textarea",
+        "What it is and why it matters",
+        s.summary || d.summary || "",
+      ],
+      [
+        "tags",
+        "Tags (comma separated)",
+        "text",
+        "events, michelle, q4",
+        (s.tags || d.tags || []).join(", "),
+      ],
       ["from", "From", "text", "Who sent it?", d.from_person || ""],
       [
         "actions",
@@ -2359,20 +2499,31 @@ function openDocReview(d, suggestion) {
         "Send RSVP list to Michelle | 2026-10-15",
         items.map((a) => (a.due ? `${a.text} | ${a.due}` : a.text)).join("\n"),
       ],
-      ["pinned", "Pin to the top of Docs and the Resource hub", "checkbox", !!d.pinned],
+      [
+        "pinned",
+        "Pin to the top of Docs and the Resource hub",
+        "checkbox",
+        !!d.pinned,
+      ],
     ],
     submit: async (v) => {
       const body = {
         title: v.title.trim(),
         category: v.category,
         summary: v.summary.trim(),
-        tags: v.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        tags: v.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
         from: v.from.trim(),
         actionItems: v.actions
           .split("\n")
           .map((line) => {
             const [text, due] = line.split("|").map((x) => x.trim());
-            return { text, due: /^\d{4}-\d{2}-\d{2}$/.test(due || "") ? due : "" };
+            return {
+              text,
+              due: /^\d{4}-\d{2}-\d{2}$/.test(due || "") ? due : "",
+            };
           })
           .filter((a) => a.text),
         pinned: v.pinned,
@@ -2418,8 +2569,7 @@ function onboardingStatus(c) {
     let when = ob[step.key] || null;
     if (step.key === "program" && !when && clientPrograms(c).length)
       when = ob.programPrinted || null;
-    if (step.key === "mealPlan" && !when && clientPlanCount(c))
-      when = "done";
+    if (step.key === "mealPlan" && !when && clientPlanCount(c)) when = "done";
     return { ...step, done: !!when, when: /^\d{4}/.test(when) ? when : null };
   });
   const done = steps.filter((x) => x.done).length;
@@ -2545,8 +2695,7 @@ function onboardingStepHTML(c, step, i) {
     actions = programs.length
       ? `<button class="step-link" data-profile="open-program" data-program="${attr(programs[0].id)}">Open “${esc(programs[0].name)}”</button><button class="step-link" data-profile="print-program" data-program="${attr(programs[0].id)}">Print</button>`
       : `<button class="step-link" data-profile="new-program">Create program</button>`;
-    if (!step.done)
-      detail = programs.length ? "Created · not printed yet" : "";
+    if (!step.done) detail = programs.length ? "Created · not printed yet" : "";
   }
   if (step.key === "mealPlan")
     actions = `<button class="step-link" data-profile="intake">${clientPlanCount(c) ? "New plan" : "Questionnaire + generate"}</button>`;
@@ -2649,7 +2798,8 @@ function trainingSectionHTML(c) {
 }
 const workoutSetCount = (w) =>
   (w.entries || []).reduce(
-    (n, e) => n + (e.sets || []).filter((x) => x.done || x.weight || x.reps).length,
+    (n, e) =>
+      n + (e.sets || []).filter((x) => x.done || x.weight || x.reps).length,
     0,
   );
 // Sets and reps for one exercise in one week. A week cell like "4 × 6"
@@ -2686,18 +2836,23 @@ function nextLiveDay(program, logs) {
   const days = normalizeProgramContent(program).days.length || 1,
     weeks = Number(program.weeks) || 4,
     last = logs.find(
-      (w) => w.status === "finished" && String(w.program_id) === String(program.id),
+      (w) =>
+        w.status === "finished" && String(w.program_id) === String(program.id),
     );
   if (!last) return { day: 0, week: 0 };
   const day = (last.day_index + 1) % days,
-    week = day === 0 ? Math.min(last.week_index + 1, weeks - 1) : last.week_index;
+    week =
+      day === 0 ? Math.min(last.week_index + 1, weeks - 1) : last.week_index;
   return { day, week };
 }
 async function startLiveSession(clientId, programId) {
   const c = state.clients.find((x) => String(x.id) === String(clientId)),
     p = state.programs.find((x) => String(x.id) === String(programId));
   if (!c || !p) return toast("Open a client program to start a session");
-  if (String(state.activeClient) !== String(c.id) || !state.clientWorkouts.length)
+  if (
+    String(state.activeClient) !== String(c.id) ||
+    !state.clientWorkouts.length
+  )
     try {
       state.clientWorkouts =
         (await getJSON(`/api/workouts?clientId=${encodeURIComponent(c.id)}`))
@@ -2724,13 +2879,14 @@ function resumeLiveSession(clientId, workoutId) {
   const c = state.clients.find((x) => String(x.id) === String(clientId)),
     w = state.clientWorkouts.find((x) => String(x.id) === String(workoutId));
   if (!c || !w) return;
-  const p =
-    state.programs.find((x) => String(x.id) === String(w.program_id)) || {
-      id: w.program_id,
-      name: w.program_name,
-      content: { days: [] },
-      weeks: w.week_index + 1,
-    };
+  const p = state.programs.find(
+    (x) => String(x.id) === String(w.program_id),
+  ) || {
+    id: w.program_id,
+    name: w.program_name,
+    content: { days: [] },
+    weeks: w.week_index + 1,
+  };
   state.live = {
     client: c,
     program: p,
@@ -2771,7 +2927,10 @@ function showLiveSession() {
 function updateLiveClock() {
   const el = $("#liveClock");
   if (!el || !state.live) return;
-  const secs = Math.max(0, Math.floor((Date.now() - state.live.startedAt) / 1000));
+  const secs = Math.max(
+    0,
+    Math.floor((Date.now() - state.live.startedAt) / 1000),
+  );
   el.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
 }
 function renderLiveSession() {
@@ -2780,27 +2939,38 @@ function renderLiveSession() {
   const plan = normalizeProgramContent(L.program),
     weeks = Number(L.program.weeks) || 4,
     day = plan.days[L.dayIndex] || {},
-    done = L.entries.reduce((n, e) => n + e.sets.filter((x) => x.done).length, 0),
+    done = L.entries.reduce(
+      (n, e) => n + e.sets.filter((x) => x.done).length,
+      0,
+    ),
     total = L.entries.reduce((n, e) => n + e.sets.length, 0);
   let lastBlock = "";
-  $("#liveSession").innerHTML = `<header class="live-head"><div><span class="kicker">LIVE SESSION · ${esc(L.program.name || "Program")}</span><h2>${esc(L.client.name)}</h2></div><div class="live-pickers"><label>Day<select data-live="day" ${L.log ? "disabled" : ""}>${plan.days.map((d, i) => `<option value="${i}" ${i === L.dayIndex ? "selected" : ""}>${esc(d.name || `Day ${i + 1}`)}</option>`).join("")}</select></label><label>Week<select data-live="week" ${L.log ? "disabled" : ""}>${Array.from({ length: weeks }, (_, i) => `<option value="${i}" ${i === L.weekIndex ? "selected" : ""}>Week ${i + 1}</option>`).join("")}</select></label><div class="live-clock"><span id="liveClock">0:00</span><small>${done}/${total} sets</small></div></div><div class="live-actions"><span class="live-save" id="liveSaveState">${L.log ? "Saved" : "Not started"}</span><button class="secondary-btn" data-live="close">Save &amp; close</button><button class="primary-btn" data-live="finish">Finish session</button></div></header><div class="live-body">${
-    day.warmup?.length
-      ? `<section class="live-warmup"><span class="kicker">WARM-UP / PILLAR PREP</span>${day.warmup.map((w) => `<span>${esc(w.name)} <em>${esc(w.prescription || "")}</em></span>`).join("")}</section>`
-      : ""
-  }${L.entries
-    .map((e, ei) => {
-      const block = e.key.replace(/\d+$/, ""),
-        divider = block !== lastBlock ? `<div class="live-block">BLOCK ${esc(block)}</div>` : "",
-        last = lastTimeFor(e.name, L.log?.id);
-      lastBlock = block;
-      return `${divider}<article class="live-ex" data-ex="${ei}"><header><b>${esc(e.key)}</b><div><strong>${esc(e.name)}</strong><span>Target ${esc(e.target)}${e.coachNote ? ` · ${esc(e.coachNote)}` : ""}</span>${last ? `<small>${esc(last)}</small>` : ""}</div></header><div class="live-sets">${e.sets
-        .map(
-          (x, si) =>
-            `<div class="live-set ${x.done ? "done" : ""}" data-set="${si}"><span>Set ${si + 1}</span><input inputmode="decimal" data-field="weight" value="${attr(x.weight)}" placeholder="${attr(si ? e.sets[si - 1].weight || "lbs" : "lbs")}" aria-label="${attr(e.name)} set ${si + 1} weight"><i>×</i><input inputmode="numeric" data-field="reps" value="${attr(x.reps)}" placeholder="${attr(String(e.target).split("×").pop().trim() || "reps")}" aria-label="${attr(e.name)} set ${si + 1} reps"><button class="live-check" data-live="check" aria-label="Set ${si + 1} done">✓</button></div>`,
-        )
-        .join("")}<button class="live-add" data-live="add-set">＋ Set</button></div><input class="live-note" data-field="note" value="${attr(e.note)}" placeholder="Notes for ${attr(e.name)} (form, pain, tempo…)"></article>`;
-    })
-    .join("")}<label class="live-notes">Session notes<textarea data-live-notes placeholder="How did the session go?">${esc(L.notes)}</textarea></label></div>`;
+  $("#liveSession").innerHTML =
+    `<header class="live-head"><div><span class="kicker">LIVE SESSION · ${esc(L.program.name || "Program")}</span><h2>${esc(L.client.name)}</h2></div><div class="live-pickers"><label>Day<select data-live="day" ${L.log ? "disabled" : ""}>${plan.days.map((d, i) => `<option value="${i}" ${i === L.dayIndex ? "selected" : ""}>${esc(d.name || `Day ${i + 1}`)}</option>`).join("")}</select></label><label>Week<select data-live="week" ${L.log ? "disabled" : ""}>${Array.from({ length: weeks }, (_, i) => `<option value="${i}" ${i === L.weekIndex ? "selected" : ""}>Week ${i + 1}</option>`).join("")}</select></label><div class="live-clock"><span id="liveClock">0:00</span><small>${done}/${total} sets</small></div></div><div class="live-actions"><span class="live-save" id="liveSaveState">${L.log ? "Saved" : "Not started"}</span><button class="secondary-btn" data-live="close">Save &amp; close</button><button class="primary-btn" data-live="finish">Finish session</button></div></header><div class="live-body">${
+      day.warmup?.length
+        ? `<section class="live-warmup"><span class="kicker">WARM-UP / PILLAR PREP</span>${day.warmup.map((w) => `<span>${esc(w.name)} <em>${esc(w.prescription || "")}</em></span>`).join("")}</section>`
+        : ""
+    }${L.entries
+      .map((e, ei) => {
+        const block = e.key.replace(/\d+$/, ""),
+          divider =
+            block !== lastBlock
+              ? `<div class="live-block">BLOCK ${esc(block)}</div>`
+              : "",
+          last = lastTimeFor(e.name, L.log?.id);
+        lastBlock = block;
+        return `${divider}<article class="live-ex" data-ex="${ei}"><header><b>${esc(e.key)}</b><div><strong>${esc(e.name)}</strong><span>Target ${esc(e.target)}${e.coachNote ? ` · ${esc(e.coachNote)}` : ""}</span>${last ? `<small>${esc(last)}</small>` : ""}</div></header><div class="live-sets">${e.sets
+          .map(
+            (x, si) =>
+              `<div class="live-set ${x.done ? "done" : ""}" data-set="${si}"><span>Set ${si + 1}</span><input inputmode="decimal" data-field="weight" value="${attr(x.weight)}" placeholder="${attr(si ? e.sets[si - 1].weight || "lbs" : "lbs")}" aria-label="${attr(e.name)} set ${si + 1} weight"><i>×</i><input inputmode="numeric" data-field="reps" value="${attr(x.reps)}" placeholder="${attr(String(e.target).split("×").pop().trim() || "reps")}" aria-label="${attr(e.name)} set ${si + 1} reps"><button class="live-check" data-live="check" aria-label="Set ${si + 1} done">✓</button></div>`,
+          )
+          .join(
+            "",
+          )}<button class="live-add" data-live="add-set">＋ Set</button></div><input class="live-note" data-field="note" value="${attr(e.note)}" placeholder="Notes for ${attr(e.name)} (form, pain, tempo…)"></article>`;
+      })
+      .join(
+        "",
+      )}<label class="live-notes">Session notes<textarea data-live-notes placeholder="How did the session go?">${esc(L.notes)}</textarea></label></div>`;
   updateLiveClock();
 }
 function liveInput(e) {
@@ -2812,7 +2982,9 @@ function liveInput(e) {
     const entry = L.entries[Number(ex.dataset.ex)],
       set = e.target.closest("[data-set]");
     if (e.target.dataset.field === "note") entry.note = e.target.value;
-    else if (set) entry.sets[Number(set.dataset.set)][e.target.dataset.field] = e.target.value;
+    else if (set)
+      entry.sets[Number(set.dataset.set)][e.target.dataset.field] =
+        e.target.value;
   }
   queueLiveSave();
 }
@@ -2821,7 +2993,9 @@ function liveChange(e) {
     which = e.target.dataset.live;
   if (!L || (which !== "day" && which !== "week")) return;
   if (L.entries.some((x) => x.sets.some((s) => s.weight || s.reps || s.done)))
-    if (!confirm("Switch day or week? Numbers entered so far will be cleared.")) {
+    if (
+      !confirm("Switch day or week? Numbers entered so far will be cleared.")
+    ) {
       renderLiveSession();
       return;
     }
@@ -2843,12 +3017,21 @@ async function liveClick(e) {
     set.done = !set.done;
     // Ticking an empty set fills in what the placeholders suggested.
     if (set.done && !set.weight && si) set.weight = entry.sets[si - 1].weight;
-    if (set.done && !set.reps) set.reps = String(entry.target).split("×").pop().trim().replace(/\/side$/, "");
+    if (set.done && !set.reps)
+      set.reps = String(entry.target)
+        .split("×")
+        .pop()
+        .trim()
+        .replace(/\/side$/, "");
     renderLiveSession();
     queueLiveSave();
   }
   if (a === "add-set") {
-    entry.sets.push({ weight: entry.sets.at(-1)?.weight || "", reps: "", done: false });
+    entry.sets.push({
+      weight: entry.sets.at(-1)?.weight || "",
+      reps: "",
+      done: false,
+    });
     renderLiveSession();
     queueLiveSave();
   }
@@ -2857,7 +3040,8 @@ async function liveClick(e) {
     closeLiveSession("Session saved. Resume it from the client's profile.");
   }
   if (a === "finish") {
-    if (!confirm("Finish this session and add it to the client's history?")) return;
+    if (!confirm("Finish this session and add it to the client's history?"))
+      return;
     try {
       await saveLiveSession(true);
     } catch (err) {
@@ -2880,7 +3064,10 @@ function queueLiveSave() {
   const status = $("#liveSaveState");
   if (status) status.textContent = "Saving…";
   clearTimeout(state.liveSaveTimer);
-  state.liveSaveTimer = setTimeout(() => saveLiveSession().catch(() => {}), 800);
+  state.liveSaveTimer = setTimeout(
+    () => saveLiveSession().catch(() => {}),
+    800,
+  );
 }
 async function saveLiveSession(finish = false) {
   const L = state.live;
@@ -2916,11 +3103,15 @@ async function saveLiveSession(finish = false) {
         dayKey: todayKey,
       }),
     });
-    const i = state.clientWorkouts.findIndex((w) => String(w.id) === String(L.log.id));
+    const i = state.clientWorkouts.findIndex(
+      (w) => String(w.id) === String(L.log.id),
+    );
     if (i >= 0) state.clientWorkouts[i] = L.log;
     else state.clientWorkouts.unshift(L.log);
     if (status) status.textContent = `Saved ${fmtTime(new Date())}`;
-    $$("[data-live=day],[data-live=week]").forEach((el) => (el.disabled = true));
+    $$("[data-live=day],[data-live=week]").forEach(
+      (el) => (el.disabled = true),
+    );
   } catch (err) {
     if (status) status.textContent = "Saved on this device only";
     if (finish) throw err;
@@ -2937,7 +3128,8 @@ function closeLiveSession(message) {
     loadClients().then(() => {
       renderClients();
       renderDashboard();
-      if (String(state.activeClient) === String(L.client.id)) renderClientProfile();
+      if (String(state.activeClient) === String(L.client.id))
+        renderClientProfile();
     });
   }
 }
@@ -2948,8 +3140,10 @@ function openMealIntakeDialog(c) {
       const value = saved[f.key];
       if (f.type === "select")
         return [f.key, f.label, "select", ["|—", ...f.options], value ?? "|—"];
-      if (f.type === "multi") return [f.key, f.label, "multi", f.options, value || []];
-      if (f.type === "textarea") return [f.key, f.label, "textarea", "", value ?? ""];
+      if (f.type === "multi")
+        return [f.key, f.label, "multi", f.options, value || []];
+      if (f.type === "textarea")
+        return [f.key, f.label, "textarea", "", value ?? ""];
       return [f.key, f.label, f.type, "", value ?? ""];
     });
   openDialog({
@@ -2959,8 +3153,7 @@ function openMealIntakeDialog(c) {
     submit: async (v) => {
       const intake = {};
       for (const f of MealIntake.FIELDS)
-        intake[f.key] =
-          f.type === "select" ? optionValue(v[f.key]) : v[f.key];
+        intake[f.key] = f.type === "select" ? optionValue(v[f.key]) : v[f.key];
       const btn = $("#dialogSubmit");
       btn.textContent = "Generating… about a minute";
       try {
@@ -3010,7 +3203,8 @@ function printMealPlan(c, id) {
     n = (v) => Math.round(Number(v) || 0),
     w = window.open("", "_blank");
   if (!w) return toast("Allow pop-ups to print the meal plan");
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(c.name)} · Meal plan</title><style>
+  w.document
+    .write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(c.name)} · Meal plan</title><style>
 body{font:13px/1.45 -apple-system,Helvetica,Arial,sans-serif;color:#111;margin:32px}
 .cover{border-bottom:4px solid #d52b1e;padding-bottom:10px;margin-bottom:16px}
 .cover span{font:700 9px ui-monospace,Menlo,monospace;color:#d52b1e;letter-spacing:.08em}
@@ -3081,7 +3275,13 @@ function openClientEditDialog(c) {
         "",
         c.next_follow_up ? String(c.next_follow_up).slice(0, 10) : "",
       ],
-      ["notes", "Notes", "textarea", "Goals, injuries, preferences", c.notes || ""],
+      [
+        "notes",
+        "Notes",
+        "textarea",
+        "Goals, injuries, preferences",
+        c.notes || "",
+      ],
     ],
     submit: async (v) => {
       const name = v.name.trim();
@@ -3227,7 +3427,9 @@ function renderEvents() {
     .forEach((d) => state.openDrafts.add(d.closest(".event-card").dataset.id));
   document
     .querySelectorAll(".draft-panel:not([open])")
-    .forEach((d) => state.openDrafts.delete(d.closest(".event-card").dataset.id));
+    .forEach((d) =>
+      state.openDrafts.delete(d.closest(".event-card").dataset.id),
+    );
   const list = state.events.map(normalizeEvent).sort((a, b) => a.date - b.date);
   $("#eventBoard").innerHTML = list.length
     ? list
@@ -3306,7 +3508,10 @@ function openEventDialog() {
         });
         await loadEvents();
       } catch (err) {
-        if (state.authRequired || /\((400|401|403)\)|required|must/i.test(err.message))
+        if (
+          state.authRequired ||
+          /\((400|401|403)\)|required|must/i.test(err.message)
+        )
           throw err;
         state.events.push({
           ...body,
@@ -3321,7 +3526,11 @@ function openEventDialog() {
       if (created) state.openDrafts.add(String(created.id));
       renderEvents();
       renderDashboard();
-      toast(created ? "Event timeline built · drafting messages" : "Server unreachable — event saved on this device only");
+      toast(
+        created
+          ? "Event timeline built · drafting messages"
+          : "Server unreachable — event saved on this device only",
+      );
       if (created) generateEventDrafts(created.id);
     },
   });
@@ -3364,7 +3573,9 @@ function draftSlotHTML(raw, type, steps = eventSteps(raw)) {
     draft = eventDrafts(raw)[type.key],
     status = state.draftStatus[`${id}:${type.key}`] || "",
     step = steps.find((s) => s.key === type.step),
-    due = step ? ` · ${step.done ? "done" : `due ${fmtDate(step.due, { short: true })}`}` : "";
+    due = step
+      ? ` · ${step.done ? "done" : `due ${fmtDate(step.due, { short: true })}`}`
+      : "";
   let body;
   if (status === "pending")
     body = `<div class="draft-status">Drafting with Claude…</div>`;
@@ -3373,25 +3584,33 @@ function draftSlotHTML(raw, type, steps = eventSteps(raw)) {
   else if (draft?.text)
     body = `<textarea data-draft-text spellcheck="true" rows="${Math.min(18, Math.max(6, draft.text.split("\n").length + 1))}" aria-label="${attr(type.label)}">${esc(draft.text)}</textarea>`;
   else body = `<div class="draft-status">Not drafted yet.</div>`;
-  const actions = draft?.text && status !== "pending"
-    ? `<button class="text-btn" data-draft-action="copy">Copy</button>${type.email ? '<button class="text-btn" data-draft-action="mail">Open in mail</button>' : ""}<button class="text-btn" data-draft-action="regen">Regenerate</button>`
-    : status === "pending"
-      ? ""
-      : `<button class="text-btn" data-draft-action="regen">${status ? "Retry" : "Generate"}</button>`;
+  const actions =
+    draft?.text && status !== "pending"
+      ? `<button class="text-btn" data-draft-action="copy">Copy</button>${type.email ? '<button class="text-btn" data-draft-action="mail">Open in mail</button>' : ""}<button class="text-btn" data-draft-action="regen">Regenerate</button>`
+      : status === "pending"
+        ? ""
+        : `<button class="text-btn" data-draft-action="regen">${status ? "Retry" : "Generate"}</button>`;
   return `<section class="draft" data-draft="${type.key}"><header><div><strong>${esc(type.label)}</strong><small>${esc(type.hint)}${due}${draft?.edited ? " · edited" : ""}</small></div><div class="draft-actions">${actions}</div></header>${body}</section>`;
 }
 function refreshDraftSlot(eventId, key) {
   const raw = state.events.find((x) => String(x.id) === String(eventId)),
-    card = document.querySelector(`.event-card[data-id="${CSS.escape(String(eventId))}"]`);
+    card = document.querySelector(
+      `.event-card[data-id="${CSS.escape(String(eventId))}"]`,
+    );
   if (!raw || !card) return;
   const type = DRAFT_TYPES.find((t) => t.key === key),
     slot = card.querySelector(`[data-draft="${key}"]`);
   if (type && slot) slot.outerHTML = draftSlotHTML(raw, type);
   const types = applicableDrafts(raw),
     ready = types.filter((t) => eventDrafts(raw)[t.key]?.text).length,
-    busy = types.some((t) => state.draftStatus[`${raw.id}:${t.key}`] === "pending"),
+    busy = types.some(
+      (t) => state.draftStatus[`${raw.id}:${t.key}`] === "pending",
+    ),
     count = card.querySelector("[data-draft-count]");
-  if (count) count.textContent = busy ? "Drafting…" : `${ready} of ${types.length} ready`;
+  if (count)
+    count.textContent = busy
+      ? "Drafting…"
+      : `${ready} of ${types.length} ready`;
 }
 async function generateDraft(eventId, key) {
   const statusKey = `${eventId}:${key}`;
@@ -3406,18 +3625,25 @@ async function generateDraft(eventId, key) {
     if (raw) raw.drafts = { ...eventDrafts(raw), [key]: result.draft };
     delete state.draftStatus[statusKey];
   } catch (err) {
-    state.draftStatus[statusKey] = `error:${err.message || "Could not draft this message"}`;
+    state.draftStatus[statusKey] =
+      `error:${err.message || "Could not draft this message"}`;
   }
   refreshDraftSlot(eventId, key);
 }
 async function generateEventDrafts(eventId) {
   const raw = state.events.find((x) => String(x.id) === String(eventId));
   if (!raw) return;
-  await Promise.all(applicableDrafts(raw).map((t) => generateDraft(eventId, t.key)));
+  await Promise.all(
+    applicableDrafts(raw).map((t) => generateDraft(eventId, t.key)),
+  );
   const failed = applicableDrafts(raw).filter((t) =>
     String(state.draftStatus[`${eventId}:${t.key}`] || "").startsWith("error:"),
   ).length;
-  toast(failed ? `${failed} draft${failed === 1 ? "" : "s"} failed — use Retry` : `Drafts ready for ${raw.name}`);
+  toast(
+    failed
+      ? `${failed} draft${failed === 1 ? "" : "s"} failed — use Retry`
+      : `Drafts ready for ${raw.name}`,
+  );
 }
 async function saveDraftEdit(e) {
   const card = e.target.closest(".event-card"),
@@ -3426,16 +3652,26 @@ async function saveDraftEdit(e) {
   if (!raw || !key) return;
   const previous = eventDrafts(raw)[key] || {};
   try {
-    const result = await getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        draft: { key, text: e.target.value, generatedAt: previous.generatedAt },
-      }),
-    });
+    const result = await getJSON(
+      `/api/events?id=${encodeURIComponent(raw.id)}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draft: {
+            key,
+            text: e.target.value,
+            generatedAt: previous.generatedAt,
+          },
+        }),
+      },
+    );
     raw.drafts = { ...eventDrafts(raw), [key]: result.draft };
-    const small = e.target.closest("[data-draft]").querySelector("header small");
-    if (small && !small.textContent.endsWith(" · edited")) small.textContent += " · edited";
+    const small = e.target
+      .closest("[data-draft]")
+      .querySelector("header small");
+    if (small && !small.textContent.endsWith(" · edited"))
+      small.textContent += " · edited";
     toast("Draft saved");
   } catch (err) {
     toast(`Draft not saved — ${err.message}`);
@@ -3446,10 +3682,15 @@ async function draftAction(b) {
     key = b.closest("[data-draft]").dataset.draft,
     raw = state.events.find((x) => String(x.id) === card.dataset.id);
   if (!raw) return;
-  const textarea = card.querySelector(`[data-draft="${key}"] [data-draft-text]`),
+  const textarea = card.querySelector(
+      `[data-draft="${key}"] [data-draft-text]`,
+    ),
     value = textarea?.value || "";
   if (b.dataset.draftAction === "regen") {
-    if (eventDrafts(raw)[key]?.edited && !confirm("Replace your edited draft with a new one?"))
+    if (
+      eventDrafts(raw)[key]?.edited &&
+      !confirm("Replace your edited draft with a new one?")
+    )
       return;
     return generateDraft(raw.id, key);
   }
@@ -3503,8 +3744,13 @@ async function eventAction(e) {
     const raw = state.events.find(
       (x) => String(x.id) === all.closest(".event-card").dataset.id,
     );
-    const edited = applicableDrafts(raw).some((t) => eventDrafts(raw)[t.key]?.edited);
-    if (edited && !confirm("Regenerate every draft? Your edits will be replaced."))
+    const edited = applicableDrafts(raw).some(
+      (t) => eventDrafts(raw)[t.key]?.edited,
+    );
+    if (
+      edited &&
+      !confirm("Regenerate every draft? Your edits will be replaced.")
+    )
       return;
     return generateEventDrafts(raw.id);
   }

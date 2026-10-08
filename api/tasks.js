@@ -17,7 +17,14 @@ const RECUR_COLUMNS =
 
 function scheduleParams(body) {
   const r = normalizeSchedule(body);
-  return [r.cadence, r.weekday, r.monthDay, r.anchorDate, r.leadDays, r.timeLabel || null];
+  return [
+    r.cadence,
+    r.weekday,
+    r.monthDay,
+    r.anchorDate,
+    r.leadDays,
+    r.timeLabel || null,
+  ];
 }
 
 module.exports = async (req, res) => {
@@ -70,7 +77,8 @@ module.exports = async (req, res) => {
       if (type === "recur_task") {
         if (!name) return res.status(400).json({ error: "name required" });
         const id =
-          clean(req.body.id, 80) || `custom-${crypto.randomBytes(6).toString("hex")}`;
+          clean(req.body.id, 80) ||
+          `custom-${crypto.randomBytes(6).toString("hex")}`;
         const r = await db.query(
           `insert into recur_tasks (id, name, cadence, weekday, month_day, anchor_date, lead_days, time_label, link_label, link_url, source)
            values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'custom') returning ${RECUR_COLUMNS}`,
@@ -91,7 +99,9 @@ module.exports = async (req, res) => {
         if (!process.env.ANTHROPIC_API_KEY)
           return res
             .status(503)
-            .json({ error: "Smart add needs ANTHROPIC_API_KEY on the server." });
+            .json({
+              error: "Smart add needs ANTHROPIC_API_KEY on the server.",
+            });
         const { parseTask } = require("../lib/taskParse");
         const parsed = await parseTask(text, dayKey);
         trackUsage("Claude API", "Parse task schedule", "ok", parsed.usage);

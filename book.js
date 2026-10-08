@@ -45,8 +45,7 @@ async function loadAvailability() {
         ]
       )
         .map(
-          (reason) =>
-            `<option value="${attr(reason)}">${esc(reason)}</option>`,
+          (reason) => `<option value="${attr(reason)}">${esc(reason)}</option>`,
         )
         .join("");
     renderDays();

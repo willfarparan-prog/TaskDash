@@ -149,9 +149,8 @@
           <div>
             <strong>Private dashboard locked</strong
             ><span
-              >Your data is still saved. Sign in with an approved Google
-              account to load tasks, clients, programs, links, and
-              integrations.</span
+              >Your data is still saved. Sign in with an approved Google account
+              to load tasks, clients, programs, links, and integrations.</span
             >
           </div>
           <div class="owner-gate-actions">
@@ -257,7 +256,9 @@
                   </div>
                   <div class="task-heading-tools">
                     <span class="count-label" id="todayTaskCount">0 items</span>
-                    <button class="text-btn" id="taskManage">Manage tasks</button>
+                    <button class="text-btn" id="taskManage">
+                      Manage tasks
+                    </button>
                   </div>
                 </div>
                 <div class="quick-task">
@@ -265,7 +266,13 @@
                     id="taskInput"
                     placeholder="Add a task, or describe a repeating one for Smart add"
                   /><button id="taskAdd">Add task</button
-                  ><button id="taskSmart" class="smart-add" title="Claude fills in the schedule from your sentence">✦ Smart add</button>
+                  ><button
+                    id="taskSmart"
+                    class="smart-add"
+                    title="Claude fills in the schedule from your sentence"
+                  >
+                    ✦ Smart add
+                  </button>
                 </div>
                 <div class="task-list" id="taskList"></div>
                 <div class="onboarding-queue" id="onboardingQueue" hidden></div>
@@ -353,7 +360,9 @@
               <div class="table-toolbar">
                 <label class="table-search"
                   ><span>⌕</span
-                  ><input id="docSearch" placeholder="Search titles, tags, summaries"
+                  ><input
+                    id="docSearch"
+                    placeholder="Search titles, tags, summaries"
                 /></label>
               </div>
               <div class="doc-filters" id="docFilters"></div>
@@ -719,7 +728,11 @@
                 </table>
               </div>
             </article>
-            <article class="panel client-profile" id="clientProfile" hidden></article>
+            <article
+              class="panel client-profile"
+              id="clientProfile"
+              hidden
+            ></article>
           </section>
 
           <section class="view" id="view-inbox" data-title="Inbox">
@@ -931,11 +944,19 @@
             <span class="kicker" id="dialogKicker">QUICK ADD</span>
             <h2 id="dialogTitle">Add item</h2>
           </div>
-          <button class="icon-btn" value="cancel" formnovalidate aria-label="Close">×</button>
+          <button
+            class="icon-btn"
+            value="cancel"
+            formnovalidate
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
         <div id="dialogFields" class="modal-body"></div>
         <div class="modal-actions">
-          <button class="secondary-btn" value="cancel" formnovalidate>Cancel</button
+          <button class="secondary-btn" value="cancel" formnovalidate>
+            Cancel</button
           ><button class="primary-btn" id="dialogSubmit" value="default">
             Save
           </button>

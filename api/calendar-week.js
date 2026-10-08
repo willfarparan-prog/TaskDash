@@ -80,7 +80,13 @@ module.exports = async (req, res) => {
     const weekStart = pacificInstant(startKey, "00:00");
     const weekEnd = pacificInstant(endKey, "00:00");
     const [personal, work] = await Promise.all([
-      loadGoogleWeek("owner", "calendar.readonly", "personal", weekStart, weekEnd),
+      loadGoogleWeek(
+        "owner",
+        "calendar.readonly",
+        "personal",
+        weekStart,
+        weekEnd,
+      ),
       loadGoogleWeek("work", "calendar", "exos", weekStart, weekEnd),
     ]);
     const googleEvents = personal.events;

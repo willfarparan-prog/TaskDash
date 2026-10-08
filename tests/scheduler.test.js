@@ -30,7 +30,11 @@ test("pacificToday follows Pacific time, not UTC", () => {
 
 test("normalizeSchedule survives bad closures and out-of-range values", () => {
   const s = normalizeSchedule({
-    closures: [null, { date: "nope" }, { date: "2026-12-25", reason: "Holiday" }],
+    closures: [
+      null,
+      { date: "nope" },
+      { date: "2026-12-25", reason: "Holiday" },
+    ],
     sessionMinutes: 9999,
     bookAheadDays: 0,
     hours: { mon: { enabled: true, start: "17:00", end: "09:00" } },

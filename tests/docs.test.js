@@ -10,13 +10,20 @@ test("text comes out of Word, Excel and plain-text files", () => {
   const docx = Buffer.from(
     zipSync({
       "word/document.xml": strToU8(
-        '<w:document><w:body><w:p><w:r><w:t>Holiday party &amp; RSVP</w:t></w:r></w:p><w:p><w:t>Due Oct 15</w:t></w:p></w:body></w:document>',
+        "<w:document><w:body><w:p><w:r><w:t>Holiday party &amp; RSVP</w:t></w:r></w:p><w:p><w:t>Due Oct 15</w:t></w:p></w:body></w:document>",
       ),
     }),
   );
-  assert.equal(extractText(docx, "Plan.docx"), "Holiday party & RSVP\nDue Oct 15");
+  assert.equal(
+    extractText(docx, "Plan.docx"),
+    "Holiday party & RSVP\nDue Oct 15",
+  );
   const xlsx = Buffer.from(
-    zipSync({ "xl/sharedStrings.xml": strToU8("<sst><si><t>Badge</t></si><si><t>Count</t></si></sst>") }),
+    zipSync({
+      "xl/sharedStrings.xml": strToU8(
+        "<sst><si><t>Badge</t></si><si><t>Count</t></si></sst>",
+      ),
+    }),
   );
   assert.equal(extractText(xlsx, "report.xlsx"), "Badge Count");
   assert.equal(extractText(Buffer.from("hello"), "notes.txt"), "hello");
@@ -29,7 +36,11 @@ test("Claude's filing suggestion is kept to known, tidy values", () => {
     title: "  Q4 Event Plan ",
     category: "Made up",
     tags: ["Events", " Michelle ", ""],
-    action_items: [{ text: "Send RSVPs", due: "2026-10-15" }, { text: "Book room", due: "soon" }, { text: "" }],
+    action_items: [
+      { text: "Send RSVPs", due: "2026-10-15" },
+      { text: "Book room", due: "soon" },
+      { text: "" },
+    ],
   });
   assert.equal(s.title, "Q4 Event Plan");
   assert.equal(s.category, "Other");
@@ -42,7 +53,9 @@ test("Claude's filing suggestion is kept to known, tidy values", () => {
 });
 
 function stub(rel, exports) {
-  const file = require.resolve(rel.startsWith("@") ? rel : path.join("..", rel));
+  const file = require.resolve(
+    rel.startsWith("@") ? rel : path.join("..", rel),
+  );
   require.cache[file] = { id: file, filename: file, loaded: true, exports };
 }
 function call(handler, req) {
@@ -72,7 +85,17 @@ test("adding a file stores it privately and returns Claude's suggestion", async 
         if (sql.includes("insert into docs")) {
           inserts.push(params);
           return {
-            rows: [{ id: 1, kind: "file", title: params[0], file_name: params[2], content_type: params[3], from_person: params[5], note: params[7] }],
+            rows: [
+              {
+                id: 1,
+                kind: "file",
+                title: params[0],
+                file_name: params[2],
+                content_type: params[3],
+                from_person: params[5],
+                note: params[7],
+              },
+            ],
           };
         }
         return { rows: [] };
@@ -91,7 +114,10 @@ test("adding a file stores it privately and returns Claude's suggestion", async 
     CATEGORIES: ["Events", "Other"],
     organizeDoc: async (doc, content) => {
       seen = { doc, content };
-      return { suggestion: { title: "Holiday Party Plan", category: "Events" }, usage: {} };
+      return {
+        suggestion: { title: "Holiday Party Plan", category: "Events" },
+        usage: {},
+      };
     },
   });
   process.env.ANTHROPIC_API_KEY = "test";
@@ -102,7 +128,14 @@ test("adding a file stores it privately and returns Claude's suggestion", async 
     query: { dayKey: "2026-10-07" },
     headers: {
       "content-type": "application/octet-stream",
-      "x-doc-meta": encodeURIComponent(JSON.stringify({ name: "party/plan.pdf", type: "application/pdf", from: "Michelle", note: "Read before Friday" })),
+      "x-doc-meta": encodeURIComponent(
+        JSON.stringify({
+          name: "party/plan.pdf",
+          type: "application/pdf",
+          from: "Michelle",
+          note: "Read before Friday",
+        }),
+      ),
     },
     body: Buffer.from("%PDF-1.4 fake"),
   });
@@ -126,7 +159,10 @@ test("links must be https and files over 4 MB are turned away", async () => {
   stub("lib/session.js", { requireOwnerSession: () => true });
   delete require.cache[require.resolve("../lib/docsApi.js")];
   const handler = require("../lib/docsApi.js");
-  const bad = await call(handler, { method: "POST", body: { url: "javascript:alert(1)" } });
+  const bad = await call(handler, {
+    method: "POST",
+    body: { url: "javascript:alert(1)" },
+  });
   assert.equal(bad.code, 400);
   const big = await call(handler, {
     method: "POST",

@@ -6,7 +6,9 @@ const card = require("../db/stock-programs-training-card.json");
 const first = require("../db/stock-programs.json");
 
 const day = (name, dayName) =>
-  card.find((p) => p.name === name).content.days.find((d) => d.name === dayName);
+  card
+    .find((p) => p.name === name)
+    .content.days.find((d) => d.name === dayName);
 const ex = (name, dayName, key) => {
   const d = day(name, dayName),
     b = d.blocks.find((x) => x.letter === key[0]);
@@ -29,7 +31,10 @@ test("each training card becomes stock programs with unique names", () => {
           // Logged weights and Excel date serials must not leak into reps.
           for (const r of x.reps) {
             assert.doesNotMatch(r, /^4\d{4}$/);
-            assert.ok(!(/^\d+$/.test(r) && Number(r) >= 30), `${p.name} ${x.name} ${r}`);
+            assert.ok(
+              !(/^\d+$/.test(r) && Number(r) >= 30),
+              `${p.name} ${x.name} ${r}`,
+            );
           }
         }
     }
@@ -46,10 +51,16 @@ test("sets, weekly reps and coaching notes follow the sheet", () => {
   assert.match(b1.note, /Week 3: Seat Ham Curl; Week 4: KB\/Plate Hug RDL/);
   assert.equal(b1.reps[2], "12, 15, 15, 12-15");
   assert.deepEqual(
-    day("Xingjian · 4-Day Program", "Day 3").blocks[0].exercises.map((x) => x.name),
+    day("Xingjian · 4-Day Program", "Day 3").blocks[0].exercises.map(
+      (x) => x.name,
+    ),
     ["Trap Bar Deadlift", "Alt. Deadbug w/ DB Pullover"],
   );
-  assert.equal(day("Margaret Lovallo · 2-Day Program · Block 2", "Mobility menu").blocks.length, 4);
+  assert.equal(
+    day("Margaret Lovallo · 2-Day Program · Block 2", "Mobility menu").blocks
+      .length,
+    4,
+  );
 });
 
 test("the second library is imported once under its own marker", async () => {
@@ -71,8 +82,14 @@ test("the second library is imported once under its own marker", async () => {
   };
   const db = { connect: async () => client };
   assert.equal(await seedStockPrograms(db), first.length);
-  assert.equal(await seedStockPrograms(db, card, "stock_seed_trainingcard_v1"), 14);
-  assert.equal(await seedStockPrograms(db, card, "stock_seed_trainingcard_v1"), 0);
+  assert.equal(
+    await seedStockPrograms(db, card, "stock_seed_trainingcard_v1"),
+    14,
+  );
+  assert.equal(
+    await seedStockPrograms(db, card, "stock_seed_trainingcard_v1"),
+    0,
+  );
   assert.equal(names.length, first.length + 14);
 });
 
@@ -96,18 +113,38 @@ test("unfinished one-off tasks carry over and finished ones stay for the day", a
     },
   };
   const sfile = require.resolve(path.join("..", "lib/session.js"));
-  require.cache[sfile] = { id: sfile, filename: sfile, loaded: true, exports: { requireOwnerSession: () => true } };
+  require.cache[sfile] = {
+    id: sfile,
+    filename: sfile,
+    loaded: true,
+    exports: { requireOwnerSession: () => true },
+  };
   delete require.cache[require.resolve("../api/tasks.js")];
   const handler = require("../api/tasks.js");
   const run = (req) =>
     new Promise((resolve) =>
-      handler({ headers: {}, query: {}, ...req }, { setHeader() {}, status() { return this; }, json: resolve }),
+      handler(
+        { headers: {}, query: {}, ...req },
+        {
+          setHeader() {},
+          status() {
+            return this;
+          },
+          json: resolve,
+        },
+      ),
     );
   await run({ method: "GET", query: { day: "2026-10-08" } });
   const daily = calls.find((c) => c.sql.includes("from daily_tasks"));
-  assert.match(daily.sql, /day_key < \$1 and \(done = false or done_on = \$1\)/);
+  assert.match(
+    daily.sql,
+    /day_key < \$1 and \(done = false or done_on = \$1\)/,
+  );
   assert.deepEqual(daily.params, ["2026-10-08"]);
-  await run({ method: "PATCH", body: { kind: "daily_task", id: 4, done: true, dayKey: "2026-10-08" } });
+  await run({
+    method: "PATCH",
+    body: { kind: "daily_task", id: 4, done: true, dayKey: "2026-10-08" },
+  });
   const patch = calls.at(-1);
   assert.match(patch.sql, /done_on = case when \$1 is true then \$4/);
   assert.deepEqual(patch.params, [true, null, 4, "2026-10-08"]);

@@ -25,7 +25,10 @@ test("a monthly task stays hidden once its cycle is checked off", () => {
   assert.equal(first.done, false);
   // Checked on the 12th under the new due-date key…
   assert.equal(show(news, "2026-10-13", ["2026-10-15"]).done, true);
-  assert.equal(show(news, "2026-10-13", ["2026-10-15"], "2026-10-01").done, true);
+  assert.equal(
+    show(news, "2026-10-13", ["2026-10-15"], "2026-10-01").done,
+    true,
+  );
   // …or under an old day-based key: both count for the cycle.
   assert.equal(show(news, "2026-10-14", ["2026-10-12"]).done, true);
   assert.equal(show(news, "2026-10-20", ["2026-10-15"]), null);
@@ -71,8 +74,17 @@ test("weekly tasks with a lead show across the window", () => {
 test("built-in duties keep their ids and old timing", () => {
   const ids = S.BUILTIN_TASKS.map((t) => t.id);
   assert.deepEqual(ids, [
-    "wr-am", "inbox", "wr-pm", "workday", "board", "lab",
-    "glove", "meeting", "news", "fdt", "class",
+    "wr-am",
+    "inbox",
+    "wr-pm",
+    "workday",
+    "board",
+    "lab",
+    "glove",
+    "meeting",
+    "news",
+    "fdt",
+    "class",
   ]);
   const fdt = S.BUILTIN_TASKS.find((t) => t.id === "fdt");
   // Old rule: from 6 days before month end through the last day.
@@ -84,7 +96,11 @@ test("bad input falls back to safe values", () => {
   const r = S.normalizeSchedule({ cadence: "Yearly", leadDays: 99 });
   assert.equal(r.cadence, "Daily");
   assert.equal(r.leadDays, 0);
-  assert.equal(S.normalizeSchedule({ cadence: "Weekly", lead_days: "3", weekday: "2" }).leadDays, 3);
+  assert.equal(
+    S.normalizeSchedule({ cadence: "Weekly", lead_days: "3", weekday: "2" })
+      .leadDays,
+    3,
+  );
 });
 
 test("built-in duties are copied into the database only once", async () => {
@@ -106,5 +122,13 @@ test("built-in duties are copied into the database only once", async () => {
   assert.equal(await seedBuiltinTasks(db), 0);
   const fdt = rows.find((r) => r[0] === "fdt");
   // id, name, cadence, weekday, month_day, anchor_date, lead_days, time_label, sort
-  assert.deepEqual(fdt.slice(2), ["Monthly", null, 0, null, 6, "Last week", 10]);
+  assert.deepEqual(fdt.slice(2), [
+    "Monthly",
+    null,
+    0,
+    null,
+    6,
+    "Last week",
+    10,
+  ]);
 });

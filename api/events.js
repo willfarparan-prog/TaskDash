@@ -33,23 +33,33 @@ module.exports = async (req, res) => {
       const id = Number(req.query.id);
       const key = String(req.query.key || "");
       if (!Number.isInteger(id) || !DRAFT_KEYS.includes(key))
-        return res.status(400).json({ error: "Event id and draft type are required" });
+        return res
+          .status(400)
+          .json({ error: "Event id and draft type are required" });
       if (!process.env.ANTHROPIC_API_KEY)
         return res.status(503).json({
-          error: "Claude isn't connected. Add ANTHROPIC_API_KEY in Vercel to draft messages.",
+          error:
+            "Claude isn't connected. Add ANTHROPIC_API_KEY in Vercel to draft messages.",
         });
-      const found = await db.query(`select ${EVENT_COLUMNS} from events where id=$1`, [id]);
+      const found = await db.query(
+        `select ${EVENT_COLUMNS} from events where id=$1`,
+        [id],
+      );
       const event = found.rows[0];
       if (!event) return res.status(404).json({ error: "Event not found" });
       const spec = draftSpec(key);
       if (spec.needs && !spec.needs(event))
-        return res.status(409).json({ error: "This event doesn't need that message." });
+        return res
+          .status(409)
+          .json({ error: "This event doesn't need that message." });
       let generated;
       try {
         generated = await generateDraft(event, key);
       } catch (err) {
         trackUsage("Claude", "Event draft", "error");
-        return res.status(502).json({ error: err.message || "Claude could not write this draft" });
+        return res
+          .status(502)
+          .json({ error: err.message || "Claude could not write this draft" });
       }
       const draft = {
         text: generated.text,
@@ -76,7 +86,9 @@ module.exports = async (req, res) => {
       const startTime = time(body.startTime);
       const endTime = time(body.endTime);
       if (startTime && endTime && endTime <= startTime)
-        return res.status(400).json({ error: "End time must be after start time" });
+        return res
+          .status(400)
+          .json({ error: "End time must be after start time" });
       const attendance = Number(body.expectedAttendance);
       const result = await db.query(
         `insert into events (name, event_date, pillar, needs_vendor, expected_attendance, notes,
@@ -108,7 +120,8 @@ module.exports = async (req, res) => {
     }
     if (req.method === "PATCH") {
       const { id } = req.query;
-      const { pipelineState, expectedAttendance, notes, draft } = req.body || {};
+      const { pipelineState, expectedAttendance, notes, draft } =
+        req.body || {};
       if (!id) return res.status(400).json({ error: "Event id is required" });
       if (draft) {
         if (!DRAFT_KEYS.includes(draft.key))
