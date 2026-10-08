@@ -18,8 +18,8 @@ function load(tokens) {
     WORK_EMAIL: "william.farparan@teamexos.com",
     getVerifiedGoogleToken: async (kind = "owner") => tokens[kind] ?? null,
   });
-  delete require.cache[require.resolve("../api/inbox.js")];
-  return require("../api/inbox.js");
+  delete require.cache[require.resolve("../lib/routes/inbox.js")];
+  return require("../lib/routes/inbox.js");
 }
 
 function call(handler) {

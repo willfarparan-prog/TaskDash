@@ -121,8 +121,8 @@ test("adding a file stores it privately and returns Claude's suggestion", async 
     },
   });
   process.env.ANTHROPIC_API_KEY = "test";
-  delete require.cache[require.resolve("../lib/docsApi.js")];
-  const handler = require("../lib/docsApi.js");
+  delete require.cache[require.resolve("../lib/routes/docs.js")];
+  const handler = require("../lib/routes/docs.js");
   const { code, body } = await call(handler, {
     method: "POST",
     query: { dayKey: "2026-10-07" },
@@ -157,8 +157,8 @@ test("links must be https and files over 4 MB are turned away", async () => {
     getPool: () => ({ query: async () => ({ rows: [] }) }),
   });
   stub("lib/session.js", { requireOwnerSession: () => true });
-  delete require.cache[require.resolve("../lib/docsApi.js")];
-  const handler = require("../lib/docsApi.js");
+  delete require.cache[require.resolve("../lib/routes/docs.js")];
+  const handler = require("../lib/routes/docs.js");
   const bad = await call(handler, {
     method: "POST",
     body: { url: "javascript:alert(1)" },
@@ -173,8 +173,8 @@ test("links must be https and files over 4 MB are turned away", async () => {
 });
 
 test("only safe file types open in the browser; the rest download", () => {
-  delete require.cache[require.resolve("../lib/docsApi.js")];
-  const { servedAs } = require("../lib/docsApi.js");
+  delete require.cache[require.resolve("../lib/routes/docs.js")];
+  const { servedAs } = require("../lib/routes/docs.js");
   assert.deepEqual(servedAs({ content_type: "application/pdf" }), {
     contentType: "application/pdf",
     disposition: "inline",

@@ -58,8 +58,8 @@ test("finishing a live session logs it to the client's history once", async () =
     }),
   });
   stub("lib/session.js", { requireOwnerSession: () => true });
-  delete require.cache[require.resolve("../lib/workoutsApi.js")];
-  const handler = require("../lib/workoutsApi.js");
+  delete require.cache[require.resolve("../lib/routes/workouts.js")];
+  const handler = require("../lib/routes/workouts.js");
   const entries = [
     {
       key: "A1",

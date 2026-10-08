@@ -148,8 +148,8 @@ test("generating a meal plan saves the answers, the plan and the checklist step"
     },
   });
   process.env.ANTHROPIC_API_KEY = "test";
-  delete require.cache[require.resolve("../lib/mealPlansApi.js")];
-  const handler = require("../lib/mealPlansApi.js");
+  delete require.cache[require.resolve("../lib/routes/meal-plans.js")];
+  const handler = require("../lib/routes/meal-plans.js");
   const { code, body } = await call(handler, {
     method: "POST",
     body: {
@@ -186,8 +186,8 @@ test("new personal training clients start with the checklist", async () => {
     }),
   });
   stub("lib/session.js", { requireOwnerSession: () => true });
-  delete require.cache[require.resolve("../api/clients.js")];
-  const handler = require("../api/clients.js");
+  delete require.cache[require.resolve("../lib/routes/clients.js")];
+  const handler = require("../lib/routes/clients.js");
   await call(handler, {
     method: "POST",
     body: {
@@ -215,8 +215,8 @@ test("checklist steps are validated", async () => {
     }),
   });
   stub("lib/session.js", { requireOwnerSession: () => true });
-  delete require.cache[require.resolve("../api/clients.js")];
-  const handler = require("../api/clients.js");
+  delete require.cache[require.resolve("../lib/routes/clients.js")];
+  const handler = require("../lib/routes/clients.js");
   const bad = await call(handler, {
     method: "PATCH",
     query: { resource: "onboarding", id: "1" },

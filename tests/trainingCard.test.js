@@ -119,8 +119,8 @@ test("unfinished one-off tasks carry over and finished ones stay for the day", a
     loaded: true,
     exports: { requireOwnerSession: () => true },
   };
-  delete require.cache[require.resolve("../api/tasks.js")];
-  const handler = require("../api/tasks.js");
+  delete require.cache[require.resolve("../lib/routes/tasks.js")];
+  const handler = require("../lib/routes/tasks.js");
   const run = (req) =>
     new Promise((resolve) =>
       handler(
