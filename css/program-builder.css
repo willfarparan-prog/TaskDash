@@ -46,6 +46,8 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .editor-history .secondary-btn {
   white-space: nowrap;
@@ -341,5 +343,20 @@
     margin-top: 10px;
     font-size: 8px;
     color: #6b6b6b;
+  }
+}
+
+/* On a phone the title and the undo/redo/close toolbar stack instead of
+   pushing the page wider than the screen. */
+@media (max-width: 640px) {
+  .program-edit-head {
+    flex-wrap: wrap;
+  }
+  .program-edit-head > div:first-child {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  .editor-history {
+    justify-content: flex-start;
   }
 }

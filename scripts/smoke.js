@@ -85,6 +85,7 @@ function fakeApi() {
       },
     ],
     workouts: [],
+    consults: [],
     events: [
       {
         id: 31,
@@ -165,7 +166,100 @@ function fakeApi() {
         }
         case "GET programs":
           return json(route, { programs: db.programs });
+        case "GET consults": {
+          if (q.id) {
+            const c = db.consults.find((x) => String(x.id) === q.id);
+            return c
+              ? json(route, {
+                  consult: c,
+                  client: db.clients.find((x) => x.id === c.client_id),
+                })
+              : json(route, { error: "Consult not found" }, 404);
+          }
+          return json(route, {
+            consults: db.consults.filter((x) => String(x.client_id) === q.clientId),
+          });
+        }
+        case "POST consults": {
+          if (q.action === "complete") {
+            const c = db.consults.find((x) => String(x.id) === q.id);
+            Object.assign(c, {
+              answers: body.answers,
+              status: "completed",
+              decision: body.decision,
+              days_per_week: body.daysPerWeek,
+              session_minutes: body.sessionMinutes,
+              first_session: body.firstSession,
+              completed_at: new Date().toISOString(),
+            });
+            const client = db.clients.find((x) => x.id === c.client_id);
+            if (body.decision === "yes" && body.makePersonalTraining !== false) {
+              client.service_type = "Personal training";
+              client.onboarding = client.onboarding || {};
+            }
+            return json(route, { consult: c, client });
+          }
+          if (q.action === "program") {
+            db.programRequest = body;
+            const ex = (name) => ({ name, sets: 3, reps: ["8", "8", "6", "6"], note: "" });
+            return json(route, {
+              name: "Smoke · Strength Foundation",
+              goal: "Build base strength",
+              rationale: ["Full-body split fits four days"],
+              cautions: ["Protect the left knee"],
+              daysPerWeek: body.daysPerWeek,
+              weeks: 4,
+              content: {
+                days: Array.from({ length: body.daysPerWeek }, (_, i) => ({
+                  name: `Day ${i + 1}`,
+                  warmup: [],
+                  blocks: [{ letter: "A", exercises: [ex("Goblet Squat"), ex("Push-up")] }],
+                })),
+              },
+            });
+          }
+          const client = {
+            id: db.seq++,
+            name: body.name,
+            email: body.email,
+            service_type: "PT consult",
+            status: "active",
+            onboarding: null,
+          };
+          db.clients.push(client);
+          const consult = {
+            id: db.seq++,
+            client_id: client.id,
+            status: "draft",
+            answers: { name: body.name },
+            created_at: new Date().toISOString(),
+          };
+          db.consults.push(consult);
+          return json(route, { consult, client, resumed: false }, 201);
+        }
+        case "PATCH consults": {
+          const c = db.consults.find((x) => String(x.id) === q.id);
+          if (body.answers) c.answers = body.answers;
+          if (body.programId) c.program_id = body.programId;
+          return json(route, c);
+        }
         case "POST programs": {
+          if (!body.sourceId && body.content) {
+            // A brand-new program (the custom one built from a consult).
+            const p = {
+              id: db.seq++,
+              name: body.name,
+              is_stock: false,
+              client_id: body.clientId,
+              client_name: body.clientName,
+              status: body.status,
+              weeks: body.weeks,
+              days_per_week: body.daysPerWeek,
+              content: body.content,
+            };
+            db.programs.unshift(p);
+            return json(route, p, 201);
+          }
           // Attaching a program copies the source into a new, separate row.
           const src = db.programs.find(
             (x) => String(x.id) === String(body.sourceId),
@@ -323,7 +417,29 @@ function fakeApi() {
             route,
             q.resource === "availability"
               ? { days: [], settings: {} }
-              : { settings: {}, bookings: [] },
+              : {
+                  settings: {},
+                  bookings: [
+                    {
+                      id: 71,
+                      visitor_name: "Booked Prospect",
+                      visitor_email: "booked@example.com",
+                      booking_code: "abc123",
+                      reason: "PT consultation",
+                      status: "confirmed",
+                      starts_at: new Date(Date.now() + 2 * 864e5).toISOString(),
+                      calendar_sync_status: "synced",
+                    },
+                    {
+                      id: 72,
+                      visitor_name: "InBody Person",
+                      reason: "InBody scan",
+                      status: "confirmed",
+                      starts_at: new Date(Date.now() + 3 * 864e5).toISOString(),
+                      calendar_sync_status: "synced",
+                    },
+                  ],
+                },
           );
         case "GET links":
           return json(route, { links: [] });
@@ -576,6 +692,110 @@ async function main() {
       // The survey tracker follows the pasted response count.
       if (api.db.events[0].pipeline_state._survey.responses !== 8)
         throw new Error("survey tracker wasn't updated");
+    });
+
+    await step("PT consult: form, decision, program match, custom program, meal plan", async () => {
+      await page.click('.nav-item[data-view="clients"]');
+      await page.click("#newConsultBtn");
+      await page.fill('#dialogForm [name="name"]', "Consult Prospect");
+      await page.fill('#dialogForm [name="email"]', "prospect@example.com");
+      await page.click("#dialogSubmit");
+      await page.waitForSelector('#view-consult.active [data-cf="goal"]');
+      if (!page.url().includes("#consult/")) throw new Error(`url ${page.url()}`);
+      if ((await page.inputValue('[data-cf="name"]')) !== "Consult Prospect")
+        throw new Error("name wasn't pre-filled");
+
+      await page.fill('[data-cf="height"]', "70");
+      await page.fill('[data-cf="weight"]', "180");
+      await page.fill('[data-cf="dob"]', "1990-05-17");
+      await page.selectOption('[data-cf="sex"]', "Man");
+      await page.selectOption('[data-cf="experience"]', "Under 1 year");
+      await page.fill('[data-cf="injuries"]', "Left knee, 2022");
+      await page.fill('[data-cf="goal"]', "I want to build muscle and get stronger");
+      await page.press('[data-cf="goal"]', "Tab"); // leaving the field saves at once
+      await page.waitForFunction(
+        () => document.querySelector("#consultSaveState")?.textContent.startsWith("Saved"),
+      );
+      const draft = api.db.consults.at(-1);
+      if (draft.answers.goal !== "I want to build muscle and get stronger" || draft.answers.height !== "70")
+        throw new Error(`autosaved ${JSON.stringify(draft.answers)}`);
+
+      // Finish → Yes → details
+      await page.click('.consult-foot [data-consult="finish"]');
+      await page.waitForSelector('#dialogForm [name="decision"]');
+      await page.click("#dialogSubmit");
+      await page.waitForSelector('#dialogForm [name="daysPerWeek"]');
+      await page.selectOption('#dialogForm [name="daysPerWeek"]', "4");
+      await page.selectOption('#dialogForm [name="sessionMinutes"]', "45");
+      await page.click("#dialogSubmit");
+      await page.waitForSelector("#consultNext .match-card");
+      const client = api.db.clients.find((c) => c.name === "Consult Prospect");
+      if (client.service_type !== "Personal training" || !client.onboarding)
+        throw new Error(`client ${JSON.stringify(client)}`);
+      const matches = await page.locator("#consultNext .match-card").count();
+      if (matches < 1 || matches > 3) throw new Error(`${matches} matches`);
+
+      // Attach the top stock match: an independent copy on the client.
+      const stockBefore = JSON.stringify(api.db.programs.filter((p) => p.is_stock));
+      await page.click('#consultNext [data-consult="attach-stock"] >> nth=0');
+      await page.waitForSelector("#view-programs.active");
+      const copy = api.db.programs.find((p) => !p.is_stock && p.client_id === client.id);
+      if (!copy || copy.status !== "active") throw new Error("stock match wasn't attached");
+      if (JSON.stringify(api.db.programs.filter((p) => p.is_stock)) !== stockBefore)
+        throw new Error("a stock template changed");
+      if (api.db.consults.at(-1).program_id !== copy.id)
+        throw new Error("consult isn't linked to its program");
+
+      // Back to the consult: custom program, then meal plan.
+      await page.goBack();
+      await page.waitForSelector('#consultNext [data-consult="build"]');
+      await page.click('#consultNext [data-consult="build"]');
+      await page.waitForSelector(".custom-program .cp-day");
+      if (api.db.programRequest.daysPerWeek !== 4 || api.db.programRequest.sessionMinutes !== 45)
+        throw new Error(`program request ${JSON.stringify(api.db.programRequest)}`);
+      if (!(await page.textContent(".cp-cautions")).includes("left knee"))
+        throw new Error("cautions weren't shown");
+      await page.click('[data-consult="attach-custom"]');
+      await page.waitForSelector("#view-programs.active");
+      const custom = api.db.programs.find((p) => p.name === "Smoke · Strength Foundation");
+      if (!custom || custom.client_id !== client.id || custom.days_per_week !== 4)
+        throw new Error("custom program wasn't attached");
+
+      await page.goBack();
+      await page.waitForSelector('#consultNext [data-consult="meal"]');
+      await page.click('#consultNext [data-consult="meal"]');
+      await page.waitForSelector('#dialogForm [name="height"]');
+      const meal = {
+        height: await page.inputValue('#dialogForm [name="height"]'),
+        weight: await page.inputValue('#dialogForm [name="weight"]'),
+        days: await page.inputValue('#dialogForm [name="trainingDays"]'),
+      };
+      if (meal.height !== "70" || meal.weight !== "180" || meal.days !== "4")
+        throw new Error(`meal prefill ${JSON.stringify(meal)}`);
+      await page.click('#dialogForm button[value="cancel"]');
+
+      // The consult shows on the client's profile.
+      await page.evaluate((id) => (location.hash = `client/${id}`), client.id);
+      await page.waitForSelector(".consults .consult-row");
+      if (!(await page.textContent(".consults")).includes("Starting personal training"))
+        throw new Error("consult row missing its decision");
+    });
+
+    await step("a PT consultation booking can start a consult", async () => {
+      await page.click('.nav-item[data-view="scheduler"]');
+      await page.waitForSelector("#bookingList .booking-row");
+      const buttons = await page.locator("[data-start-consult]").count();
+      if (buttons !== 1) throw new Error(`${buttons} Start consult buttons (want 1, not on the InBody scan)`);
+      await page.click("[data-start-consult]");
+      await page.waitForSelector('#dialogForm [name="name"]');
+      if ((await page.inputValue('#dialogForm [name="name"]')) !== "Booked Prospect")
+        throw new Error("name wasn't pre-filled from the booking");
+      if ((await page.inputValue('#dialogForm [name="email"]')) !== "booked@example.com")
+        throw new Error("email wasn't pre-filled from the booking");
+      await page.click("#dialogSubmit");
+      await page.waitForSelector('#view-consult.active [data-cf="goal"]');
+      if ((await page.inputValue('[data-cf="name"]')) !== "Booked Prospect")
+        throw new Error("consult didn't start with the booking's name");
     });
 
     await step("filing a doc from Claude's suggestion", async () => {

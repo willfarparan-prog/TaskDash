@@ -96,7 +96,7 @@ function renderScheduler() {
         .slice(0, 12)
         .map((b) => {
           const start = new Date(b.starts_at);
-          return `<div class="booking-row" data-booking-id="${b.id}"><div><strong>${esc(b.visitor_name)}</strong><span>${esc(b.reason)} · ${start.toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span><small>${b.calendar_sync_status === "synced" ? "On work calendar" : b.calendar_sync_status === "error" ? "Calendar sync needs attention" : "Waiting for calendar connection"}</small></div><button class="row-delete" data-cancel-booking aria-label="Cancel ${attr(b.visitor_name)} booking">×</button></div>`;
+          return `<div class="booking-row" data-booking-id="${b.id}"><div><strong>${esc(b.visitor_name)}</strong><span>${esc(b.reason)} · ${start.toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span><small>${b.calendar_sync_status === "synced" ? "On work calendar" : b.calendar_sync_status === "error" ? "Calendar sync needs attention" : "Waiting for calendar connection"}</small></div>${/consult/i.test(b.reason || "") ? `<button class="secondary-btn" data-start-consult="${b.id}">Start consult</button>` : ""}<button class="row-delete" data-cancel-booking aria-label="Cancel ${attr(b.visitor_name)} booking">×</button></div>`;
         })
         .join("")
     : '<div class="empty-state compact">No upcoming bookings yet.</div>';

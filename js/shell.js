@@ -71,15 +71,22 @@ function routeFromHash() {
     }
     return;
   }
+  // A consult has its own address too: #consult/<id>.
+  const consult = /^consult\/(\d+)$/.exec(hash);
+  if (consult) return openConsult(consult[1]);
   state.view = document.getElementById(`view-${hash}`) ? hash : "dashboard";
   renderRoute();
 }
 function renderRoute() {
+  // Leaving a consult page: make sure the last answers are saved.
+  if (state.view !== "consult" && state.consult?.unsaved) saveConsult();
   $$(".view").forEach((v) =>
     v.classList.toggle("active", v.id === `view-${state.view}`),
   );
   // A client's page sits under Clients in the sidebar.
-  const section = state.view === "client" ? "clients" : state.view;
+  const section = ["client", "consult"].includes(state.view)
+    ? "clients"
+    : state.view;
   $$(".nav-item").forEach((b) =>
     b.classList.toggle("active", b.dataset.view === section),
   );
@@ -88,7 +95,11 @@ function renderRoute() {
       state.view === "client"
         ? state.clients.find((c) => String(c.id) === state.activeClient)
             ?.name || "Client"
-        : active?.dataset.title || "Dashboard";
+        : state.view === "consult"
+          ? state.consult
+            ? `PT consult · ${state.consult.client?.name || ""}`
+            : "PT consult"
+          : active?.dataset.title || "Dashboard";
   $("#crumbTitle").textContent = title;
   document.title = `${title} · Task Dash`;
   if (state.view === "client") renderClientProfile();
@@ -171,6 +182,23 @@ function wireControls() {
       recordProgramEdit(pending);
   });
   $("#newClientBtn").onclick = openClientDialog;
+  $("#newConsultBtn").onclick = () => openNewConsultDialog();
+  $("#consultView").addEventListener("input", consultInput);
+  $("#consultView").addEventListener("change", consultInput);
+  $("#consultView").addEventListener("click", consultClick);
+  $("#bookingList").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-start-consult]");
+    if (!b) return;
+    const booking = state.scheduler.bookings?.find(
+      (x) => String(x.id) === b.dataset.startConsult,
+    );
+    if (booking)
+      openNewConsultDialog({
+        name: booking.visitor_name,
+        email: booking.visitor_email || "",
+        bookingCode: booking.booking_code,
+      });
+  });
   $("#clientSearch").oninput = renderClients;
   $("#clientTypeFilter").onchange = renderClients;
   $("#clientRows").onclick = clientAction;

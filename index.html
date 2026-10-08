@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="/css/program-builder.css" />
     <link rel="stylesheet" href="/css/event-drafts.css" />
     <link rel="stylesheet" href="/css/event-report.css" />
+    <link rel="stylesheet" href="/css/consult.css" />
     <link rel="stylesheet" href="/css/client-profile.css" />
     <link rel="stylesheet" href="/css/live-session.css" />
     <link rel="stylesheet" href="/css/docs.css" />
@@ -661,9 +662,14 @@
                   session in one running record.
                 </p>
               </div>
-              <button class="primary-btn" id="newClientBtn">
-                ＋ Add client
-              </button>
+              <div class="header-actions">
+                <button class="secondary-btn" id="newConsultBtn">
+                  ＋ New consult
+                </button>
+                <button class="primary-btn" id="newClientBtn">
+                  ＋ Add client
+                </button>
+              </div>
             </div>
             <div class="metric-grid client-metrics">
               <article class="metric-card">
@@ -722,6 +728,13 @@
               ← All clients
             </button>
             <article class="panel client-profile" id="clientProfile"></article>
+          </section>
+
+          <section class="view" id="view-consult" data-title="PT consult">
+            <button class="text-btn back-link" data-go="clients">
+              ← All clients
+            </button>
+            <article class="panel client-profile consult" id="consultView"></article>
           </section>
 
           <section class="view" id="view-inbox" data-title="Inbox">
@@ -976,6 +989,9 @@
     <script src="/js/clients.js" defer></script>
     <script src="/js/progress.js" defer></script>
     <script src="/js/live-session.js" defer></script>
+    <script src="/js/consult-intake.js" defer></script>
+    <script src="/js/consult-program-core.js" defer></script>
+    <script src="/js/consult.js" defer></script>
     <script src="/js/docs.js" defer></script>
     <script src="/js/inbox.js" defer></script>
     <script src="/js/survey-followup.js" defer></script>

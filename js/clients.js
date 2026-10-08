@@ -272,6 +272,7 @@ async function openClientProfile(id) {
     state.activeClient = id;
     state.clientMealPlans = [];
     state.clientWorkouts = [];
+    state.clientConsults = [];
     state.activeMealPlan = null;
     document.scrollingElement.scrollTop = 0;
   }
@@ -293,6 +294,13 @@ async function openClientProfile(id) {
   } catch {
     state.clientWorkouts = readLocal(`taskdash_workouts_${id}`, []);
   }
+  try {
+    state.clientConsults =
+      (await getJSON(`/api/consults?clientId=${encodeURIComponent(id)}`))
+        .consults || [];
+  } catch {
+    state.clientConsults = [];
+  }
   state.activeMealPlan = state.clientMealPlans[0]?.id ?? null;
   renderClientProfile();
 }
@@ -310,7 +318,7 @@ function renderClientProfile() {
     st
       ? `<section class="onboarding"><div class="builder-label"><span>NEW-CLIENT CHECKLIST · ${st.done} OF ${st.total} DONE</span><span class="first-session ${c.first_session && String(c.first_session).slice(0, 10) <= todayKey && st.done < st.total ? "late" : ""}">${esc(firstSessionLabel(c))}</span></div><div class="onboarding-bar"><i style="width:${(st.done / st.total) * 100}%"></i></div>${st.steps.map((step, i) => onboardingStepHTML(c, step, i)).join("")}<button class="text-btn" data-profile="untrack">Stop tracking this checklist</button></section>`
       : `<section class="onboarding empty"><p>The new-client checklist isn't on for this client.</p><button class="secondary-btn" data-profile="track">Start new-client checklist</button></section>`
-  }${trainingSectionHTML(c)}<section class="meal-plans"><div class="builder-label"><span>MEAL PLAN</span><button class="step-link" data-profile="intake">${state.clientMealPlans.length ? "＋ New meal plan" : "Fill in questionnaire + generate"}</button></div>${mealPlanSectionHTML(c)}</section>`;
+  }${consultSectionHTML(c)}${trainingSectionHTML(c)}<section class="meal-plans"><div class="builder-label"><span>MEAL PLAN</span><button class="step-link" data-profile="intake">${state.clientMealPlans.length ? "＋ New meal plan" : "Fill in questionnaire + generate"}</button></div>${mealPlanSectionHTML(c)}</section>`;
 }
 function onboardingStepHTML(c, step, i) {
   const programs = clientPrograms(c);
@@ -387,6 +395,8 @@ async function clientProfileAction(e) {
     setTimeout(() => window.print(), 100);
   }
   if (a === "intake") openMealIntakeDialog(c);
+  if (a === "start-consult") startConsultFor(c);
+  if (a === "open-consult") location.hash = `consult/${b.dataset.consultId}`;
   if (a === "add-stock") openAttachProgramDialog(c, "stock");
   if (a === "add-copy") openAttachProgramDialog(c, "copy");
   if (a === "remove-program") {

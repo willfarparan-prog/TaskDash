@@ -12,6 +12,7 @@ const ROUTES = {
   "calendar-week": () => require("../lib/routes/calendar-week"),
   clients: () => require("../lib/routes/clients"),
   connections: () => require("../lib/routes/connections"),
+  consults: () => require("../lib/routes/consults"),
   docs: () => require("../lib/routes/docs"),
   errors: () => require("../lib/routes/errors"),
   events: () => require("../lib/routes/events"),
