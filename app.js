@@ -78,6 +78,7 @@ const state = {
   mailFilter: "all",
   calendarOffset: 0,
   activeProgram: null,
+  errors: [],
   programHistory: { undo: [], redo: [], pending: null },
   scheduler: {
     settings: structuredClone(DEFAULT_BOOKING_SCHEDULE),
@@ -567,10 +568,14 @@ async function loadInbox() {
 }
 async function loadConnections() {
   try {
-    const d = await getJSON("/api/connections");
+    const [d, e] = await Promise.all([
+      getJSON("/api/connections"),
+      getJSON("/api/errors").catch(() => ({ errors: [] })),
+    ]);
     state.authRequired = false;
     state.connections = d.connections || [];
     state.usage = d.usage || state.usage;
+    state.errors = e.errors || [];
   } catch {
     state.connections = fallbackConnections();
   }
@@ -3378,7 +3383,7 @@ function renderInbox() {
     ? filtered
         .map(
           (m) =>
-            `<article class="mail-row unread"><i class="priority-dot"></i><div class="mail-from">${esc(m.from || "Unknown")}<small class="mail-account ${attr(m.source)}">${m.source === "work" ? "Exos work" : "Personal"}</small></div><div><div class="mail-subject">${esc(m.subject || "(no subject)")}</div><span class="mail-snippet">${esc(m.snippet || "")}</span></div><div class="mail-time">${esc(m.received || "")}</div></article>`,
+            `<a class="mail-row unread" href="${attr(m.link || "https://mail.google.com/")}" target="_blank" rel="noopener noreferrer" title="Open in Gmail"><i class="priority-dot"></i><div class="mail-from">${esc(m.from || "Unknown")}<small class="mail-account ${attr(m.source)}">${m.source === "work" ? "Exos work" : "Personal"}</small></div><div><div class="mail-subject">${esc(m.subject || "(no subject)")}</div><span class="mail-snippet">${esc(m.snippet || "")}</span></div><div class="mail-time">${esc(m.received || "")}</div></a>`,
         )
         .join("")
     : inboxEmptyHTML();
@@ -3822,8 +3827,36 @@ function renderConnections() {
         .join("")
     : '<tr><td colspan="5"><div class="empty-state compact">Usage tracking begins with this dashboard release.</div></td></tr>';
   $("#connectionPin").classList.toggle("live", live === list.length);
+  $("#errorLog").innerHTML = state.errors.length
+    ? state.errors
+        .map(
+          (e) =>
+            `<div class="error-row"><span>${esc(e.source)}</span><p>${esc(e.message)}</p><time>${shortDate(e.created_at)} ${fmtTime(new Date(e.created_at))}</time></div>`,
+        )
+        .join("")
+    : '<div class="empty-state compact">No errors recorded. Server and browser errors will be listed here.</div>';
   renderReadiness();
 }
+// Browser crashes are sent to the error log (at most 5 per page load).
+let errorsReported = 0;
+function reportBrowserError(message, stack = "") {
+  if (errorsReported++ >= 5 || !message) return;
+  fetch("/api/errors", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      where: state.view,
+      message: String(message),
+      stack: String(stack),
+    }),
+  }).catch(() => {});
+}
+window.addEventListener("error", (e) =>
+  reportBrowserError(e.message, e.error?.stack),
+);
+window.addEventListener("unhandledrejection", (e) =>
+  reportBrowserError(e.reason?.message || e.reason, e.reason?.stack),
+);
 function fallbackConnections() {
   return [
     {

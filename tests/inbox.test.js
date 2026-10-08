@@ -92,6 +92,10 @@ test("work and personal priority mail are merged, newest first", async (t) => {
     ],
   );
   assert.deepEqual(body.notices, []);
+  assert.equal(
+    body.messages[0].link,
+    "https://mail.google.com/mail/u/william.farparan%40teamexos.com/#all/w1",
+  );
 });
 
 test("a work account connected for calendar only asks to reconnect", async (t) => {

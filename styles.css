@@ -1255,6 +1255,16 @@ textarea:focus-visible {
 .mail-row.unread {
   background: #fbfaf8;
 }
+a.mail-row {
+  color: inherit;
+  text-decoration: none;
+}
+a.mail-row:hover {
+  background: #f3f0ec;
+}
+a.mail-row:hover .mail-subject {
+  text-decoration: underline;
+}
 .mail-row .priority-dot {
   width: 7px;
   height: 7px;
@@ -3660,5 +3670,42 @@ body.live-open {
     grid-column: 1 / -1;
     justify-content: flex-start;
     max-width: none;
+  }
+}
+/* Connections: recent errors */
+.error-log {
+  display: grid;
+  gap: 6px;
+}
+.error-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 9px 12px;
+  border: 1px solid #f0d4cf;
+  border-radius: 8px;
+  background: #fff8f6;
+}
+.error-row span {
+  font:
+    600 10px IBM Plex Mono,
+    monospace;
+  color: var(--red);
+}
+.error-row p {
+  margin: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.error-row time {
+  font-size: 11px;
+  color: #6b6b6b;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .error-row {
+    grid-template-columns: 1fr;
+    gap: 3px;
   }
 }
