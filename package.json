@@ -6,7 +6,8 @@
   "scripts": {
     "check": "node scripts/check.js && node --test tests/*.test.js",
     "test": "node --test tests/*.test.js",
-    "format": "npx --yes prettier@3 --write \"*.{js,html}\" \"js/**/*.js\" \"css/**/*.css\" \"api/**/*.js\" \"lib/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\""
+    "format": "npx --yes prettier@3 --write \"*.{js,html}\" \"js/**/*.js\" \"css/**/*.css\" \"api/**/*.js\" \"lib/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\"",
+    "smoke": "node scripts/smoke.js"
   },
   "engines": {
     "node": "22.x"
@@ -16,5 +17,8 @@
     "@vercel/blob": "^2.8.1",
     "fflate": "^0.8.3",
     "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.0"
   }
 }

@@ -164,7 +164,7 @@ function openDialog({ kicker, title, fields, submit }) {
 function fieldHTML(f) {
   const [name, label, type, value, defaultValue] = f,
     full = type === "textarea" || type === "checkbox",
-    required = ["name", "email"].includes(name);
+    required = name === "name"; // only a name is ever mandatory
   if (type === "select")
     return `<label class="${full ? "full" : ""}">${label}<select name="${name}" required>${value
       .map((v) => {
