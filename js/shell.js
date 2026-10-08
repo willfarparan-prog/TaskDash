@@ -205,7 +205,9 @@ function wireControls() {
   );
   $("#newEventBtn").onclick = openEventDialog;
   $("#eventBoard").addEventListener("change", (e) => {
-    if (e.target.matches("[data-draft-text]")) saveDraftEdit(e);
+    if (e.target.matches("[data-report-field],[data-report-setting]"))
+      reportChange(e);
+    else if (e.target.matches("[data-draft-text]")) saveDraftEdit(e);
     else if (e.target.matches("[data-survey-field]")) surveyStatsChange(e);
     else if (e.target.matches(".step-check")) eventStepChange(e);
   });
@@ -214,11 +216,13 @@ function wireControls() {
   $("#eventBoard").addEventListener(
     "toggle",
     (e) => {
-      if (!e.target.matches(".draft-panel")) return;
+      const report = e.target.matches(".report-panel");
+      if (!report && !e.target.matches(".draft-panel")) return;
       const id = e.target.closest(".event-card")?.dataset.id;
       if (!id) return;
-      if (e.target.open) state.openDrafts.add(id);
-      else state.openDrafts.delete(id);
+      const set = report ? state.openReports : state.openDrafts;
+      if (e.target.open) set.add(id);
+      else set.delete(id);
       rememberOpenDrafts();
     },
     true,

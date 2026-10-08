@@ -375,3 +375,165 @@
     justify-content: flex-start;
   }
 }
+
+/* Attached programs on the client profile */
+.client-program {
+  margin: 10px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.client-program > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.client-program > header strong {
+  display: block;
+  font-size: 15px;
+}
+.client-program > header small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.client-program-tools {
+  display: flex;
+  gap: 10px;
+}
+.client-program-run {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 10px;
+}
+.client-program-run span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.run-grid {
+  width: auto;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 4px;
+  font-size: 12px;
+}
+.run-grid th:first-child {
+  min-width: 64px;
+  text-align: left;
+}
+.run-grid th {
+  padding: 2px 6px;
+  color: var(--muted);
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+.run-grid thead th {
+  text-align: center;
+  width: 38px;
+  font:
+    600 10px IBM Plex Mono,
+    monospace;
+}
+.run-grid td {
+  padding: 0;
+}
+.run-grid td button {
+  width: 38px;
+  height: 34px;
+  border: 1px solid #d6d1cb;
+  border-radius: 7px;
+  background: #faf9f7;
+  color: #00756c;
+  font-weight: 800;
+  cursor: pointer;
+}
+.run-grid td button:hover {
+  border-color: var(--ink);
+}
+.run-grid td button.done {
+  background: var(--teal-soft);
+  border-color: var(--teal);
+}
+.run-grid td button.open {
+  background: #fff0cb;
+  border-color: #d6a94a;
+  color: #755100;
+}
+.run-grid td button.next {
+  border: 2px solid var(--red);
+}
+.program-add {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+.progress-panel {
+  margin: 12px 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.progress-panel summary {
+  padding: 11px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.progress-table th,
+.progress-table td {
+  padding: 8px 14px;
+  border-top: 1px solid #eee;
+  text-align: left;
+  vertical-align: middle;
+}
+.progress-table th {
+  color: var(--muted);
+  font-size: 11px;
+}
+.progress-table td small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.progress-table .spark {
+  width: 72px;
+  height: 22px;
+  color: var(--teal);
+}
+.progress-table .pr {
+  font:
+    700 9px IBM Plex Mono,
+    monospace;
+  font-style: normal;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #fff0cb;
+  color: #755100;
+}
+.picker-search {
+  display: block;
+  width: 100%;
+  min-height: 38px;
+  margin: 6px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+@media (max-width: 640px) {
+  .run-grid td button {
+    width: 34px;
+  }
+}

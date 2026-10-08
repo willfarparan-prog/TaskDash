@@ -85,6 +85,19 @@ function fakeApi() {
       },
     ],
     workouts: [],
+    events: [
+      {
+        id: 31,
+        name: "Recovery Lab",
+        event_date: day(-2),
+        pillar: "Recovery",
+        expected_attendance: 30,
+        description: "Mobility and percussion stations.",
+        pipeline_state: {},
+        drafts: {},
+        report: {},
+      },
+    ],
     docs: [],
   };
   const json = (route, body, status = 200) =>
@@ -152,13 +165,38 @@ function fakeApi() {
         }
         case "GET programs":
           return json(route, { programs: db.programs });
+        case "POST programs": {
+          // Attaching a program copies the source into a new, separate row.
+          const src = db.programs.find(
+            (x) => String(x.id) === String(body.sourceId),
+          );
+          if (!src) return json(route, { error: "Program not found" }, 404);
+          const copy = {
+            ...structuredClone(src),
+            id: db.seq++,
+            name: body.name,
+            is_stock: false,
+            client_id: body.clientId,
+            client_name: body.clientName,
+            status: body.status || "draft",
+            source_program_id: src.id,
+          };
+          db.programs.unshift(copy);
+          return json(route, copy, 201);
+        }
+        case "PATCH programs": {
+          const p = db.programs.find((x) => String(x.id) === q.id);
+          if (body.content) p.content = body.content;
+          return json(route, p);
+        }
         case "GET meal-plans":
           return json(route, { mealPlans: [] });
         case "GET workouts":
           return json(route, {
-            workouts: db.workouts.filter(
-              (w) => String(w.client_id) === q.clientId,
-            ),
+            // Newest first, like the real API.
+            workouts: db.workouts
+              .filter((w) => String(w.client_id) === q.clientId)
+              .reverse(),
           });
         case "POST workouts": {
           const w = {
@@ -257,7 +295,22 @@ function fakeApi() {
           db.errors.push(body);
           return json(route, { ok: true }, 201);
         case "GET events":
-          return json(route, { events: [] });
+          return json(route, { events: db.events });
+        case "PATCH events": {
+          const ev = db.events.find((x) => String(x.id) === q.id);
+          if (body.report) ev.report = body.report;
+          if (body.pipelineState) ev.pipeline_state = body.pipelineState;
+          return json(route, body.report ? { report: body.report } : ev);
+        }
+        case "POST events": {
+          if (q.action !== "report") return json(route, { error: "unmocked" }, 400);
+          db.reportRequest = body;
+          return json(route, {
+            description: ["Hands-on mobility stations", "Percussion therapy"],
+            takeaways: ["Attendees wanted longer sessions"],
+            strategy: { answer: "yes", reason: "Recovery pillar." },
+          });
+        }
         case "GET connections":
           return json(route, {
             connections: [],
@@ -390,6 +443,139 @@ async function main() {
       const first = api.db.workouts[0].entries[0].sets[0];
       if (first.weight !== "135" || !first.done)
         throw new Error(`set saved as ${JSON.stringify(first)}`);
+    });
+
+    await step("attach a stock program from the client's profile", async () => {
+      const stock = api.db.programs.find((p) => p.is_stock);
+      const before = JSON.stringify(stock);
+      await page.click('[data-profile="add-stock"]');
+      await page.waitForSelector('#dialogForm select[name="source"]');
+      await page.fill(".picker-search", stock.name.slice(0, 8));
+      await page.selectOption(
+        '#dialogForm select[name="source"]',
+        { index: 0 },
+      );
+      await page.click("#dialogSubmit");
+      await page.waitForSelector(".client-program[data-program]:nth-of-type(2)");
+      const copy = api.db.programs.find(
+        (p) => !p.is_stock && p.source_program_id === stock.id,
+      );
+      if (!copy || copy.client_id !== 1 || copy.status !== "active")
+        throw new Error(`copy was ${JSON.stringify(copy)}`);
+      if (copy.id === stock.id) throw new Error("copy reused the template row");
+      if (JSON.stringify(stock) !== before)
+        throw new Error("the stock template changed");
+      const text = await page.textContent(`.client-program[data-program="${copy.id}"] header small`);
+      if (!text.includes("copied from")) throw new Error(`label: ${text}`);
+    });
+
+    await step("last weights pre-fill and the plan can change mid-session", async () => {
+      const stockContent = JSON.stringify(
+        api.db.programs.find((p) => p.is_stock).content,
+      );
+      // Jordan's program already has one finished session (135 lb on the first set).
+      // Day 1, week 2 straight from the program grid.
+      await page.click('.client-program[data-program="50"] [data-day="0"][data-week="1"]');
+      await page.waitForSelector("#liveSession:not([hidden]) .live-set");
+      const first = '.live-set [data-field="weight"] >> nth=0';
+      if (!(await page.locator(first).evaluate((el) => el.classList.contains("suggested"))))
+        throw new Error("first set isn't suggesting last session's weight");
+      if ((await page.getAttribute(first, "placeholder")) !== "135")
+        throw new Error("suggestion isn't 135");
+      if ((await page.inputValue(first)) !== "")
+        throw new Error("a suggestion was logged as a weight");
+      await page.click('[data-live="use-last"]');
+      if ((await page.inputValue(first)) !== "135")
+        throw new Error("Use last weights didn't fill it in");
+
+      // Swap the first exercise, for this client's program too.
+      const name = await page.textContent(".live-ex >> nth=0 >> header strong");
+      await page.click(".live-more >> nth=0");
+      await page.click('[data-live="swap"]');
+      await page.fill('#dialogForm [name="name"]', "Smoke Goblet Squat");
+      await page.selectOption('#dialogForm [name="scope"]', { index: 1 });
+      await page.click("#dialogSubmit");
+      await page.waitForFunction(
+        () => document.querySelector(".live-ex strong")?.textContent === "Smoke Goblet Squat",
+      );
+      const program = api.db.programs.find((p) => p.id === 50);
+      if (program.content.days[0].blocks[0].exercises[0].name !== "Smoke Goblet Squat")
+        throw new Error("the client's program wasn't updated");
+
+      // Add one just for today.
+      await page.click('[data-live="add-exercise"]');
+      await page.fill('#dialogForm [name="name"]', "Smoke Face Pull");
+      await page.click("#dialogSubmit");
+      await page.waitForSelector('.live-ex strong:text("Smoke Face Pull")');
+      await page.click('[data-live="finish"]');
+      await page.waitForSelector("#liveSession", { state: "hidden" });
+
+      const logged = api.db.workouts.at(-1).entries;
+      if (!logged.some((e) => e.name === "Smoke Face Pull"))
+        throw new Error("added exercise missing from the log");
+      if (JSON.stringify(program.content).includes("Smoke Face Pull"))
+        throw new Error("a today-only exercise leaked into the program");
+      if (JSON.stringify(api.db.programs.find((p) => p.is_stock).content) !== stockContent)
+        throw new Error("the stock template changed");
+      if (name === "Smoke Goblet Squat") throw new Error("swap didn't change the name");
+    });
+
+    await step("the profile shows program progress", async () => {
+      await page.waitForSelector(".client-program[data-program=\"50\"] .run-grid td button.done");
+      await page.click(".progress-panel summary");
+      await page.waitForSelector('.progress-table :text("Smoke Goblet Squat")');
+    });
+
+    await step("Wellbeing Strategy report: numbers, draft, copy-ready text", async () => {
+      await page.click('.nav-item[data-view="events"]');
+      await page.waitForSelector(".event-card .report-panel");
+      await page.click(".report-panel > summary");
+      await page.fill('[data-report-field="actual"]', "34");
+      await page.press('[data-report-field="actual"]', "Tab");
+      await page.waitForSelector('[data-report-field="paste"]');
+      const header =
+        "ID\tName\tHow likely are you to recommend this event? (0-10)\tComments";
+      const rows = [10, 9, 9, 8, 6, 10, 9, 3].map(
+        (n, i) => `${i + 1}\tPat ${i}\t${n}\t${n < 7 ? "Too crowded" : ""}`,
+      );
+      await page.fill('[data-report-field="paste"]', [header, ...rows].join("\n"));
+      await page.click('[data-report-action="read"]');
+      await page.waitForSelector(".report-nps");
+      const nps = await page.textContent(".report-nps");
+      // 5 promoters, 1 passive, 2 detractors of 8 → (5 - 2) / 8 = 38
+      if (!nps.includes("NPS 38") || !nps.includes("8 responses"))
+        throw new Error(`NPS line: ${nps}`);
+      await page.click('[data-report-action="draft"]');
+      await page.waitForSelector('.seg.on[data-value="yes"]');
+      const text = await page.textContent("[data-report-preview]");
+      for (const want of [
+        "WELLBEING STRATEGY? YES",
+        "* Hands-on mobility stations",
+        "* Attendees wanted longer sessions",
+        "Objective: 30 Participants",
+        "Outcome: Goal Met 34 Participants",
+        "NPS Score: 38",
+      ])
+        if (!text.includes(want)) throw new Error(`missing "${want}" in:\n${text}`);
+      const saved = api.db.events[0].report;
+      if (saved.nps.score !== 38 || saved.actual !== 34)
+        throw new Error(`saved ${JSON.stringify(saved)}`);
+      if (JSON.stringify(saved).includes("Too crowded"))
+        throw new Error("pasted comments were saved");
+      if (JSON.stringify(saved).includes("Pat 1"))
+        throw new Error("names were saved");
+      if (!api.db.reportRequest.comments.includes("Too crowded"))
+        throw new Error("comments weren't sent for drafting");
+      if (JSON.stringify(api.db.reportRequest).includes("Pat "))
+        throw new Error("names were sent to Claude");
+      // Flipping the goal by hand sticks.
+      await page.click('[data-report-action="goal"][data-value="not_met"]');
+      await page.waitForSelector('.seg.on[data-value="not_met"]');
+      if (!(await page.textContent("[data-report-preview]")).includes("Goal Not Met"))
+        throw new Error("goal toggle didn't reach the text");
+      // The survey tracker follows the pasted response count.
+      if (api.db.events[0].pipeline_state._survey.responses !== 8)
+        throw new Error("survey tracker wasn't updated");
     });
 
     await step("filing a doc from Claude's suggestion", async () => {

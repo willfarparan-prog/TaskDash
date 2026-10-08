@@ -65,6 +65,14 @@ const PIPE = [
     owner: "William",
     survey: true,
   },
+  // The last step: answer the Wellbeing Strategy sheet (see js/event-report.js).
+  {
+    key: "report",
+    name: "Fill out the Wellbeing Strategy sheet",
+    offset: -16,
+    owner: "William",
+    report: true,
+  },
 ];
 // Messaging drafts generated for each event (see lib/eventDrafts.js).
 const DRAFT_TYPES = [
@@ -149,9 +157,12 @@ async function loadEvents() {
       : err.message || "The server couldn't be reached";
   }
   state.openDrafts = new Set(readLocal("taskdash_open_drafts", []));
+  state.openReports = new Set(readLocal("taskdash_open_reports", []));
+  state.reportBusy = {};
 }
 function rememberOpenDrafts() {
   writeLocal("taskdash_open_drafts", [...state.openDrafts]);
+  writeLocal("taskdash_open_reports", [...(state.openReports || [])]);
 }
 function normalizeEvent(raw) {
   const date = new Date(
@@ -192,6 +203,7 @@ function eventSteps(raw) {
       // A resend that isn't needed (30%+ responded) counts as complete.
       skipped: survey?.state === "skipped",
       survey,
+      reportReady: s.report ? reportReady(raw) : false,
       compressed: ev.days >= 0 && ev.days < 14 && s.parallel,
     };
   });
@@ -219,6 +231,8 @@ function stepDateLabel(s, eventDate) {
 }
 function stepStateHTML(s) {
   if (s.done) return `<span class="step-state">DONE</span>`;
+  if (s.report && s.reportReady)
+    return `<span class="step-state now">DRAFT READY</span>`;
   const st = s.survey?.state;
   if (st === "skipped")
     return `<span class="step-state skipped" title="${Math.round(s.survey.rate * 100)}% responded">NOT NEEDED</span>`;
@@ -291,6 +305,14 @@ async function surveyStatsChange(e) {
 }
 function renderEvents() {
   document
+    .querySelectorAll(".report-panel[open]")
+    .forEach((d) => state.openReports.add(d.closest(".event-card").dataset.id));
+  document
+    .querySelectorAll(".report-panel:not([open])")
+    .forEach((d) =>
+      state.openReports.delete(d.closest(".event-card").dataset.id),
+    );
+  document
     .querySelectorAll(".draft-panel[open]")
     .forEach((d) => state.openDrafts.add(d.closest(".event-card").dataset.id));
   document
@@ -308,7 +330,7 @@ function renderEvents() {
         .map((e) => {
           const steps = eventSteps(e.raw),
             compressed = e.days >= 0 && e.days < 14;
-          return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done || s.skipped).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""} ${s.skipped ? "skipped" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${stepDateLabel(s, e.date)}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div>${stepStateHTML(s)}</div>`).join("")}${surveyTrackerHTML(e, steps)}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${draftPanelHTML(e.raw, steps)}</article>`;
+          return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done || s.skipped).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""} ${s.skipped ? "skipped" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${stepDateLabel(s, e.date)}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div>${stepStateHTML(s)}</div>`).join("")}${surveyTrackerHTML(e, steps)}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${reportPanelHTML(e.raw, e)}${draftPanelHTML(e.raw, steps)}</article>`;
         })
         .join("")
     : state.eventsLoadError
@@ -611,6 +633,8 @@ async function eventStepChange(e) {
   }
 }
 async function eventAction(e) {
+  const reportButton = e.target.closest("[data-report-action]");
+  if (reportButton) return reportClick(reportButton);
   if (e.target.closest('[data-event-action="reload"]')) {
     await loadEvents();
     renderEvents();

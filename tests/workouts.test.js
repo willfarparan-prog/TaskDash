@@ -101,3 +101,38 @@ test("finishing a live session logs it to the client's history once", async () =
   });
   assert.equal(sessions.length, 1);
 });
+
+test("suggested weights are kept with each set, and history is deep enough", async () => {
+  let listSql = "";
+  stub("lib/db.js", {
+    ensureWorkspaceSchema: async () => {},
+    trackUsage: () => {},
+    getPool: () => ({
+      async query(sql, params) {
+        if (sql.startsWith("select * from workout_logs")) {
+          listSql = sql;
+          return { rows: [] };
+        }
+        if (sql.startsWith("select id from clients")) return { rows: [{ id: 3 }] };
+        if (sql.startsWith("insert into workout_logs"))
+          return { rows: [{ id: 1, entries: JSON.parse(params[6]) }] };
+        return { rows: [] };
+      },
+    }),
+  });
+  stub("lib/session.js", { requireOwnerSession: () => true });
+  delete require.cache[require.resolve("../lib/routes/workouts.js")];
+  const handler = require("../lib/routes/workouts.js");
+  const created = await call(handler, {
+    method: "POST",
+    body: {
+      clientId: 3,
+      entries: [{ key: "A1", name: "Bench", sets: [{ weight: "", reps: "", suggest: "135", done: false }] }],
+    },
+  });
+  assert.equal(created.code, 201);
+  assert.equal(created.body.entries[0].sets[0].suggest, "135");
+  assert.equal(created.body.entries[0].sets[0].weight, ""); // a suggestion is not a logged weight
+  await call(handler, { method: "GET", query: { clientId: "3" } });
+  assert.match(listSql, /limit 200/);
+});

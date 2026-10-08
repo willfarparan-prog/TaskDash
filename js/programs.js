@@ -608,35 +608,15 @@ function useStockProgram(id) {
     ],
     submit: async (v) => {
       const linked = clientChoice(v.client),
-        body = {
-          action: "use_template",
-          sourceId: source.id,
-          ...linked,
-          name: `${linked.clientName} — ${v.name}`,
-        };
-      let saved;
-      try {
-        saved = await getJSON("/api/programs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        await loadPrograms();
-      } catch {
-        saved = {
-          ...source,
-          id: `local-${Date.now()}`,
-          name: body.name,
-          is_stock: false,
-          status: "draft",
-          client_id: linked.clientId,
-          client_name: linked.clientName,
-          source_program_id: source.id,
-          content: structuredClone(source.content),
-        };
-        state.programs.unshift(saved);
-        writeLocal("taskdash_programs", state.programs);
-      }
+        client = state.clients.find((c) => String(c.id) === String(linked.clientId)) || {
+          id: linked.clientId,
+          name: linked.clientName,
+        },
+        saved = await copyProgramForClient(
+          source,
+          client,
+          `${linked.clientName} — ${v.name}`,
+        );
       state.programFilter = "clients";
       $$("#programFilters button").forEach((b) =>
         b.classList.toggle("active", b.dataset.filter === "clients"),
@@ -647,8 +627,118 @@ function useStockProgram(id) {
     },
   });
 }
-async function deleteProgram(p) {
-  if (!confirm(`Delete “${p.name}”?`)) return;
+// Copies a program (a stock template, or another client's program) for a
+// client. The source is only read; the copy is its own program, so editing it
+// or logging weights against it never changes the original.
+async function copyProgramForClient(source, client, name, { status = "draft" } = {}) {
+  const body = {
+    action: source.is_stock ? "use_template" : "copy_program",
+    sourceId: source.id,
+    clientId: client.id,
+    clientName: client.name,
+    name,
+    status,
+  };
+  let saved;
+  try {
+    saved = await getJSON("/api/programs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    await loadPrograms();
+  } catch (err) {
+    // A rejection (not signed in, bad choice) is shown; only an outage falls
+    // back to a copy kept in this browser.
+    if (
+      state.authRequired ||
+      /\((400|401|403|404)\)|required|not found|Choose/i.test(err.message)
+    )
+      throw err;
+    saved = {
+      ...source,
+      id: `local-${Date.now()}`,
+      name,
+      is_stock: false,
+      status,
+      client_id: client.id,
+      client_name: client.name,
+      source_program_id: source.id,
+      content: structuredClone(source.content),
+    };
+    state.programs.unshift(saved);
+    writeLocal("taskdash_programs", state.programs);
+  }
+  return saved;
+}
+// Attach a program to a client from their profile: pick a stock template or
+// another client's program, and a copy is added to this client.
+function openAttachProgramDialog(client, kind) {
+  const stock = kind === "stock",
+    sources = state.programs
+      .filter((p) =>
+        stock ? p.is_stock : !p.is_stock && String(p.client_id) !== String(client.id),
+      )
+      .sort((a, b) => String(a.name).localeCompare(String(b.name))),
+    label = (p) =>
+      stock
+        ? [p.name, p.level, p.emphasis].filter(Boolean).join(" · ")
+        : `${p.name}${p.client_name ? ` (${p.client_name})` : ""}`,
+    options = sources.map((p) => `${p.id}|${label(p)}`);
+  if (!options.length)
+    return toast(
+      stock
+        ? "The stock library is empty"
+        : "No other client has a program to copy yet",
+    );
+  const nameFor = (p) => `${client.name} — ${p.name}`;
+  openDialog({
+    kicker: "TRAINING PROGRAM",
+    title: stock ? "Copy from the stock library" : "Copy another client's program",
+    fields: [
+      ["source", stock ? "Template" : "Program", "select", options],
+      ["name", "Program title", "text", "", nameFor(sources[0])],
+    ],
+    submit: async (v) => {
+      const source = sources.find((p) => String(p.id) === v.source.split("|")[0]);
+      if (!source) throw new Error("Choose a program to copy");
+      const name = v.name.trim();
+      if (!name) throw new Error("Give the program a name");
+      await copyProgramForClient(source, client, name, { status: "active" });
+      if (String(state.activeClient) === String(client.id)) renderClientProfile();
+      renderPrograms();
+      toast(
+        `Copied for ${client.name}. ${stock ? "The template" : "The original"} is unchanged.`,
+      );
+    },
+  });
+  // A search box that narrows the list, and a title that follows the choice.
+  const select = $('#dialogFields select[name="source"]'),
+    title = $('#dialogFields input[name="name"]');
+  let renamed = false;
+  title.addEventListener("input", () => (renamed = true));
+  select.insertAdjacentHTML("beforebegin", '<input type="search" class="picker-search" placeholder="Search by name, level or emphasis" aria-label="Search programs">');
+  const search = $("#dialogFields .picker-search");
+  search.addEventListener("input", () => {
+    const q = search.value.trim().toLowerCase(),
+      keep = select.value;
+    select.innerHTML = options
+      .filter((o) => !q || o.toLowerCase().includes(q))
+      .map(
+        (o) =>
+          `<option value="${attr(o)}" ${o === keep ? "selected" : ""}>${esc(o.split("|").slice(1).join("|"))}</option>`,
+      )
+      .join("");
+    select.dispatchEvent(new Event("change"));
+  });
+  select.addEventListener("change", () => {
+    const picked = sources.find((p) => String(p.id) === select.value.split("|")[0]);
+    if (picked && !renamed) title.value = nameFor(picked);
+  });
+  search.focus();
+}
+async function deleteProgram(p, message = `Delete “${p.name}”?`) {
+  if (!confirm(message)) return;
   state.programs = state.programs.filter((x) => String(x.id) !== String(p.id));
   $("#programEditor").hidden = true;
   try {

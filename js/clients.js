@@ -323,7 +323,7 @@ function onboardingStepHTML(c, step, i) {
   if (step.key === "program") {
     actions = programs.length
       ? `<button class="step-link" data-profile="open-program" data-program="${attr(programs[0].id)}">Open “${esc(programs[0].name)}”</button><button class="step-link" data-profile="print-program" data-program="${attr(programs[0].id)}">Print</button>`
-      : `<button class="step-link" data-profile="new-program">Create program</button>`;
+      : `<button class="step-link" data-profile="add-stock">Copy from stock library</button><button class="step-link" data-profile="new-program">Create program</button>`;
     if (!step.done) detail = programs.length ? "Created · not printed yet" : "";
   }
   if (step.key === "mealPlan")
@@ -387,7 +387,25 @@ async function clientProfileAction(e) {
     setTimeout(() => window.print(), 100);
   }
   if (a === "intake") openMealIntakeDialog(c);
-  if (a === "live") startLiveSession(c.id, b.dataset.program);
+  if (a === "add-stock") openAttachProgramDialog(c, "stock");
+  if (a === "add-copy") openAttachProgramDialog(c, "copy");
+  if (a === "remove-program") {
+    const p = state.programs.find((x) => String(x.id) === b.dataset.program);
+    if (p) {
+      await deleteProgram(
+        p,
+        `Remove “${p.name}” from ${c.name}?\n\nSessions already logged are kept. The template it was copied from isn't affected.`,
+      );
+      renderClientProfile();
+    }
+  }
+  if (a === "live")
+    startLiveSession(
+      c.id,
+      b.dataset.program,
+      b.dataset.day == null ? undefined : Number(b.dataset.day),
+      b.dataset.week == null ? undefined : Number(b.dataset.week),
+    );
   if (a === "resume-live") resumeLiveSession(c.id, b.dataset.workout);
   if (a === "show-plan") {
     state.activeMealPlan = b.dataset.plan;

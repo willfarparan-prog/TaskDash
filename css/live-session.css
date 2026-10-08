@@ -273,3 +273,37 @@ body.live-open {
     display: none !important;
   }
 }
+
+/* Suggested weights (last session) show as tinted placeholders */
+.live-set input.suggested::placeholder {
+  color: #00756c;
+  opacity: 0.85;
+}
+.live-ex > header {
+  align-items: flex-start;
+}
+.live-more {
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d6d1cb;
+  border-radius: 8px;
+  background: #fff;
+  color: #555;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.live-more[aria-expanded="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+.live-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+.live-add-exercise {
+  margin: 14px 0 4px;
+}

@@ -1,0 +1,159 @@
+/* Wellbeing Strategy report panel on an event card */
+.report-panel {
+  border-top: 1px solid var(--line);
+  background: #fff;
+}
+.report-panel > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+}
+.report-panel > summary::-webkit-details-marker {
+  display: none;
+}
+.report-panel > summary::after {
+  content: "▾";
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.report-panel[open] > summary::after {
+  transform: rotate(180deg);
+}
+.report-panel > summary em {
+  margin-left: auto;
+  font:
+    600 11px IBM Plex Mono,
+    monospace;
+  font-style: normal;
+  color: var(--muted);
+}
+.report-body {
+  display: grid;
+  gap: 14px;
+  padding: 0 20px 18px;
+}
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.report-body label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.report-body label small,
+.report-choice small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+.report-body input,
+.report-body textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  background: #fff;
+}
+.report-body input:focus,
+.report-body textarea:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+.report-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+.report-nps {
+  font-size: 13px;
+}
+.report-nps b {
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--teal-soft);
+  color: #00756c;
+}
+.report-answers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.report-choice {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #faf9f7;
+  font-size: 13px;
+}
+.report-choice > div {
+  display: flex;
+  gap: 6px;
+}
+.seg {
+  min-width: 74px;
+  padding: 8px 14px;
+  border: 1px solid #d6d1cb;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.seg.on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+.report-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+.report-preview {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px dashed #bdb7b0;
+  border-radius: 10px;
+  background: #faf9f7;
+  font:
+    13px/1.55 IBM Plex Mono,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.report-settings {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.report-settings summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+}
+.report-settings label {
+  margin-top: 10px;
+}
+@media (max-width: 640px) {
+  .report-grid,
+  .report-answers {
+    grid-template-columns: 1fr;
+  }
+}

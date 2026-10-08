@@ -60,7 +60,7 @@ test("saving a stock template refuses a name that's already taken", async () => 
 
 test("using a template makes a draft copy named for the client", async () => {
   const { handler, queries } = load("programs", (sql) => {
-    if (sql.includes("and is_stock=true limit 1"))
+    if (sql.startsWith("select * from training_programs where id"))
       return { rows: [{ id: 11, name: "Vivian Le · 3-Day Program" }] };
     if (sql.startsWith("select id,name from clients where id"))
       return { rows: [{ id: 3, name: "Priya Shah" }] };
@@ -72,14 +72,84 @@ test("using a template makes a draft copy named for the client", async () => {
     body: { action: "use_template", sourceId: 11, clientId: 3 },
   });
   assert.equal(code, 201);
+  // The source is only read, and only if it really is a stock template.
+  const read = queries.find((q) => q.sql.startsWith("select * from training"));
+  assert.deepEqual(read.params, [11, true]);
   const insert = queries.find((q) => q.sql.startsWith("insert into"));
   assert.deepEqual(insert.params, [
     "Priya Shah — Vivian Le · 3-Day Program",
     3,
     "Priya Shah",
     11,
+    "draft",
   ]);
-  assert.match(insert.sql, /'draft',content,false,id/);
+  assert.match(insert.sql, /content,false,id/);
+  assert.equal(
+    queries.filter((q) => /^(update|delete)/.test(q.sql)).length,
+    0,
+    "the template is never modified",
+  );
+});
+
+test("attaching from a client profile can start the copy as active", async () => {
+  const { handler, queries } = load("programs", (sql) => {
+    if (sql.startsWith("select * from training_programs where id"))
+      return { rows: [{ id: 11, name: "Foundation" }] };
+    if (sql.startsWith("select id,name from clients where id"))
+      return { rows: [{ id: 3, name: "Priya Shah" }] };
+    if (sql.startsWith("insert into training_programs"))
+      return { rows: [{ id: 99 }] };
+  });
+  await call(handler, {
+    method: "POST",
+    body: { action: "use_template", sourceId: 11, clientId: 3, status: "active" },
+  });
+  assert.equal(queries.find((q) => q.sql.startsWith("insert into")).params[4], "active");
+  // An unknown status falls back to draft instead of being stored.
+  await call(handler, {
+    method: "POST",
+    body: { action: "use_template", sourceId: 11, clientId: 3, status: "weird" },
+  });
+  assert.equal(queries.filter((q) => q.sql.startsWith("insert into")).at(-1).params[4], "draft");
+});
+
+test("copying a client's program to another client links the copy to the original", async () => {
+  const { handler, queries } = load("programs", (sql) => {
+    if (sql.startsWith("select * from training_programs where id"))
+      return { rows: [{ id: 21, name: "Jordan block" }] };
+    if (sql.startsWith("select id,name from clients where id"))
+      return { rows: [{ id: 8, name: "Sam Ortiz" }] };
+    if (sql.startsWith("insert into training_programs"))
+      return { rows: [{ id: 100 }] };
+  });
+  const { code } = await call(handler, {
+    method: "POST",
+    body: { action: "copy_program", sourceId: 21, clientId: 8, status: "active" },
+  });
+  assert.equal(code, 201);
+  assert.deepEqual(queries[0].params, [21, false]); // client programs only, not stock
+  const insert = queries.find((q) => q.sql.startsWith("insert into"));
+  assert.deepEqual(insert.params, ["Sam Ortiz — Jordan block", 8, "Sam Ortiz", 21, "active"]);
+  assert.match(insert.sql, /false,id/); // source_program_id = the original
+  assert.equal(queries.filter((q) => /^(update|delete)/.test(q.sql)).length, 0);
+});
+
+test("a copy needs a real client and an existing source", async () => {
+  const noClient = load("programs", (sql) => {
+    if (sql.startsWith("select * from training_programs where id"))
+      return { rows: [{ id: 11, name: "Foundation" }] };
+  });
+  const a = await call(noClient.handler, {
+    method: "POST",
+    body: { action: "use_template", sourceId: 11 },
+  });
+  assert.equal(a.code, 400);
+  const noSource = load("programs", () => ({ rows: [] }));
+  const b = await call(noSource.handler, {
+    method: "POST",
+    body: { action: "copy_program", sourceId: 404, clientId: 3 },
+  });
+  assert.equal(b.code, 404);
 });
 
 test("new programs need a name and get sane days, weeks and content", async () => {
