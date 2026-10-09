@@ -39,7 +39,7 @@ function renderDashboard() {
     readiness = state.connections.length
       ? Math.round((live / state.connections.length) * 100)
       : 0;
-  $("#metricReadiness").textContent = `${readiness}%`;
+  $("#metricReadiness").textContent = `${live} active`;
   $("#readyProgress").style.width = `${readiness}%`;
   $("#todayTaskCount").textContent = `${remaining} open · ${done} done`;
   $("#taskList").innerHTML = visible.length
@@ -60,6 +60,7 @@ function renderDashboard() {
       .find((e) => e.days >= 0);
   $("#dailyBrief").innerHTML =
     `<strong>${overdue ? "Start with the overdue work." : "Your operating queue is under control."}</strong><ul>${next || "<li>No open tasks on today’s list.</li>"}${nextEvent ? `<li><strong>${esc(nextEvent.name)}</strong> is ${nextEvent.days === 0 ? "today" : `in ${nextEvent.days} days`}.</li>` : ""}</ul>`;
+  renderFollowups();
   renderOnboardingQueue();
   renderWrapupQueue();
   renderAgenda();
@@ -68,7 +69,7 @@ function renderDashboard() {
   renderLinks();
 }
 function renderAgenda() {
-  const events = state.calendar
+  const events = (state.agenda || state.calendar)
     .map((e) => ({ ...e, date: new Date(e.start) }))
     .filter((e) => e.date >= startOfDay(today))
     .sort((a, b) => a.date - b.date)
@@ -129,4 +130,99 @@ function renderOnboardingQueue() {
         )
         .join("")}`
     : "";
+}
+
+function getFollowups() {
+  const nextWeek = new Date(today);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const endKey = ymd(nextWeek);
+  return [
+    ...state.tasks
+      .filter((task) => !task.done && task.carried && task.carried < todayKey)
+      .map((task) => ({
+        type: "task",
+        id: task.id,
+        title: task.name,
+        detail: `Overdue since ${shortDate(task.carried)}`,
+        date: task.carried,
+      })),
+    ...state.clients
+      .filter(
+        (client) =>
+          client.status !== "archived" &&
+          client.next_follow_up &&
+          String(client.next_follow_up).slice(0, 10) <= endKey,
+      )
+      .map((client) => ({
+        type: "client",
+        id: client.id,
+        title: client.name,
+        detail: `Client follow-up · ${shortDate(client.next_follow_up)}`,
+        date: String(client.next_follow_up).slice(0, 10),
+      })),
+    ...state.events.flatMap((event) =>
+      eventSteps(event)
+        .filter(
+          (step) => !step.done && !step.skipped && ymd(step.due) <= endKey,
+        )
+        .map((step) => ({
+          type: "event",
+          id: event.id,
+          title: event.name,
+          detail: `${step.name} · ${shortDate(ymd(step.due))}`,
+          date: ymd(step.due),
+        })),
+    ),
+    ...state.scheduler.bookings
+      .filter(
+        (booking) =>
+          booking.status !== "cancelled" &&
+          booking.calendar_sync_status !== "synced" &&
+          new Date(booking.ends_at) >= startOfDay(today),
+      )
+      .map((booking) => ({
+        type: "booking",
+        id: booking.id,
+        title: booking.visitor_name,
+        detail: "Booking needs calendar sync",
+        date: String(booking.starts_at).slice(0, 10),
+      })),
+  ].sort((a, b) => a.date.localeCompare(b.date));
+}
+function renderFollowups() {
+  const items = getFollowups();
+  $("#followupCount").textContent =
+    `${items.length} action${items.length === 1 ? "" : "s"}`;
+  $("#followupList").innerHTML = items.length
+    ? items
+        .slice(0, 20)
+        .map(
+          (item) =>
+            `<button class="followup-row ${item.date < todayKey ? "overdue" : ""}" data-followup="${item.type}" data-record-id="${attr(item.id)}"><span><strong>${esc(item.title)}</strong><small>${esc(item.detail)}</small></span><span aria-hidden="true">→</span></button>`,
+        )
+        .join("")
+    : '<div class="empty-state compact">No follow-ups due in the next 7 days.</div>';
+}
+function openFollowup(event) {
+  const row = event.target.closest("[data-followup]");
+  if (!row) return;
+  const id = row.dataset.recordId,
+    type = row.dataset.followup;
+  if (type === "client") return openClientProfile(id);
+  go(
+    type === "event"
+      ? "events"
+      : type === "booking"
+        ? "scheduler"
+        : "dashboard",
+  );
+  const target =
+    type === "event"
+      ? $(`.event-card[data-id="${CSS.escape(id)}"]`)
+      : type === "booking"
+        ? $(`.booking-row[data-booking-id="${CSS.escape(id)}"]`)
+        : $(`.task-row[data-id="${CSS.escape(id)}"]`);
+  target?.scrollIntoView({ behavior: "smooth", block: "center" });
+  target?.classList.add("record-highlight");
+  setTimeout(() => target?.classList.remove("record-highlight"), 2500);
 }

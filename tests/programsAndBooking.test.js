@@ -174,8 +174,8 @@ test("new programs need a name and get sane days, weeks and content", async () =
 test("public booking: name required, email optional, bad email rejected", async () => {
   const { handler, queries } = load("calendar-manual", (sql) => {
     // The flood guard answers "busy", which proves validation passed.
-    if (sql.includes("count(*)::int n from booking_requests"))
-      return { rows: [{ n: 15 }] };
+    if (sql.includes("booking_rate_limits"))
+      return { rows: [{ requests: 13 }] };
   });
   const book = (fields) =>
     call(handler, {

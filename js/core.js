@@ -21,10 +21,17 @@ const OWNER_EMAIL = "willfarparan@gmail.com",
     "Nov",
     "Dec",
   ];
+const DEMO_MODE = ["localhost", "127.0.0.1", "::1", "[::1]"].includes(
+  location.hostname,
+);
+function allowLocalFallback(error) {
+  if (!DEMO_MODE) throw error;
+}
 const today = new Date(),
   todayKey = ymd(today);
 const DEFAULT_BOOKING_SCHEDULE = {
   timezone: "America/Los_Angeles",
+  requireCalendar: true,
   slotMinutes: 30,
   sessionMinutes: 60,
   noticeMinutes: 120,
@@ -87,6 +94,9 @@ const state = {
   mailFilter: "all",
   calendarOffset: 0,
   activeProgram: null,
+  programDirty: false,
+  programSaving: false,
+  editorVersion: null,
   stockFilters: { days: "", emphasis: "", source: "" },
   errors: [],
   programHistory: { undo: [], redo: [], pending: null },
@@ -113,20 +123,34 @@ async function getJSON(url, opts) {
   const method = String(opts?.method || "GET").toUpperCase();
   let r;
   try {
-    r = await fetch(url, opts);
+    r = await fetch(url, {
+      ...opts,
+      signal: opts?.signal || AbortSignal.timeout(20000),
+    });
   } catch (err) {
     if (method !== "GET") throw err;
     await new Promise((done) => setTimeout(done, 600));
-    r = await fetch(url, opts); // one retry for a dropped connection
+    r = await fetch(url, {
+      ...opts,
+      signal: opts?.signal || AbortSignal.timeout(20000),
+    }); // one retry for a dropped connection
   }
   if (method === "GET" && r.status >= 500) {
     await new Promise((done) => setTimeout(done, 600));
-    r = await fetch(url, opts);
+    r = await fetch(url, {
+      ...opts,
+      signal: opts?.signal || AbortSignal.timeout(20000),
+    });
   }
   let data = {};
   try {
     data = await r.json();
-  } catch {}
+  } catch {
+    if (r.ok)
+      throw new Error(
+        "The server returned an unreadable response. Please retry.",
+      );
+  }
   if (!r.ok) {
     if (r.status === 401) state.authRequired = true;
     throw new Error(data.error || `Request failed (${r.status})`);

@@ -157,6 +157,7 @@ function openProgramDialog(client = null) {
         });
         await loadPrograms();
       } catch (err) {
+        allowLocalFallback(err);
         if (
           state.authRequired ||
           /\((400|401|403)\)|required/i.test(err.message)
@@ -186,6 +187,21 @@ function programAction(e) {
   if (action === "use") useStockProgram(card.dataset.id);
 }
 function openProgram(id, { draft, day = 0 } = {}) {
+  if (state.programSaving) return toast("Wait for the current save to finish");
+  if (!draft && state.programDirty) persistProgramDraft();
+  if (!draft) {
+    const recovered = readLocal(`taskdash_draft_${id}`, null);
+    if (
+      (DEMO_MODE || !state.authRequired) &&
+      recovered?.name != null &&
+      recovered?.content?.days
+    ) {
+      draft = recovered;
+      day = recovered.day || 0;
+      toast("Recovered your unsaved program draft");
+    }
+    state.programDirty = !!draft;
+  }
   // History belongs to one editing session: opening a different program
   // (or reopening after closing) starts fresh; re-renders keep it.
   if (String(id) !== state.activeProgram || $("#programEditor").hidden)
@@ -196,6 +212,8 @@ function openProgram(id, { draft, day = 0 } = {}) {
   );
   if (!saved) return;
   const p = draft ? { ...saved, ...draft } : saved;
+  state.editorVersion =
+    draft?.updated_at || (draft && state.editorVersion) || saved.updated_at;
   const plan = normalizeProgramContent(p),
     weeks = Number(p.weeks) || 4,
     clientOptions =
@@ -208,7 +226,7 @@ function openProgram(id, { draft, day = 0 } = {}) {
         .join("");
   $("#programEditor").hidden = false;
   $("#programEditor").innerHTML =
-    `<div class="program-edit-head"><div><span class="kicker">${p.is_stock ? "STOCK TEMPLATE" : "PROGRAM BUILDER"}</span><h2>${esc(p.name)}</h2><p>${p.is_stock ? "Edit the reusable source or copy it for a client." : "Changes here affect this client copy only."}</p></div><div class="editor-history"><button class="secondary-btn" data-editor="undo" title="Undo (⌘Z)">↶ Undo</button><button class="secondary-btn" data-editor="redo" title="Redo (⇧⌘Z)">↷ Redo</button><button class="icon-btn" data-editor="close">×</button></div></div><div class="program-meta"><label>Program title<input data-meta="name" value="${attr(p.name)}"></label><label>Client<select data-meta="clientId" ${p.is_stock ? "disabled" : ""}>${clientOptions}</select></label><label>Weeks<select data-meta="weeks">${Array.from({ length: 8 }, (_, i) => `<option ${i + 1 === weeks ? "selected" : ""}>${i + 1}</option>`).join("")}</select></label><label>Status<select data-meta="status"><option ${p.status === "draft" ? "selected" : ""}>draft</option><option ${p.status === "active" ? "selected" : ""}>active</option><option ${p.status === "archived" ? "selected" : ""}>archived</option></select></label><label class="wide">Goal / coaching focus<input data-meta="goal" value="${attr(p.goal || "")}" placeholder="What should this block accomplish?"></label></div><div class="day-tabs">${plan.days.map((d, i) => `<button class="${i === 0 ? "active" : ""}" data-day="${i}">${esc(d.name || `Day ${i + 1}`)}</button>`).join("")}<button data-editor="add-day">＋ Day</button></div><div class="program-builder">${plan.days.map((d, i) => dayEditorHTML(d, i, weeks)).join("")}</div><div class="program-print-sheet">${programPrintHTML(p, plan, weeks)}</div><div class="editor-actions"><button class="text-btn danger-text" data-editor="delete">Delete</button>${p.is_stock ? '<button class="secondary-btn" data-editor="use">Use for a client</button>' : '<button class="secondary-btn" data-editor="template">Save as stock template</button>'}${p.client_id ? '<button class="secondary-btn" data-editor="live">▶ Live session</button>' : ""}<button class="secondary-btn" data-editor="print">Print program</button><button class="primary-btn" data-editor="save">Save changes</button></div>`;
+    `<div class="program-edit-head"><div><span class="kicker">${p.is_stock ? "STOCK TEMPLATE" : "PROGRAM BUILDER"}</span><h2>${esc(p.name)}</h2><p>${p.is_stock ? "Edit the reusable source or copy it for a client." : "Changes here affect this client copy only."}</p></div><div class="editor-history"><button class="secondary-btn" data-editor="undo" title="Undo (⌘Z)">↶ Undo</button><button class="secondary-btn" data-editor="redo" title="Redo (⇧⌘Z)">↷ Redo</button><button class="icon-btn" data-editor="close">×</button></div></div><div class="program-meta"><label>Program title<input data-meta="name" value="${attr(p.name)}"></label><label>Client<select data-meta="clientId" ${p.is_stock ? "disabled" : ""}>${clientOptions}</select></label><label>Weeks<select data-meta="weeks">${Array.from({ length: 8 }, (_, i) => `<option ${i + 1 === weeks ? "selected" : ""}>${i + 1}</option>`).join("")}</select></label><label>Status<select data-meta="status"><option ${p.status === "draft" ? "selected" : ""}>draft</option><option ${p.status === "active" ? "selected" : ""}>active</option><option ${p.status === "archived" ? "selected" : ""}>archived</option></select></label><label class="wide">Goal / coaching focus<input data-meta="goal" value="${attr(p.goal || "")}" placeholder="What should this block accomplish?"></label></div><div class="day-tabs">${plan.days.map((d, i) => `<button class="${i === 0 ? "active" : ""}" data-day="${i}">${esc(d.name || `Day ${i + 1}`)}</button>`).join("")}<button data-editor="add-day">＋ Day</button></div><div class="program-builder">${plan.days.map((d, i) => dayEditorHTML(d, i, weeks)).join("")}</div><div class="program-print-sheet">${programPrintHTML(p, plan, weeks)}</div><p id="draftStatus" role="status" class="draft-status">${state.programDirty ? "Recovered draft · Review and save your changes" : "Drafts recover in this browser until you save the program."}</p><div class="editor-actions"><button class="text-btn" data-editor="discard">Discard draft</button><button class="text-btn danger-text" data-editor="delete">Delete</button>${p.is_stock ? '<button class="secondary-btn" data-editor="use">Use for a client</button>' : '<button class="secondary-btn" data-editor="template">Save as stock template</button>'}${p.client_id ? '<button class="secondary-btn" data-editor="live">▶ Live session</button>' : ""}<button class="secondary-btn" data-editor="print">Print program</button><button class="primary-btn" data-editor="save">Save changes</button></div>`;
   if (day) showProgramDay(Math.min(day, plan.days.length - 1));
   updateProgramHistoryButtons();
   if (!draft)
@@ -226,7 +244,7 @@ function showProgramDay(index) {
 function programSnapshot() {
   const root = $("#programEditor"),
     meta = (key) => $(`[data-meta="${key}"]`, root)?.value ?? "",
-    content = collectProgram();
+    content = collectProgram(true);
   return {
     name: meta("name"),
     client_id: meta("clientId") || null,
@@ -259,7 +277,9 @@ function stepProgramHistory(direction) {
   to.push(programSnapshot());
   const { day, ...draft } = from.pop();
   h.pending = null;
+  state.programDirty = true;
   openProgram(state.activeProgram, { draft, day });
+  persistProgramDraft();
 }
 function updateProgramHistoryButtons() {
   const root = $("#programEditor");
@@ -351,7 +371,7 @@ function defaultProgram(days, weeks = 4) {
     ),
   };
 }
-function collectProgram() {
+function collectProgram(includeEmpty = false) {
   const root = $("#programEditor"),
     weeks = Number($('[data-meta="weeks"]', root).value),
     days = $$("[data-day-panel]", root).map((panel) => ({
@@ -361,7 +381,7 @@ function collectProgram() {
           name: $("[data-warm-name]", row).value.trim(),
           prescription: $("[data-warm-rx]", row).value.trim(),
         }))
-        .filter((x) => x.name),
+        .filter((x) => includeEmpty || x.name),
       blocks: $$("[data-block]", panel)
         .map((block, bi) => ({
           letter: String.fromCharCode(65 + bi),
@@ -375,9 +395,9 @@ function collectProgram() {
                 (_, i) => $(`[data-ex-rep="${i}"]`, row)?.value.trim() || "",
               ),
             }))
-            .filter((x) => x.name),
+            .filter((x) => includeEmpty || x.name),
         }))
-        .filter((x) => x.exercises.length),
+        .filter((x) => includeEmpty || x.exercises.length),
     }));
   return { weeks, days };
 }
@@ -390,6 +410,8 @@ function programEditorAction(e) {
   if (e.target.closest("[data-remove-row]")) {
     recordProgramEdit();
     e.target.closest(".warmup-row,.exercise-row").remove();
+    state.programDirty = true;
+    persistProgramDraft();
     return;
   }
   const a = e.target.closest("[data-editor]")?.dataset.editor,
@@ -398,13 +420,25 @@ function programEditorAction(e) {
   if (a === "undo" || a === "redo") return stepProgramHistory(a);
   if (["add-exercise", "add-warmup", "add-block", "add-day"].includes(a))
     recordProgramEdit();
-  if (a === "close") $("#programEditor").hidden = true;
+  if (a === "close") {
+    persistProgramDraft();
+    $("#programEditor").hidden = true;
+  }
+  if (
+    a === "discard" &&
+    confirm("Discard the unsaved draft and reload the saved program?")
+  ) {
+    localStorage.removeItem(`taskdash_draft_${p.id}`);
+    state.programDirty = false;
+    openProgram(p.id);
+    return;
+  }
   if (a === "print") {
     refreshPrintSheet();
     markProgramPrinted(p.id);
     setTimeout(() => window.print(), 40);
   }
-  if (a === "save") saveProgram();
+  if (a === "save") saveProgram().catch((error) => toast(error.message));
   if (a === "live") startLiveSession(p.client_id, p.id);
   if (a === "template") saveAsStock(p);
   if (a === "use") useStockProgram(p.id);
@@ -455,35 +489,39 @@ function programEditorAction(e) {
     const panels = $$("[data-day-panel]", $("#programEditor"));
     if (panels.length < 2) return toast("A program needs at least one day");
     recordProgramEdit();
-    const plan = collectProgram(),
+    const plan = collectProgram(true),
       idx = panels.indexOf(e.target.closest("[data-day-panel]"));
     plan.days.splice(idx, 1);
-    p.content = plan;
-    p.days_per_week = plan.days.length;
-    openProgram(p.id);
+    openProgram(p.id, { draft: { ...programSnapshot(), content: plan } });
   }
   if (a === "add-day") {
-    const plan = collectProgram();
+    const plan = collectProgram(true);
     plan.days.push(defaultProgram(1, plan.weeks).days[0]);
-    p.content = plan;
-    p.days_per_week = plan.days.length;
-    openProgram(p.id);
+    openProgram(p.id, { draft: { ...programSnapshot(), content: plan } });
+  }
+  if (
+    [
+      "add-exercise",
+      "add-warmup",
+      "add-block",
+      "add-day",
+      "remove-day",
+    ].includes(a)
+  ) {
+    state.programDirty = true;
+    persistProgramDraft();
   }
 }
 async function saveProgram() {
   const p = state.programs.find((x) => String(x.id) === state.activeProgram);
   if (!p) return;
+  if (state.programSaving) return;
   const root = $("#programEditor"),
-    titleInput = $('[data-meta="name"]', root);
-  if (!titleInput.value.trim()) {
-    titleInput.focus();
-    toast("A program needs a name before it can be saved");
-    return;
-  }
-  const content = collectProgram(),
+    content = collectProgram(),
     clientId = $('[data-meta="clientId"]', root)?.value || null,
     client = state.clients.find((c) => String(c.id) === String(clientId)),
     body = {
+      updatedAt: state.editorVersion,
       name: $('[data-meta="name"]', root).value.trim(),
       clientId,
       clientName: client?.name || "",
@@ -493,16 +531,13 @@ async function saveProgram() {
       goal: $('[data-meta="goal"]', root).value.trim(),
       content,
     };
-  Object.assign(p, {
-    name: body.name,
-    client_id: clientId,
-    client_name: body.clientName,
-    weeks: body.weeks,
-    days_per_week: body.daysPerWeek,
-    status: body.status,
-    goal: body.goal,
-    content,
-  });
+  if (!body.name) throw new Error("Program title is required");
+  state.programDirty = true;
+  persistProgramDraft();
+  state.programSaving = true;
+  const button = $('[data-editor="save"]', root);
+  button.disabled = true;
+  root.inert = true;
   try {
     const saved = await getJSON(
       `/api/programs?id=${encodeURIComponent(p.id)}`,
@@ -514,16 +549,29 @@ async function saveProgram() {
     );
     Object.assign(p, saved);
     await loadPrograms();
-  } catch (err) {
+  } catch (error) {
+    allowLocalFallback(error);
+    Object.assign(p, {
+      name: body.name,
+      client_id: clientId,
+      client_name: body.clientName,
+      weeks: body.weeks,
+      days_per_week: body.daysPerWeek,
+      status: body.status,
+      goal: body.goal,
+      content,
+    });
     writeLocal("taskdash_programs", state.programs);
-    renderPrograms();
-    openProgram(p.id);
-    toast(`Saved on this device only — ${err.message}`);
-    return;
+  } finally {
+    state.programSaving = false;
+    root.inert = false;
+    button.disabled = false;
   }
+  localStorage.removeItem(`taskdash_draft_${p.id}`);
+  state.programDirty = false;
   renderPrograms();
-  openProgram(p.id);
-  toast("Program saved");
+  if (state.activeProgram === String(p.id) && !root.hidden) openProgram(p.id);
+  toast(DEMO_MODE ? "Program saved · Local preview only" : "Program saved");
 }
 function saveAsStock(p) {
   openDialog({
@@ -569,7 +617,8 @@ function saveAsStock(p) {
           body: JSON.stringify(body),
         });
         await loadPrograms();
-      } catch {
+      } catch (error) {
+        allowLocalFallback(error);
         saved = {
           ...p,
           ...body,
@@ -608,7 +657,9 @@ function useStockProgram(id) {
     ],
     submit: async (v) => {
       const linked = clientChoice(v.client),
-        client = state.clients.find((c) => String(c.id) === String(linked.clientId)) || {
+        client = state.clients.find(
+          (c) => String(c.id) === String(linked.clientId),
+        ) || {
           id: linked.clientId,
           name: linked.clientName,
         },
@@ -630,7 +681,12 @@ function useStockProgram(id) {
 // Copies a program (a stock template, or another client's program) for a
 // client. The source is only read; the copy is its own program, so editing it
 // or logging weights against it never changes the original.
-async function copyProgramForClient(source, client, name, { status = "draft" } = {}) {
+async function copyProgramForClient(
+  source,
+  client,
+  name,
+  { status = "draft" } = {},
+) {
   const body = {
     action: source.is_stock ? "use_template" : "copy_program",
     sourceId: source.id,
@@ -648,6 +704,7 @@ async function copyProgramForClient(source, client, name, { status = "draft" } =
     });
     await loadPrograms();
   } catch (err) {
+    allowLocalFallback(err);
     // A rejection (not signed in, bad choice) is shown; only an outage falls
     // back to a copy kept in this browser.
     if (
@@ -677,7 +734,9 @@ function openAttachProgramDialog(client, kind) {
   const stock = kind === "stock",
     sources = state.programs
       .filter((p) =>
-        stock ? p.is_stock : !p.is_stock && String(p.client_id) !== String(client.id),
+        stock
+          ? p.is_stock
+          : !p.is_stock && String(p.client_id) !== String(client.id),
       )
       .sort((a, b) => String(a.name).localeCompare(String(b.name))),
     label = (p) =>
@@ -694,18 +753,23 @@ function openAttachProgramDialog(client, kind) {
   const nameFor = (p) => `${client.name} — ${p.name}`;
   openDialog({
     kicker: "TRAINING PROGRAM",
-    title: stock ? "Copy from the stock library" : "Copy another client's program",
+    title: stock
+      ? "Copy from the stock library"
+      : "Copy another client's program",
     fields: [
       ["source", stock ? "Template" : "Program", "select", options],
       ["name", "Program title", "text", "", nameFor(sources[0])],
     ],
     submit: async (v) => {
-      const source = sources.find((p) => String(p.id) === v.source.split("|")[0]);
+      const source = sources.find(
+        (p) => String(p.id) === v.source.split("|")[0],
+      );
       if (!source) throw new Error("Choose a program to copy");
       const name = v.name.trim();
       if (!name) throw new Error("Give the program a name");
       await copyProgramForClient(source, client, name, { status: "active" });
-      if (String(state.activeClient) === String(client.id)) renderClientProfile();
+      if (String(state.activeClient) === String(client.id))
+        renderClientProfile();
       renderPrograms();
       toast(
         `Copied for ${client.name}. ${stock ? "The template" : "The original"} is unchanged.`,
@@ -717,7 +781,10 @@ function openAttachProgramDialog(client, kind) {
     title = $('#dialogFields input[name="name"]');
   let renamed = false;
   title.addEventListener("input", () => (renamed = true));
-  select.insertAdjacentHTML("beforebegin", '<input type="search" class="picker-search" placeholder="Search by name, level or emphasis" aria-label="Search programs">');
+  select.insertAdjacentHTML(
+    "beforebegin",
+    '<input type="search" class="picker-search" placeholder="Search by name, level or emphasis" aria-label="Search programs">',
+  );
   const search = $("#dialogFields .picker-search");
   search.addEventListener("input", () => {
     const q = search.value.trim().toLowerCase(),
@@ -732,7 +799,9 @@ function openAttachProgramDialog(client, kind) {
     select.dispatchEvent(new Event("change"));
   });
   select.addEventListener("change", () => {
-    const picked = sources.find((p) => String(p.id) === select.value.split("|")[0]);
+    const picked = sources.find(
+      (p) => String(p.id) === select.value.split("|")[0],
+    );
     if (picked && !renamed) title.value = nameFor(picked);
   });
   search.focus();
@@ -772,4 +841,27 @@ function refreshPrintSheet() {
 }
 function programPrintHTML(p, plan, weeks) {
   return `<div class="print-program-cover"><span>TASK DASH · TRAINING PROGRAM</span><h1>${esc(p.name)}</h1><p>${esc(p.client_name || "Stock program")} · ${weeks} week${weeks === 1 ? "" : "s"}${p.goal ? ` · ${esc(p.goal)}` : ""}</p></div>${plan.days.map((day, di) => `<article class="print-program-day"><header><h2>${esc(day.name || `Day ${di + 1}`)}</h2><span>${esc(p.client_name || "Stock program")}</span></header>${day.warmup?.length ? `<section><h3>Warm-up / Pillar Prep</h3><ol>${day.warmup.map((w) => `<li><strong>${esc(w.name)}</strong> ${esc(w.prescription || "")}</li>`).join("")}</ol></section>` : ""}<table><thead><tr><th>Lift</th><th>Exercise</th><th>Sets</th>${Array.from({ length: weeks }, (_, i) => `<th>Week ${i + 1}<small>Rep / Weight</small></th>`).join("")}</tr></thead><tbody>${(day.blocks || []).flatMap((b) => b.exercises.map((x, i) => `<tr><td><b>${esc(b.letter)}${i + 1}</b></td><td><strong>${esc(x.name)}</strong>${x.note ? `<small>${esc(x.note)}</small>` : ""}</td><td>${x.sets}</td>${Array.from({ length: weeks }, (_, wi) => `<td><span>${esc(x.reps?.[wi] || "")}</span><i></i></td>`).join("")}</tr>`)).join("")}</tbody></table><footer>${esc(state.settings.coach || "William Farparan")} · ${esc(state.settings.footer || "Move well. Train with intent.")}</footer></article>`).join("")}`;
+}
+
+function persistProgramDraft() {
+  if (
+    !state.programDirty ||
+    !state.activeProgram ||
+    $("#programEditor").hidden ||
+    state.programSaving
+  )
+    return;
+  const draft = { ...programSnapshot(), updated_at: state.editorVersion };
+  state.programDirty = true;
+  try {
+    localStorage.setItem(
+      `taskdash_draft_${state.activeProgram}`,
+      JSON.stringify(draft),
+    );
+    $("#draftStatus").textContent =
+      "Draft saved in this browser · Save changes to update the program";
+  } catch {
+    $("#draftStatus").textContent =
+      "Draft could not be stored. Keep this page open and save changes.";
+  }
 }

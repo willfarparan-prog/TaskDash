@@ -3,7 +3,7 @@ const { readdirSync, readFileSync, statSync } = require("node:fs");
 const { join, relative } = require("node:path");
 
 const root = join(__dirname, "..");
-const ignored = new Set(["node_modules", ".git", ".vercel"]);
+const ignored = new Set(["node_modules", ".git", ".vercel", "public", "tmp"]);
 
 function files(dir) {
   return readdirSync(dir).flatMap((name) => {

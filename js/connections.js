@@ -11,7 +11,14 @@ async function loadConnections() {
     state.usage = d.usage || state.usage;
     state.errors = e.errors || [];
   } catch {
-    state.connections = fallbackConnections();
+    state.connections = fallbackConnections().map((c) => ({
+      ...c,
+      status: c.status === "connected" ? "attention" : c.status,
+      detail:
+        c.status === "connected"
+          ? "Connection status unavailable · Refresh to retry"
+          : c.detail,
+    }));
   }
 }
 function renderConnections() {

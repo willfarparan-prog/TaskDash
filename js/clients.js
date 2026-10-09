@@ -83,7 +83,8 @@ function openClientDialog() {
           body: JSON.stringify(body),
         });
         await loadClients();
-      } catch {
+      } catch (error) {
+        allowLocalFallback(error);
         state.clients.push({
           ...body,
           id: `local-${Date.now()}`,
@@ -152,7 +153,8 @@ function clientAction(e) {
         });
         loggedId = logged.id;
         await loadClients();
-      } catch {
+      } catch (error) {
+        allowLocalFallback(error);
         state.sessions.push({
           ...body,
           id: `local-${Date.now()}`,
@@ -222,6 +224,7 @@ function firstSessionLabel(c) {
   return `First session ${when} · in ${days} days`;
 }
 async function setOnboardingStep(c, step, done) {
+  const previous = structuredClone(c.onboarding);
   const body = { step, done, dayKey: todayKey };
   if (!c.onboarding) c.onboarding = {};
   if (done) c.onboarding[step] = todayKey;
@@ -236,14 +239,16 @@ async function setOnboardingStep(c, step, done) {
       },
     );
     Object.assign(c, saved);
-  } catch {
-    writeLocal("taskdash_clients", state.clients);
+  } catch (error) {
+    c.onboarding = previous;
+    toast(error.message);
   }
   renderClients();
   renderClientProfile();
   renderDashboard();
 }
 async function setOnboardingTracking(c, track) {
+  const previous = structuredClone(c.onboarding);
   c.onboarding = track ? c.onboarding || {} : null;
   try {
     const saved = await getJSON(
@@ -255,8 +260,9 @@ async function setOnboardingTracking(c, track) {
       },
     );
     Object.assign(c, saved);
-  } catch {
-    writeLocal("taskdash_clients", state.clients);
+  } catch (error) {
+    c.onboarding = previous;
+    toast(error.message);
   }
   renderClients();
   renderClientProfile();
@@ -543,8 +549,20 @@ function openClientEditDialog(c) {
         "",
         c.first_session ? String(c.first_session).slice(0, 10) : "",
       ],
-      ["packageSize", "Package size (sessions)", "number", "e.g. 10", c.package_size ?? ""],
-      ["packagePrice", "Package price paid, before tax ($)", "number", "e.g. 630", c.package_price ?? ""],
+      [
+        "packageSize",
+        "Package size (sessions)",
+        "number",
+        "e.g. 10",
+        c.package_size ?? "",
+      ],
+      [
+        "packagePrice",
+        "Package price paid, before tax ($)",
+        "number",
+        "e.g. 630",
+        c.package_price ?? "",
+      ],
       [
         "packageStart",
         "Package started",
@@ -552,7 +570,13 @@ function openClientEditDialog(c) {
         "",
         c.package_start ? String(c.package_start).slice(0, 10) : "",
       ],
-      ["sessionMinutes", "Usual session length (minutes)", "number", "e.g. 50", c.session_minutes ?? ""],
+      [
+        "sessionMinutes",
+        "Usual session length (minutes)",
+        "number",
+        "e.g. 50",
+        c.session_minutes ?? "",
+      ],
       [
         "nextFollowUp",
         "Next follow-up",

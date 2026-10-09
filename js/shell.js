@@ -15,7 +15,7 @@ async function init() {
 function watchForNewDay() {
   const check = () => {
     if (document.hidden || ymd(new Date()) === todayKey) return;
-    if (state.live || $("#formDialog").open) return;
+    if (state.live || state.programDirty || $("#formDialog").open) return;
     location.reload();
   };
   document.addEventListener("visibilitychange", check);
@@ -36,9 +36,13 @@ function wireNavigation() {
   document.addEventListener("keydown", (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();
+      $(".topbar").classList.add("search-open");
       $("#globalSearch").focus();
     }
-    if (e.key === "Escape") toggleRail(false);
+    if (e.key === "Escape") {
+      toggleRail(false);
+      $(".topbar").classList.remove("search-open");
+    }
     if (
       (e.metaKey || e.ctrlKey) &&
       e.key.toLowerCase() === "z" &&
@@ -54,13 +58,20 @@ function wireNavigation() {
   );
 }
 function go(view) {
+  if (state.programDirty) persistProgramDraft();
   location.hash = view === "dashboard" ? "" : view;
   state.view = view;
   renderRoute();
   toggleRail(false);
 }
 function routeFromHash() {
-  const hash = decodeURIComponent(location.hash.slice(1)) || "dashboard";
+  if (state.programDirty) persistProgramDraft();
+  let hash;
+  try {
+    hash = decodeURIComponent(location.hash.slice(1)) || "dashboard";
+  } catch {
+    hash = "dashboard";
+  }
   // Client profiles have their own address: #client/<id>.
   const client = /^client\/(.+)$/.exec(hash);
   if (client) {
@@ -150,6 +161,7 @@ function wireControls() {
   $("#saveSchedule").onclick = saveSchedule;
   $("#scheduleHours").addEventListener("change", scheduleHoursChange);
   $("#bookingList").addEventListener("click", cancelBooking);
+  $("#bookingList").addEventListener("click", retryBookingSync);
   $("#newProgramBtn").onclick = () => openProgramDialog();
   $("#programSearch").oninput = renderPrograms;
   $("#stockFilters").onchange = (e) => {
@@ -173,6 +185,23 @@ function wireControls() {
   };
   $("#programGrid").onclick = programAction;
   $("#programEditor").onclick = programEditorAction;
+  $("#programEditor").addEventListener("input", () => {
+    state.programDirty = true;
+    persistProgramDraft();
+  });
+  window.addEventListener("beforeunload", (e) => {
+    if (state.programDirty) {
+      persistProgramDraft();
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+  $("#exportData").onclick = exportWorkspace;
+  $("#followupList").onclick = openFollowup;
+  $("#mobileSearch").onclick = () => {
+    $(".topbar").classList.toggle("search-open");
+    $("#globalSearch").focus();
+  };
   $("#programEditor").addEventListener("focusin", (e) => {
     if (e.target.matches("input, select"))
       state.programHistory.pending = programSnapshot();
@@ -280,8 +309,12 @@ function wireControls() {
   );
 }
 async function refreshAll() {
+  if (state.refreshing) return;
+  state.refreshing = true;
+  if (state.programDirty) persistProgramDraft();
   $("#refreshBtn").classList.add("loading");
   await Promise.allSettled([
+    loadInbox(),
     loadTasks(),
     loadEvents(),
     loadClients(),
@@ -296,6 +329,7 @@ async function refreshAll() {
   ]);
   renderEverything();
   $("#refreshBtn").classList.remove("loading");
+  state.refreshing = false;
 }
 function renderEverything() {
   renderWrapupSettings();
@@ -312,6 +346,7 @@ function renderEverything() {
   renderDocs();
 }
 function renderAuthGate() {
+  $("#previewBanner").hidden = !DEMO_MODE;
   $("#ownerGate").hidden = !state.authRequired;
 }
 function renderShellDate() {
@@ -350,13 +385,18 @@ function saveSettings() {
   toast("Settings saved");
 }
 function clearLocal() {
-  [
-    "taskdash_settings",
-    "taskdash_clients",
-    "taskdash_sessions",
-    "taskdash_programs",
-    "taskdash_events",
-  ].forEach((k) => localStorage.removeItem(k));
+  if (
+    !confirm(
+      "Clear browser caches and unsaved drafts? Saved database records are kept.",
+    )
+  )
+    return;
+  const keys = Array.from({ length: localStorage.length }, (_, i) =>
+    localStorage.key(i),
+  );
+  keys
+    .filter((k) => k?.startsWith("taskdash_"))
+    .forEach((k) => localStorage.removeItem(k));
   toast("Local cache cleared");
 }
 function openQuickAdd() {
@@ -398,4 +438,31 @@ function globalSearch(q) {
     items.some((x) => JSON.stringify(x).toLowerCase().includes(q)),
   );
   if (found) go(found[0]);
+}
+
+async function exportWorkspace() {
+  const button = $("#exportData");
+  button.disabled = true;
+  try {
+    if (DEMO_MODE)
+      throw new Error(
+        "Sign in on the deployed dashboard to export saved work records.",
+      );
+    const data = await getJSON("/api/connections?resource=export");
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `taskdash-backup-${todayKey}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast("Dashboard records exported");
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    button.disabled = false;
+  }
 }

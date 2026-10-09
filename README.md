@@ -73,3 +73,7 @@ python3 -m http.server 4173
 ```
 
 The static preview intentionally falls back to browser-local demo data when serverless APIs are unavailable. Production writes require the signed owner session.
+
+## Finishing release
+
+`npm run build` validates the code and tests, then copies only browser assets to `public/`. Vercel serves that directory and the existing API router. The finishing release adds recoverable program drafts, stale-edit conflicts, Tomorrow rescheduling, a linked follow-up queue, safe calendar-sync retries, verified cancellation, and private JSON exports from Settings. Public booking pauses when work-calendar checks are unavailable unless the owner explicitly permits local-only booking. See `REVIEW.md` and `RELEASE.md` for review scope and validation.

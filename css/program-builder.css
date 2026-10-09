@@ -360,3 +360,12 @@
     justify-content: flex-start;
   }
 }
+
+.draft-status {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 14px 0;
+}
+.editor-actions {
+  flex-wrap: wrap;
+}

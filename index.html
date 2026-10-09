@@ -121,6 +121,13 @@
               autocomplete="off"
             /><kbd>⌘ K</kbd></label
           >
+          <button
+            class="icon-btn mobile-search-btn"
+            id="mobileSearch"
+            aria-label="Search dashboard"
+          >
+            ⌕
+          </button>
           <div class="top-actions">
             <button
               class="icon-btn"
@@ -153,6 +160,9 @@
         </div>
 
         <div class="content-shell">
+          <p class="preview-banner" id="previewBanner" hidden>
+            Local preview · Changes are saved in this browser only.
+          </p>
           <section
             class="view active"
             id="view-dashboard"
@@ -212,30 +222,17 @@
                 </div>
               </div>
             </article>
-            <div class="metric-grid">
-              <article class="metric-card">
-                <span>Tasks completed</span
-                ><strong id="metricTasks">0 / 0</strong>
-                <div class="mini-progress"><i id="taskProgress"></i></div>
-                <small id="metricTaskHint">Today</small>
-              </article>
-              <article class="metric-card">
-                <span>Clients tracked</span><strong id="metricClients">0</strong
-                ><em class="metric-chip">LIVE ROSTER</em
-                ><small>consults, scans, and PT</small>
-              </article>
-              <article class="metric-card">
-                <span>Programs ready</span><strong id="metricPrograms">0</strong
-                ><em class="metric-chip red">PRINTABLE</em
-                ><small>active training plans</small>
-              </article>
-              <article class="metric-card">
-                <span>System readiness</span
-                ><strong id="metricReadiness">0%</strong>
-                <div class="mini-progress"><i id="readyProgress"></i></div>
-                <small>connections online</small>
-              </article>
-            </div>
+            <article class="panel followups-panel">
+              <div class="section-heading">
+                <div>
+                  <span class="kicker">NEXT ACTIONS</span>
+                  <h2>Follow-ups &amp; deadlines</h2>
+                  <p>Overdue work and the next seven days.</p>
+                </div>
+                <span id="followupCount">—</span>
+              </div>
+              <div id="followupList" class="followup-list"></div>
+            </article>
             <div class="dashboard-grid">
               <article class="panel task-panel">
                 <div class="section-heading">
@@ -271,7 +268,7 @@
               <article class="panel schedule-panel">
                 <div class="section-heading">
                   <div>
-                    <span class="kicker">NEXT 7 DAYS</span>
+                    <span class="kicker">THIS WEEK</span>
                     <h2>Daily schedule</h2>
                   </div>
                   <button class="text-btn" data-go="calendar">
@@ -333,6 +330,30 @@
                 </div>
               </div>
             </article>
+            <div class="metric-grid">
+              <article class="metric-card">
+                <span>Tasks completed</span
+                ><strong id="metricTasks">0 / 0</strong>
+                <div class="mini-progress"><i id="taskProgress"></i></div>
+                <small id="metricTaskHint">Today</small>
+              </article>
+              <article class="metric-card">
+                <span>Clients tracked</span><strong id="metricClients">0</strong
+                ><em class="metric-chip">LIVE ROSTER</em
+                ><small>consults, scans, and PT</small>
+              </article>
+              <article class="metric-card">
+                <span>Programs ready</span><strong id="metricPrograms">0</strong
+                ><em class="metric-chip red">PRINTABLE</em
+                ><small>active training plans</small>
+              </article>
+              <article class="metric-card">
+                <span>Active connections</span
+                ><strong id="metricReadiness">0%</strong>
+                <div class="mini-progress"><i id="readyProgress"></i></div>
+                <small>connected data services</small>
+              </article>
+            </div>
           </section>
 
           <section class="view" id="view-docs" data-title="Docs">
@@ -391,12 +412,21 @@
                     <span class="kicker">NOT SURE WHERE TO START?</span>
                     <h2>Ask the hub</h2>
                   </div>
-                  <button type="button" class="text-btn" id="hubChatClear">Clear</button>
+                  <button type="button" class="text-btn" id="hubChatClear">
+                    Clear
+                  </button>
                 </div>
                 <div class="hub-log" id="hubChatLog"></div>
                 <form id="hubChatForm" class="hub-form">
-                  <input id="hubChatInput" maxlength="600" autocomplete="off" placeholder="e.g. a member wants to book PT…" />
-                  <button class="primary-btn" id="hubChatSend" type="submit">Ask</button>
+                  <input
+                    id="hubChatInput"
+                    maxlength="600"
+                    autocomplete="off"
+                    placeholder="e.g. a member wants to book PT…"
+                  />
+                  <button class="primary-btn" id="hubChatSend" type="submit">
+                    Ask
+                  </button>
                 </form>
               </section>
             </article>
@@ -591,6 +621,15 @@
                         maxlength="400"
                       ></textarea>
                     </label>
+                    <label
+                      ><input
+                        type="checkbox"
+                        id="scheduleRequireCalendar"
+                        checked
+                      />
+                      Pause public booking when the work calendar is
+                      unavailable</label
+                    >
                   </div>
                 </article>
                 <div class="scheduler-save">
@@ -768,7 +807,10 @@
             <button class="text-btn back-link" data-go="clients">
               ← All clients
             </button>
-            <article class="panel client-profile consult" id="consultView"></article>
+            <article
+              class="panel client-profile consult"
+              id="consultView"
+            ></article>
           </section>
 
           <section class="view" id="view-inbox" data-title="Inbox">
@@ -839,7 +881,8 @@
                 ><span>Run launch steps in parallel</span>
               </article>
               <article>
-                <strong>+1–14 days</strong><span>NPS survey, resent if under 30%</span>
+                <strong>+1–14 days</strong
+                ><span>NPS survey, resent if under 30%</span>
               </article>
             </div>
             <div class="event-board" id="eventBoard"></div>
@@ -913,7 +956,10 @@
               <p>Adjust your dashboard without changing the underlying SOP.</p>
             </div>
             <div class="settings-grid">
-              <article class="panel settings-card wrapup-settings" id="wrapupSettingsCard"></article>
+              <article
+                class="panel settings-card wrapup-settings"
+                id="wrapupSettingsCard"
+              ></article>
               <article class="panel settings-card">
                 <span class="kicker">ACCOUNT</span>
                 <h2>Owner account</h2>
@@ -962,11 +1008,14 @@
               </article>
               <article class="panel settings-card danger-card">
                 <span class="kicker">DATA</span>
-                <h2>Local dashboard data</h2>
+                <h2>Backups &amp; local drafts</h2>
                 <p>
                   Clear only this browser's cached preferences and unsynced
                   drafts. Database records are not removed.
                 </p>
+                <button class="primary-btn" id="exportData">
+                  Export saved records
+                </button>
                 <button class="secondary-btn" id="clearLocal">
                   Clear local cache
                 </button>

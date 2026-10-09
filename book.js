@@ -48,6 +48,12 @@ async function loadAvailability() {
           (reason) => `<option value="${attr(reason)}">${esc(reason)}</option>`,
         )
         .join("");
+    if (data.paused) {
+      $("#dayStrip").innerHTML =
+        '<div class="empty">Booking is temporarily paused while the work calendar reconnects. Please check back shortly.</div>';
+      $("#timeGrid").innerHTML = "";
+      return;
+    }
     renderDays();
     const first = state.days.find((day) => day.openCount > 0);
     if (first) {

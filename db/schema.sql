@@ -177,3 +177,5 @@ create index if not exists idx_client_sessions_client on client_sessions(client_
 create index if not exists idx_training_programs_client on training_programs(client_id, updated_at desc);
 create index if not exists idx_training_programs_stock on training_programs(is_stock, level, emphasis);
 create index if not exists idx_api_usage_created on api_usage(created_at desc);
+
+create table if not exists booking_rate_limits (key text not null, bucket timestamptz not null, requests integer not null default 1, primary key(key,bucket));

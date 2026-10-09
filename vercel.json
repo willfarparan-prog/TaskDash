@@ -58,5 +58,7 @@
       "destination": "/",
       "permanent": false
     }
-  ]
+  ],
+  "outputDirectory": "public",
+  "buildCommand": "npm run build"
 }

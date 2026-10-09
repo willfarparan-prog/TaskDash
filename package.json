@@ -7,7 +7,8 @@
     "check": "node scripts/check.js && node --test tests/*.test.js",
     "test": "node --test tests/*.test.js",
     "format": "npx --yes prettier@3 --write \"*.{js,html}\" \"js/**/*.js\" \"css/**/*.css\" \"api/**/*.js\" \"lib/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\"",
-    "smoke": "node scripts/smoke.js"
+    "smoke": "node scripts/smoke.js",
+    "build": "npm run check && node scripts/build.js"
   },
   "engines": {
     "node": "22.x"

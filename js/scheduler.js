@@ -5,12 +5,15 @@ async function loadScheduler() {
       "/api/calendar-manual?resource=availability",
     );
     state.scheduler.days = publicData.days || [];
+    state.scheduler.paused = !!publicData.paused;
     state.scheduler.settings = {
       ...state.scheduler.settings,
       ...(publicData.settings || {}),
     };
     state.scheduler.workCalendar.connected = !!publicData.calendarConnected;
-  } catch {}
+  } catch {
+    state.scheduler.days = [];
+  }
   try {
     const data = await getJSON("/api/calendar-manual?resource=scheduler");
     state.scheduler = {
@@ -36,6 +39,7 @@ function renderScheduler() {
   $("#scheduleAhead").value = s.bookAheadDays || 21;
   $("#scheduleLocation").value = s.location || "";
   $("#scheduleNote").value = s.note || "";
+  $("#scheduleRequireCalendar").checked = s.requireCalendar !== false;
   const connected = !!scheduler.workCalendar?.connected;
   $("#workCalendarBanner strong").textContent = connected
     ? "Work Google Calendar connected"
@@ -96,7 +100,7 @@ function renderScheduler() {
         .slice(0, 12)
         .map((b) => {
           const start = new Date(b.starts_at);
-          return `<div class="booking-row" data-booking-id="${b.id}"><div><strong>${esc(b.visitor_name)}</strong><span>${esc(b.reason)} · ${start.toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span><small>${b.calendar_sync_status === "synced" ? "On work calendar" : b.calendar_sync_status === "error" ? "Calendar sync needs attention" : "Waiting for calendar connection"}</small></div>${/consult/i.test(b.reason || "") ? `<button class="secondary-btn" data-start-consult="${b.id}">Start consult</button>` : ""}<button class="row-delete" data-cancel-booking aria-label="Cancel ${attr(b.visitor_name)} booking">×</button></div>`;
+          return `<div class="booking-row" data-booking-id="${b.id}"><div><strong>${esc(b.visitor_name)}</strong><span>${esc(b.reason)} · ${start.toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span><small>${b.calendar_sync_status === "synced" ? "On work calendar" : b.calendar_sync_status === "error" ? "Calendar sync needs attention" : "Waiting for calendar connection"}</small></div>${/consult/i.test(b.reason || "") ? `<button class="secondary-btn" data-start-consult="${b.id}">Start consult</button>` : ""}${b.calendar_sync_status !== "synced" ? '<button class="secondary-btn" data-retry-booking>Retry sync</button>' : ""}<button class="row-delete" data-cancel-booking aria-label="Cancel ${attr(b.visitor_name)} booking">×</button></div>`;
         })
         .join("")
     : '<div class="empty-state compact">No upcoming bookings yet.</div>';
@@ -139,6 +143,7 @@ async function saveSchedule() {
     bookAheadDays: Number($("#scheduleAhead").value),
     location: $("#scheduleLocation").value.trim(),
     note: $("#scheduleNote").value.trim(),
+    requireCalendar: $("#scheduleRequireCalendar").checked,
     hours: {},
   };
   $$(".schedule-day").forEach((row) => {
@@ -189,5 +194,28 @@ async function cancelBooking(event) {
     );
   } catch (error) {
     toast(error.message);
+  }
+}
+
+async function retryBookingSync(event) {
+  const button = event.target.closest("[data-retry-booking]");
+  if (!button) return;
+  button.disabled = true;
+  try {
+    await getJSON("/api/calendar-manual?resource=sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: button.closest("[data-booking-id]").dataset.bookingId,
+      }),
+    });
+    await loadScheduler();
+    renderScheduler();
+    renderFollowups();
+    toast("Booking synced to your work calendar");
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    button.disabled = false;
   }
 }

@@ -58,7 +58,7 @@ function scheduledTasks(recur, checks) {
 function taskHTML(t) {
   const s = taskState(t),
     links = taskResourceLinks(t);
-  return `<div class="task-row ${t.done ? "done" : ""}" data-id="${attr(t.id)}" data-kind="${t.kind}"><input class="task-check" type="checkbox" aria-label="Complete ${attr(t.name)}" ${t.done ? "checked" : ""}><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${esc(t.cad)}${t.time ? ` · ${esc(t.time)}` : ""}${t.occ && !["Daily", "Weekdays"].includes(t.rule.cadence) ? ` · ${esc(TaskSchedule.dueLabel(t.occ))}` : ""}${links.map((l) => ` <a href="${attr(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.short || l.title)} ↗</a>`).join("")}</div></div><span class="task-status ${s}">${t.done ? "DONE" : s === "over" ? "OVERDUE" : s === "due" ? "DUE" : "OPEN"}</span><span class="task-tools"><button class="row-edit" aria-label="Edit task" title="Edit">✎</button><button class="row-delete" aria-label="Delete task" title="Delete">×</button></span></div>`;
+  return `<div class="task-row ${t.done ? "done" : ""}" data-id="${attr(t.id)}" data-kind="${t.kind}"><input class="task-check" type="checkbox" aria-label="Complete ${attr(t.name)}" ${t.done ? "checked" : ""}><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${esc(t.cad)}${t.time ? ` · ${esc(t.time)}` : ""}${t.occ && !["Daily", "Weekdays"].includes(t.rule.cadence) ? ` · ${esc(TaskSchedule.dueLabel(t.occ))}` : ""}${links.map((l) => ` <a href="${attr(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.short || l.title)} ↗</a>`).join("")}</div></div><span class="task-status ${s}">${t.done ? "DONE" : s === "over" ? "OVERDUE" : s === "due" ? "DUE" : "OPEN"}</span><span class="task-tools">${t.kind === "daily" && !t.done ? '<button class="text-btn" data-tomorrow>Tomorrow</button>' : ""}<button class="row-edit" aria-label="Edit task" title="Edit">✎</button><button class="row-delete" aria-label="Delete task" title="Delete">×</button></span></div>`;
 }
 function taskResourceLinks(t) {
   const keys = {
@@ -90,7 +90,6 @@ async function addTask() {
   const input = $("#taskInput"),
     name = input.value.trim();
   if (!name) return;
-  input.value = "";
   try {
     await getJSON("/api/tasks", {
       method: "POST",
@@ -98,7 +97,11 @@ async function addTask() {
       body: JSON.stringify({ type: "daily_task", dayKey: todayKey, name }),
     });
     await loadTasks();
-  } catch {
+  } catch (error) {
+    if (!DEMO_MODE) {
+      toast(error.message);
+      return;
+    }
     state.tasks.push({
       id: `local-${Date.now()}`,
       name,
@@ -108,14 +111,16 @@ async function addTask() {
       kind: "daily",
     });
   }
+  input.value = "";
   renderDashboard();
-  toast("Task added");
+  toast(DEMO_MODE ? "Task added · Local preview only" : "Task added");
 }
 async function toggleTask(e) {
   const row = e.target.closest(".task-row");
   if (!row) return;
   const t = state.tasks.find((x) => String(x.id) === row.dataset.id);
   if (!t) return;
+  const previous = t.done;
   t.done = e.target.checked;
   renderDashboard();
   const body =
@@ -140,13 +145,17 @@ async function toggleTask(e) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-  } catch {
-    toast("Saved in this browser only");
+  } catch (error) {
+    t.done = previous;
+    renderDashboard();
+    toast(error.message);
   }
 }
 function taskRowAction(e) {
   const row = e.target.closest(".task-row");
   if (!row) return;
+  if (e.target.closest("[data-tomorrow]"))
+    return rescheduleTask(row.dataset.id);
   if (e.target.closest(".row-edit")) {
     const t = state.tasks.find((x) => String(x.id) === row.dataset.id);
     if (t) openTaskDialog(taskDraft(t));
@@ -166,6 +175,8 @@ async function deleteTask(id, kind) {
     !confirm(`Delete “${name}”? It won't come back on future cycles.`)
   )
     return;
+  const previousTasks = state.tasks.slice(),
+    previousRecur = state.recurTasks.slice();
   state.tasks = state.tasks.filter((t) => String(t.id) !== id);
   if (recur) state.recurTasks = state.recurTasks.filter((t) => t.id !== id);
   renderDashboard();
@@ -174,7 +185,13 @@ async function deleteTask(id, kind) {
       `/api/tasks?id=${encodeURIComponent(id)}${recur ? "&kind=recur" : ""}`,
       { method: "DELETE" },
     );
-  } catch {}
+  } catch (error) {
+    state.tasks = previousTasks;
+    state.recurTasks = previousRecur;
+    renderDashboard();
+    toast(error.message);
+    return;
+  }
   toast("Task deleted");
 }
 // Form values for an existing task (dashboard row or recur_tasks record).
@@ -408,4 +425,21 @@ function openTaskManager() {
       openTaskManager();
     }
   };
+}
+
+async function rescheduleTask(id) {
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  try {
+    await getJSON("/api/tasks", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "reschedule", id, dayKey: ymd(tomorrow) }),
+    });
+    await loadTasks();
+    renderDashboard();
+    toast("Task moved to tomorrow");
+  } catch (error) {
+    toast(error.message);
+  }
 }

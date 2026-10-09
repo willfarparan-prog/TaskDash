@@ -240,8 +240,10 @@ function stepStateHTML(s) {
     return `<span class="step-state waiting">AFTER ${s.key === "survey-2" ? "1ST" : "2ND"} SEND</span>`;
   if (st === "log") return `<span class="step-state now">LOG RESPONSES</span>`;
   if (st === "now") return `<span class="step-state now">SEND NOW</span>`;
-  if (st === "overdue") return `<span class="step-state overdue">OVERDUE</span>`;
-  if (st === "upcoming") return `<span class="step-state">${s.survey.inDays}D</span>`;
+  if (st === "overdue")
+    return `<span class="step-state overdue">OVERDUE</span>`;
+  if (st === "upcoming")
+    return `<span class="step-state">${s.survey.inDays}D</span>`;
   return `<span class="step-state ${s.compressed ? "now" : s.delta < 0 ? "overdue" : ""}">${s.compressed ? "DO NOW" : s.delta < 0 ? "OVERDUE" : s.delta === 0 ? "TODAY" : `${s.delta}D`}</span>`;
 }
 // Logged after the first send: how many got the survey and how many answered.
@@ -278,7 +280,8 @@ async function surveyStatsChange(e) {
     n = Math.max(0, Math.floor(Number(value)));
   map._survey = {
     ...(map._survey || {}),
-    [e.target.dataset.surveyField]: value === "" || !Number.isFinite(n) ? "" : n,
+    [e.target.dataset.surveyField]:
+      value === "" || !Number.isFinite(n) ? "" : n,
   };
   raw.pipeline_state = map;
   // The redraw replaces the inputs; put focus back where Tab/click moved it.
@@ -325,17 +328,19 @@ function renderEvents() {
   const warning = state.eventsLoadError
     ? `<div class="load-warning" role="status"><span><strong>Couldn't load your events from the server.</strong> ${list.length ? "Showing the copy last saved in this browser." : ""} ${esc(state.eventsLoadError)}</span><button class="secondary-btn" data-event-action="reload">Try again</button></div>`
     : "";
-  $("#eventBoard").innerHTML = warning + (list.length
-    ? list
-        .map((e) => {
-          const steps = eventSteps(e.raw),
-            compressed = e.days >= 0 && e.days < 14;
-          return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done || s.skipped).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""} ${s.skipped ? "skipped" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${stepDateLabel(s, e.date)}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div>${stepStateHTML(s)}</div>`).join("")}${surveyTrackerHTML(e, steps)}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${reportPanelHTML(e.raw, e)}${draftPanelHTML(e.raw, steps)}</article>`;
-        })
-        .join("")
-    : state.eventsLoadError
-      ? ""
-      : '<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>');
+  $("#eventBoard").innerHTML =
+    warning +
+    (list.length
+      ? list
+          .map((e) => {
+            const steps = eventSteps(e.raw),
+              compressed = e.days >= 0 && e.days < 14;
+            return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done || s.skipped).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""} ${s.skipped ? "skipped" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${stepDateLabel(s, e.date)}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div>${stepStateHTML(s)}</div>`).join("")}${surveyTrackerHTML(e, steps)}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${reportPanelHTML(e.raw, e)}${draftPanelHTML(e.raw, steps)}</article>`;
+          })
+          .join("")
+      : state.eventsLoadError
+        ? ""
+        : '<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>');
   renderEventPreview();
 }
 function openEventDialog() {
@@ -404,6 +409,7 @@ function openEventDialog() {
         });
         await loadEvents();
       } catch (err) {
+        allowLocalFallback(err);
         if (
           state.authRequired ||
           /\((400|401|403)\)|required|must/i.test(err.message)
@@ -619,6 +625,7 @@ async function eventStepChange(e) {
     } catch {
       map = {};
     }
+  const previous = structuredClone(map);
   map[e.target.dataset.step] = e.target.checked;
   raw.pipeline_state = map;
   renderEvents();
@@ -628,8 +635,10 @@ async function eventStepChange(e) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pipelineState: map }),
     });
-  } catch {
-    writeLocal("taskdash_events", state.events);
+  } catch (error) {
+    raw.pipeline_state = previous;
+    renderEvents();
+    toast(error.message);
   }
 }
 async function eventAction(e) {
@@ -663,14 +672,18 @@ async function eventAction(e) {
   if (!confirm("Delete this event and its drafts?")) return;
   const card = b.closest(".event-card"),
     id = card.dataset.id;
+  const previousEvents = state.events.slice();
   state.events = state.events.filter((x) => String(x.id) !== id);
   renderEvents();
   try {
     await getJSON(`/api/events?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
-  } catch {
-    writeLocal("taskdash_events", state.events);
+  } catch (error) {
+    state.events = previousEvents;
+    renderEvents();
+    toast(error.message);
+    return;
   }
   toast("Event removed");
 }

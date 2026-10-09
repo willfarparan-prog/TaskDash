@@ -6,15 +6,20 @@ async function shiftCalendarWeek(step) {
   renderCalendar();
 }
 async function loadCalendar() {
+  const offset = state.calendarOffset;
+  const request = (state.calendarRequest = (state.calendarRequest || 0) + 1);
   try {
     const d = await getJSON(
       `/api/calendar-week?start=${ymd(weekStart(state.calendarOffset))}`,
     );
+    if (request !== state.calendarRequest) return;
     state.calendar = d.events || [];
+    if (offset === 0) state.agenda = state.calendar;
     state.calendarConnected = !!d.connected;
     state.calendarEmail = d.accountEmail || null;
     state.workCalendarConnected = !!d.workConnected;
   } catch {
+    if (request !== state.calendarRequest) return;
     state.calendar = [];
     state.calendarConnected = false;
     state.workCalendarConnected = false;
