@@ -362,3 +362,20 @@ function renderDataStatus() {
   if (!el.hidden)
     el.textContent = `Live data unavailable for ${[...readFailures.keys()].map((x) => x.split("/").pop().replaceAll("-", " ")).join(", ")}. Showing the last loaded data where available. Use Refresh to reconnect.`;
 }
+
+// Use the dashboard's accessible dialog for destructive confirmations.
+function confirmAction(message, label = "Confirm") {
+  return new Promise((resolve) => {
+    openDialog({
+      kicker: "CONFIRM ACTION",
+      title: label,
+      fields: [],
+      submit: async () => resolve(true),
+    });
+    $("#dialogFields").innerHTML = `<p>${esc(message)}</p>`;
+    $("#dialogSubmit").textContent = label;
+    $("#formDialog").addEventListener("close", () => resolve(false), {
+      once: true,
+    });
+  });
+}

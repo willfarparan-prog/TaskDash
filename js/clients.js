@@ -645,7 +645,7 @@ async function deleteClient(c) {
   const warning = count
     ? `Delete ${c.name} and their ${count} logged session${count === 1 ? "" : "s"}? Linked programs are kept but unlinked. This can't be undone.`
     : `Delete ${c.name}? This can't be undone.`;
-  if (!confirm(warning)) return;
+  if (!(await confirmAction(warning, "Delete client"))) return;
   try {
     if (!String(c.id).startsWith("local-"))
       await getJSON(`/api/clients?id=${encodeURIComponent(c.id)}`, {

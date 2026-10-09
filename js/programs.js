@@ -811,16 +811,18 @@ function openAttachProgramDialog(client, kind) {
   search.focus();
 }
 async function deleteProgram(p, message = `Delete “${p.name}”?`) {
-  if (!confirm(message)) return;
-  state.programs = state.programs.filter((x) => String(x.id) !== String(p.id));
-  $("#programEditor").hidden = true;
+  if (!(await confirmAction(message, "Delete program"))) return;
   try {
     await getJSON(`/api/programs?id=${encodeURIComponent(p.id)}`, {
       method: "DELETE",
     });
-  } catch {
-    writeLocal("taskdash_programs", state.programs);
+  } catch (err) {
+    if (!DEMO_MODE) return toast(err.message || "Could not delete program");
   }
+  state.programs = state.programs.filter((x) => String(x.id) !== String(p.id));
+  $("#programEditor").hidden = true;
+  writeLocal("taskdash_programs", state.programs);
+
   renderPrograms();
   toast("Program deleted");
 }

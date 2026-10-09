@@ -178,7 +178,12 @@ async function cancelBooking(event) {
   const button = event.target.closest("[data-cancel-booking]");
   if (!button) return;
   const row = button.closest("[data-booking-id]");
-  if (!confirm("Cancel this booking and remove its work calendar event?"))
+  if (
+    !(await confirmAction(
+      "Cancel this booking and remove its work calendar event?",
+      "Cancel booking",
+    ))
+  )
     return;
   try {
     const result = await getJSON(

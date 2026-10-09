@@ -324,3 +324,16 @@ test("a read outage warning clears after a successful refresh", async () => {
   await f.run('getJSON("/api/clients")');
   assert.equal(f.node("#dataStatus").hidden, true);
 });
+
+test("failed production program deletion keeps the program and editor", async () => {
+  const f = frontend();
+  f.context.confirmAction = async () => true;
+  f.context.getJSON = async () => {
+    throw Error("Delete failed");
+  };
+  f.run('state.programs=[{id:62,name:"Keep me"}];');
+  await f.run("deleteProgram(state.programs[0])");
+  assert.equal(f.run("state.programs.length"), 1);
+  assert.equal(f.node("#programEditor").hidden, false);
+  assert.equal(f.context.lastToast, "Delete failed");
+});
