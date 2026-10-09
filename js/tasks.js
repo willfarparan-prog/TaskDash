@@ -23,6 +23,14 @@ async function loadTasks() {
     ];
   } catch {
     // Offline preview: show the built-in duties on their schedules.
+    if (!DEMO_MODE) {
+      if (state.authRequired) {
+        state.tasks = [];
+        state.recurTasks = [];
+        state.taskChecks = [];
+      }
+      return;
+    }
     if (!state.recurTasks.length)
       state.recurTasks = TaskSchedule.BUILTIN_TASKS.map((t) => ({
         ...t,

@@ -147,15 +147,58 @@ const DRAFT_TYPES = [
 // load shows it (with a warning) instead of an empty board.
 async function loadEvents() {
   try {
-    state.events = (await getJSON("/api/events")).events || [];
+    const previous = new Map(state.events.map((raw) => [String(raw.id), raw]));
+    state.events = ((await getJSON("/api/events")).events || []).map(
+      (remote) => {
+        const raw = previous.get(String(remote.id));
+        if (!raw) return remote;
+        const report = raw.report,
+          drafts = eventDrafts(raw),
+          unsaved = raw.unsaved;
+        Object.assign(raw, remote);
+        if (unsaved) raw.report = report;
+        raw.drafts = {
+          ...eventDrafts(raw),
+          ...Object.fromEntries(
+            Object.entries(drafts).filter(([, draft]) => draft.unsaved),
+          ),
+        };
+        return raw;
+      },
+    );
     state.eventsLoadError = "";
     writeLocal("taskdash_events", state.events);
   } catch (err) {
-    state.events = readLocal("taskdash_events", []);
+    state.events = state.authRequired
+      ? []
+      : state.events.length
+        ? state.events
+        : readLocal("taskdash_events", []);
     state.eventsLoadError = state.authRequired
       ? ""
       : err.message || "The server couldn't be reached";
   }
+  if (!state.authRequired)
+    for (const raw of state.events) {
+      const report = readLocal(`taskdash_report_${raw.id}`, null);
+      if (report) {
+        raw.report = report;
+        raw.unsaved = true;
+        pendingDrafts.add(raw);
+        raw.saveState = "Recovered device report — retry to sync";
+      }
+      for (const type of DRAFT_TYPES) {
+        const draft = readLocal(
+          `taskdash_eventdraft_${raw.id}_${type.key}`,
+          null,
+        );
+        if (draft) {
+          raw.drafts = { ...eventDrafts(raw), [type.key]: draft };
+          eventDrafts(raw)[type.key].unsaved = true;
+          pendingDrafts.add(eventDrafts(raw)[type.key]);
+        }
+      }
+    }
   state.openDrafts = new Set(readLocal("taskdash_open_drafts", []));
   state.openReports = new Set(readLocal("taskdash_open_reports", []));
   state.reportBusy = {};
@@ -455,6 +498,7 @@ function eventDrafts(raw) {
     } catch {
       drafts = {};
     }
+  raw.drafts = drafts;
   return drafts;
 }
 function applicableDrafts(raw) {
@@ -488,11 +532,11 @@ function draftSlotHTML(raw, type, steps = eventSteps(raw)) {
   else body = `<div class="draft-status">Not drafted yet.</div>`;
   const actions =
     draft?.text && status !== "pending"
-      ? `<button class="text-btn" data-draft-action="copy">Copy</button>${type.email ? '<button class="text-btn" data-draft-action="mail">Open in mail</button>' : ""}<button class="text-btn" data-draft-action="regen">Regenerate</button>`
+      ? `<button class="text-btn" data-draft-action="retry">Retry save</button><button class="text-btn" data-draft-action="copy">Copy</button>${type.email ? '<button class="text-btn" data-draft-action="mail">Open in mail</button>' : ""}<button class="text-btn" data-draft-action="regen">Regenerate</button>`
       : status === "pending"
         ? ""
         : `<button class="text-btn" data-draft-action="regen">${status ? "Retry" : "Generate"}</button>`;
-  return `<section class="draft" data-draft="${type.key}"><header><div><strong>${esc(type.label)}</strong><small>${esc(type.hint)}${due}${draft?.edited ? " · edited" : ""}</small></div><div class="draft-actions">${actions}</div></header>${body}</section>`;
+  return `<section class="draft" data-draft="${type.key}"><header><div><strong>${esc(type.label)}</strong><small>${draft?.unsaved ? esc(draft.saveState || "Saved on this device only — retry to sync") : esc(type.hint) + due}${draft?.edited ? " · edited" : ""}</small></div><div class="draft-actions">${actions}</div></header>${body}</section>`;
 }
 function refreshDraftSlot(eventId, key) {
   const raw = state.events.find((x) => String(x.id) === String(eventId)),
@@ -547,38 +591,63 @@ async function generateEventDrafts(eventId) {
       : `Drafts ready for ${raw.name}`,
   );
 }
-async function saveDraftEdit(e) {
+function stageDraftEdit(e) {
   const card = e.target.closest(".event-card"),
     key = e.target.closest("[data-draft]")?.dataset.draft,
     raw = state.events.find((x) => String(x.id) === card?.dataset.id);
-  if (!raw || !key) return;
-  const previous = eventDrafts(raw)[key] || {};
+  if (!raw || !key) return null;
+  const draft = eventDrafts(raw)[key];
+  if (!draft) return null;
+  draft.text = e.target.value;
+  draft.edited = true;
+  draft.unsaved = true;
+  pendingDrafts.add(draft);
+  draft.saveState = writeLocal(`taskdash_eventdraft_${raw.id}_${key}`, draft)
+    ? "Saved on this device only — retry to sync"
+    : "Not saved — keep this page open and retry";
+  return { raw, key, draft };
+}
+async function saveEventDraft(raw, key) {
+  const draft = eventDrafts(raw)[key];
+  if (!draft) return;
   try {
-    const result = await getJSON(
-      `/api/events?id=${encodeURIComponent(raw.id)}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          draft: {
-            key,
-            text: e.target.value,
-            generatedAt: previous.generatedAt,
-          },
-        }),
+    await saveDraftRecord(draft, {
+      snapshot: () => ({
+        key,
+        text: draft.text,
+        generatedAt: draft.generatedAt,
+      }),
+      persist: (unsaved) => {
+        if (!unsaved) {
+          localStorage.removeItem(`taskdash_eventdraft_${raw.id}_${key}`);
+          return true;
+        }
+        return writeLocal(`taskdash_eventdraft_${raw.id}_${key}`, draft);
       },
-    );
-    raw.drafts = { ...eventDrafts(raw), [key]: result.draft };
-    const small = e.target
-      .closest("[data-draft]")
-      .querySelector("header small");
-    if (small && !small.textContent.endsWith(" · edited"))
-      small.textContent += " · edited";
-    toast("Draft saved");
+      send: (payload) =>
+        getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ draft: payload }),
+        }),
+      status: (message) => {
+        const slot = document.querySelector(
+          `.event-card[data-id="${CSS.escape(String(raw.id))}"] [data-draft="${key}"] header small`,
+        );
+        if (slot) slot.textContent = message;
+      },
+    });
+    return true;
   } catch (err) {
     toast(`Draft not saved — ${err.message}`);
+    return false;
   }
 }
+async function saveDraftEdit(e) {
+  const ctx = stageDraftEdit(e);
+  if (ctx) await saveEventDraft(ctx.raw, ctx.key);
+}
+
 async function draftAction(b) {
   const card = b.closest(".event-card"),
     key = b.closest("[data-draft]").dataset.draft,
@@ -588,7 +657,10 @@ async function draftAction(b) {
       `[data-draft="${key}"] [data-draft-text]`,
     ),
     value = textarea?.value || "";
+  if (b.dataset.draftAction === "retry") return saveEventDraft(raw, key);
   if (b.dataset.draftAction === "regen") {
+    if (eventDrafts(raw)[key]?.unsaved && !(await saveEventDraft(raw, key)))
+      return;
     if (
       eventDrafts(raw)[key]?.edited &&
       !confirm("Replace your edited draft with a new one?")

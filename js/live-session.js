@@ -135,7 +135,12 @@ async function startLiveSession(clientId, programId, dayIndex, weekIndex) {
       state.clientWorkouts =
         (await getJSON(`/api/workouts?clientId=${encodeURIComponent(c.id)}`))
           .workouts || [];
-    } catch {}
+    } catch (err) {
+      return toast(
+        err.message ||
+          "Could not check for an unfinished session. Retry before starting.",
+      );
+    }
   const chosen = Number.isInteger(dayIndex) && Number.isInteger(weekIndex),
     open = state.clientWorkouts.find(
       (w) => w.status !== "finished" && String(w.program_id) === String(p.id),
@@ -143,8 +148,14 @@ async function startLiveSession(clientId, programId, dayIndex, weekIndex) {
   // An unfinished session is resumed, unless a different day was picked and
   // William would rather start that one.
   if (open) {
-    const same = !chosen || (open.day_index === dayIndex && open.week_index === weekIndex);
-    if (same || confirm(`Resume the unfinished ${open.day_name || `Day ${open.day_index + 1}`} · Week ${open.week_index + 1} session first?\n\nOK resumes it. Cancel starts the one you picked.`))
+    const same =
+      !chosen || (open.day_index === dayIndex && open.week_index === weekIndex);
+    if (
+      same ||
+      confirm(
+        `Resume the unfinished ${open.day_name || `Day ${open.day_index + 1}`} · Week ${open.week_index + 1} session first?\n\nOK resumes it. Cancel starts the one you picked.`,
+      )
+    )
       return resumeLiveSession(c.id, open.id);
   }
   const { day, week } = chosen
@@ -160,6 +171,7 @@ async function startLiveSession(clientId, programId, dayIndex, weekIndex) {
     notes: "",
     startedAt: Date.now(),
   };
+  restoreLiveDraft();
   showLiveSession();
 }
 function resumeLiveSession(clientId, workoutId) {
@@ -184,7 +196,26 @@ function resumeLiveSession(clientId, workoutId) {
     notes: w.notes || "",
     startedAt: new Date(w.started_at).getTime(),
   };
+  restoreLiveDraft();
   showLiveSession();
+}
+function restoreLiveDraft() {
+  const L = state.live,
+    draft = readLocal(`taskdash_live_${L.client.id}`, null);
+  if (
+    !draft ||
+    draft.unsaved === false ||
+    String(draft.programId) !== String(L.program.id)
+  )
+    return;
+  if (draft.logId && String(draft.logId) !== String(L.log?.id)) return;
+  if (draft.dayIndex !== L.dayIndex || draft.weekIndex !== L.weekIndex) return;
+  L.requestKey = draft.requestKey || L.requestKey;
+  L.entries = draft.entries;
+  L.notes = draft.notes || "";
+  L.unsaved = true;
+  pendingDrafts.add(L);
+  L.saveState = "Recovered device draft — retry to sync";
 }
 // Most recent logged numbers for an exercise, from earlier sessions.
 function lastTimeFor(name, currentLogId) {
@@ -203,6 +234,7 @@ function lastTimeFor(name, currentLogId) {
   return "";
 }
 function showLiveSession() {
+  state.live.requestKey ||= crypto.randomUUID();
   const box = $("#liveSession");
   box.hidden = false;
   document.body.classList.add("live-open");
@@ -233,7 +265,7 @@ function renderLiveSession() {
     total = L.entries.reduce((n, e) => n + e.sets.length, 0);
   let lastBlock = "";
   $("#liveSession").innerHTML =
-    `<header class="live-head"><div><span class="kicker">LIVE SESSION · ${esc(L.program.name || "Program")}</span><h2>${esc(L.client.name)}</h2></div><div class="live-pickers"><label>Day<select data-live="day" ${L.log ? "disabled" : ""}>${plan.days.map((d, i) => `<option value="${i}" ${i === L.dayIndex ? "selected" : ""}>${esc(d.name || `Day ${i + 1}`)}</option>`).join("")}</select></label><label>Week<select data-live="week" ${L.log ? "disabled" : ""}>${Array.from({ length: weeks }, (_, i) => `<option value="${i}" ${i === L.weekIndex ? "selected" : ""}>Week ${i + 1}</option>`).join("")}</select></label><div class="live-clock"><span id="liveClock">0:00</span><small>${done}/${total} sets</small></div></div><div class="live-actions"><span class="live-save" id="liveSaveState">${L.log ? "Saved" : "Not started"}</span>${L.entries.some((e) => e.sets.some((x) => x.suggest && !x.weight)) ? '<button class="secondary-btn" data-live="use-last">Use last weights</button>' : ""}<button class="secondary-btn" data-live="close">Save &amp; close</button><button class="primary-btn" data-live="finish">Finish session</button></div></header><div class="live-body">${
+    `<header class="live-head"><div><span class="kicker">LIVE SESSION · ${esc(L.program.name || "Program")}</span><h2>${esc(L.client.name)}</h2></div><div class="live-pickers"><label>Day<select data-live="day" ${L.log ? "disabled" : ""}>${plan.days.map((d, i) => `<option value="${i}" ${i === L.dayIndex ? "selected" : ""}>${esc(d.name || `Day ${i + 1}`)}</option>`).join("")}</select></label><label>Week<select data-live="week" ${L.log ? "disabled" : ""}>${Array.from({ length: weeks }, (_, i) => `<option value="${i}" ${i === L.weekIndex ? "selected" : ""}>Week ${i + 1}</option>`).join("")}</select></label><div class="live-clock"><span id="liveClock">0:00</span><small>${done}/${total} sets</small></div></div><div class="live-actions"><span class="live-save" id="liveSaveState">${esc(L.saveState || (L.unsaved ? "Saved on this device only — retry to sync" : L.log ? "Saved" : "Not started"))}</span>${L.entries.some((e) => e.sets.some((x) => x.suggest && !x.weight)) ? '<button class="secondary-btn" data-live="use-last">Use last weights</button>' : ""}<button class="text-btn" data-live="retry">Retry save</button><button class="secondary-btn" data-live="close">Save &amp; close</button><button class="primary-btn" data-live="finish">Finish session</button></div></header><div class="live-body">${
       day.warmup?.length
         ? `<section class="live-warmup"><span class="kicker">WARM-UP / PILLAR PREP</span>${day.warmup.map((w) => `<span>${esc(w.name)} <em>${esc(w.prescription || "")}</em></span>`).join("")}</section>`
         : ""
@@ -288,7 +320,13 @@ function liveChange(e) {
     }
   if (which === "day") L.dayIndex = Number(e.target.value);
   else L.weekIndex = Number(e.target.value);
-  L.entries = liveEntries(L.program, L.dayIndex, L.weekIndex, state.clientWorkouts, L.log?.id);
+  L.entries = liveEntries(
+    L.program,
+    L.dayIndex,
+    L.weekIndex,
+    state.clientWorkouts,
+    L.log?.id,
+  );
   renderLiveSession();
 }
 async function liveClick(e) {
@@ -337,8 +375,20 @@ async function liveClick(e) {
     renderLiveSession();
     queueLiveSave();
   }
+  if (a === "retry") {
+    try {
+      await saveLiveSession();
+    } catch (err) {
+      toast(err.message || "Could not save");
+    }
+    return;
+  }
   if (a === "close") {
-    await saveLiveSession();
+    try {
+      await saveLiveSession();
+    } catch (err) {
+      return toast(err.message || "Could not save; your session is still open");
+    }
     closeLiveSession("Session saved. Resume it from the client's profile.");
   }
   if (a === "finish") {
@@ -349,12 +399,18 @@ async function liveClick(e) {
     } catch (err) {
       return toast(err.message || "Could not finish the session");
     }
-    closeLiveSession("Session finished and logged", state.live?.log?.session_id);
+    closeLiveSession(
+      "Session finished and logged",
+      state.live?.log?.session_id,
+    );
   }
 }
 function queueLiveSave() {
   const L = state.live;
   if (!L) return;
+  L.unsaved = true;
+  L.saveState = "Saving…";
+  pendingDrafts.add(L);
   // Keep a local copy right away in case the connection drops mid-session.
   writeLocal(`taskdash_live_${L.client.id}`, {
     entries: L.entries,
@@ -362,6 +418,9 @@ function queueLiveSave() {
     dayIndex: L.dayIndex,
     weekIndex: L.weekIndex,
     programId: L.program.id,
+    requestKey: L.requestKey,
+    logId: L.log?.id,
+    unsaved: true,
   });
   const status = $("#liveSaveState");
   if (status) status.textContent = "Saving…";
@@ -374,51 +433,91 @@ function queueLiveSave() {
 async function saveLiveSession(finish = false) {
   const L = state.live;
   if (!L) return;
+  if (L.finishing) return L.finishing;
   clearTimeout(state.liveSaveTimer);
-  const status = $("#liveSaveState");
-  try {
-    if (!L.log) {
-      L.log = await getJSON("/api/workouts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientId: L.client.id,
-          programId: L.program.id,
-          programName: L.program.name,
-          dayIndex: L.dayIndex,
-          dayName:
-            normalizeProgramContent(L.program).days[L.dayIndex]?.name ||
-            `Day ${L.dayIndex + 1}`,
-          weekIndex: L.weekIndex,
-          entries: L.entries,
-        }),
-      });
-      L.startedAt = new Date(L.log.started_at).getTime() || L.startedAt;
+  const snapshot = () =>
+    structuredClone({ entries: L.entries, notes: L.notes });
+  const persist = (unsaved) =>
+    writeLocal(`taskdash_live_${L.client.id}`, {
+      ...snapshot(),
+      dayIndex: L.dayIndex,
+      weekIndex: L.weekIndex,
+      programId: L.program.id,
+      requestKey: L.requestKey,
+      logId: L.log?.id,
+      unsaved,
+    });
+  const save = () =>
+    saveDraftRecord(L, {
+      snapshot,
+      persist,
+      send: (payload) => persistLiveSession(L, payload, false),
+      status: (message) => {
+        if (state.live === L && $("#liveSaveState"))
+          $("#liveSaveState").textContent = message;
+      },
+    });
+  if (!finish) return save();
+  // Prevent further edits between flushing the draft and completing the log.
+  $("#liveSession").inert = true;
+  L.finishing = (async () => {
+    try {
+      await save();
+      await persistLiveSession(L, snapshot(), true);
+      localStorage.removeItem(`taskdash_live_${L.client.id}`);
+    } catch (err) {
+      L.unsaved = true;
+      pendingDrafts.add(L);
+      persist(true);
+      L.saveState = "Session not finished — retry";
+      if ($("#liveSaveState")) $("#liveSaveState").textContent = L.saveState;
+      throw err;
+    } finally {
+      $("#liveSession").inert = false;
+      L.finishing = null;
     }
-    L.log = await getJSON(`/api/workouts?id=${encodeURIComponent(L.log.id)}`, {
-      method: "PATCH",
+  })();
+  return L.finishing;
+}
+async function persistLiveSession(L, payload, finish) {
+  $$("[data-live=day],[data-live=week]").forEach((el) => (el.disabled = true));
+  if (!L.log) {
+    L.log = await getJSON("/api/workouts", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        entries: L.entries,
-        notes: L.notes,
-        finish,
-        dayKey: todayKey,
+        clientId: L.client.id,
+        requestKey: L.requestKey,
+        programId: L.program.id,
+        programName: L.program.name,
+        dayIndex: L.dayIndex,
+        dayName:
+          normalizeProgramContent(L.program).days[L.dayIndex]?.name ||
+          `Day ${L.dayIndex + 1}`,
+        weekIndex: L.weekIndex,
+        entries: payload.entries,
       }),
     });
-    const i = state.clientWorkouts.findIndex(
-      (w) => String(w.id) === String(L.log.id),
-    );
-    if (i >= 0) state.clientWorkouts[i] = L.log;
-    else state.clientWorkouts.unshift(L.log);
-    if (status) status.textContent = `Saved ${fmtTime(new Date())}`;
-    $$("[data-live=day],[data-live=week]").forEach(
-      (el) => (el.disabled = true),
-    );
-  } catch (err) {
-    if (status) status.textContent = "Saved on this device only";
-    if (finish) throw err;
+    L.startedAt = new Date(L.log.started_at).getTime() || L.startedAt;
   }
+  L.log = await getJSON(`/api/workouts?id=${encodeURIComponent(L.log.id)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      entries: payload.entries,
+      notes: payload.notes,
+      finish,
+      dayKey: todayKey,
+    }),
+  });
+  const i = state.clientWorkouts.findIndex(
+    (w) => String(w.id) === String(L.log.id),
+  );
+  if (i >= 0) state.clientWorkouts[i] = L.log;
+  else state.clientWorkouts.unshift(L.log);
+  $$("[data-live=day],[data-live=week]").forEach((el) => (el.disabled = true));
 }
+
 function closeLiveSession(message, wrapSessionId) {
   const L = state.live;
   clearInterval(state.liveClock);
@@ -489,8 +588,7 @@ async function saveEditToProgram(edit) {
       edit,
       Number(p.weeks) || 4,
     );
-  if (!content)
-    throw new Error("couldn't find that exercise in the program");
+  if (!content) throw new Error("couldn't find that exercise in the program");
   const saved = await getJSON(`/api/programs?id=${encodeURIComponent(p.id)}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -506,7 +604,8 @@ async function saveEditToProgram(edit) {
 async function commitLiveEdit(scope, edit, doneMessage) {
   renderLiveSession();
   queueLiveSave();
-  if (!String(scope).startsWith("program")) return toast(`${doneMessage} for today`);
+  if (!String(scope).startsWith("program"))
+    return toast(`${doneMessage} for today`);
   try {
     await saveEditToProgram(edit);
     toast(`${doneMessage} · ${state.live.client.name}'s program updated`);
@@ -564,7 +663,12 @@ function openAddExercise() {
         reps = v.reps.trim();
       if (!name) throw new Error("Name the exercise");
       const block = (L.entries.at(-1)?.key || "A1").replace(/\d+$/, ""),
-        suggest = Progress.suggestWeights(name, state.clientWorkouts, sets, L.log?.id);
+        suggest = Progress.suggestWeights(
+          name,
+          state.clientWorkouts,
+          sets,
+          L.log?.id,
+        );
       L.entries.push({
         key: Progress.nextEntryKey(L.entries, block),
         name,

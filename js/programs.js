@@ -4,7 +4,11 @@ async function loadPrograms() {
   try {
     state.programs = (await getJSON("/api/programs")).programs || [];
   } catch {
-    state.programs = readLocal("taskdash_programs", []);
+    state.programs = state.authRequired
+      ? []
+      : state.programs.length
+        ? state.programs
+        : readLocal("taskdash_programs", []);
   }
 }
 function renderPrograms() {

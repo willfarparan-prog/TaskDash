@@ -119,7 +119,7 @@ const state = {
     readLocal("taskdash_settings", {}),
   ),
 };
-async function getJSON(url, opts) {
+async function requestJSON(url, opts) {
   const method = String(opts?.method || "GET").toUpperCase();
   let r;
   try {
@@ -285,7 +285,10 @@ function readLocal(k, f) {
 function writeLocal(k, v) {
   try {
     localStorage.setItem(k, JSON.stringify(v));
-  } catch {}
+    return true;
+  } catch {
+    return false;
+  }
 }
 let toastTimer;
 function toast(msg) {
@@ -294,4 +297,68 @@ function toast(msg) {
   el.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+// Serialize autosaves and drain edits made while a request was in flight.
+// A successful response acknowledges only the snapshot it actually saved.
+const draftSaves = new WeakMap();
+const pendingDrafts = new Set();
+function saveDraftRecord(record, { snapshot, persist, send, status }) {
+  if (draftSaves.has(record)) return draftSaves.get(record);
+  const work = (async () => {
+    record.unsaved = true;
+    pendingDrafts.add(record);
+    try {
+      while (true) {
+        const payload = snapshot(),
+          version = JSON.stringify(payload);
+        persist(true);
+        record.saveState = "Saving…";
+        status(record.saveState);
+        await send(payload);
+        if (JSON.stringify(snapshot()) !== version) continue;
+        record.unsaved = false;
+        pendingDrafts.delete(record);
+        persist(false);
+        record.saveState = `Saved ${fmtTime(new Date())}`;
+        status(record.saveState);
+        return true;
+      }
+    } catch (err) {
+      record.saveState =
+        persist(true) === false
+          ? "Not saved — keep this page open and retry"
+          : "Saved on this device only — retry to sync";
+      status(record.saveState);
+      throw err;
+    }
+  })();
+  draftSaves.set(record, work);
+  work.finally(() => draftSaves.delete(record)).catch(() => {});
+  return work;
+}
+
+const readFailures = new Map();
+async function getJSON(url, opts) {
+  const read = !opts?.method || opts.method.toUpperCase() === "GET";
+  const resource = String(url).split("?")[0];
+  try {
+    const data = await requestJSON(url, opts);
+    if (read) readFailures.delete(resource);
+    renderDataStatus();
+    return data;
+  } catch (err) {
+    if (read) readFailures.set(resource, err.message);
+    renderDataStatus();
+    throw err;
+  }
+}
+function renderDataStatus() {
+  const gate = $("#ownerGate");
+  if (gate) gate.hidden = !state.authRequired;
+  const el = $("#dataStatus");
+  if (!el) return;
+  el.hidden = state.authRequired || !readFailures.size;
+  if (!el.hidden)
+    el.textContent = `Live data unavailable for ${[...readFailures.keys()].map((x) => x.split("/").pop().replaceAll("-", " ")).join(", ")}. Showing the last loaded data where available. Use Refresh to reconnect.`;
 }

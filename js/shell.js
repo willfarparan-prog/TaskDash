@@ -93,7 +93,8 @@ function routeFromHash() {
 }
 function renderRoute() {
   // Leaving a consult page: make sure the last answers are saved.
-  if (state.view !== "consult" && state.consult?.unsaved) saveConsult();
+  if (state.view !== "consult" && state.consult?.unsaved)
+    saveConsult().catch(() => {});
   $$(".view").forEach((v) =>
     v.classList.toggle("active", v.id === `view-${state.view}`),
   );
@@ -200,8 +201,8 @@ function wireControls() {
     persistProgramDraft();
   });
   window.addEventListener("beforeunload", (e) => {
-    if (state.programDirty) {
-      persistProgramDraft();
+    if (state.programDirty || pendingDrafts.size) {
+      if (state.programDirty) persistProgramDraft();
       e.preventDefault();
       e.returnValue = "";
     }
@@ -281,6 +282,10 @@ function wireControls() {
       }),
   );
   $("#newEventBtn").onclick = openEventDialog;
+  $("#eventBoard").addEventListener("input", (e) => {
+    if (e.target.matches("[data-draft-text]")) stageDraftEdit(e);
+    else if (e.target.matches("[data-report-field]")) reportChange(e, true);
+  });
   $("#eventBoard").addEventListener("change", (e) => {
     if (e.target.matches("[data-report-field],[data-report-setting]"))
       reportChange(e);

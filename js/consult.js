@@ -54,7 +54,8 @@ async function openConsult(id) {
   if (state.consult && String(state.consult.id) !== id) state.consult = null;
   renderRoute();
   if (!state.consult) {
-    $("#consultView").innerHTML = '<div class="empty-state">Opening the consult…</div>';
+    $("#consultView").innerHTML =
+      '<div class="empty-state">Opening the consult…</div>';
     try {
       const out = await getJSON(`/api/consults?id=${encodeURIComponent(id)}`);
       const local = readLocal(`taskdash_consult_${id}`, null);
@@ -66,7 +67,8 @@ async function openConsult(id) {
         unsaved: !!local?.unsaved,
       };
     } catch (err) {
-      $("#consultView").innerHTML = `<div class="empty-state">${esc(err.message || "Couldn't open this consult.")}</div>`;
+      $("#consultView").innerHTML =
+        `<div class="empty-state">${esc(err.message || "Couldn't open this consult.")}</div>`;
       return;
     }
   }
@@ -78,30 +80,38 @@ const consultAnswers = () => state.consult?.answers || {};
 function queueConsultSave(now = false) {
   const C = state.consult;
   if (!C) return;
+  C.unsaved = true;
+  C.saveState = "Saving…";
+  pendingDrafts.add(C);
   // Keep a copy on this device first, in case the connection drops mid-consult.
   writeLocal(`taskdash_consult_${C.id}`, { answers: C.answers, unsaved: true });
   const status = $("#consultSaveState");
   if (status) status.textContent = "Saving…";
   clearTimeout(state.consultTimer);
-  state.consultTimer = setTimeout(saveConsult, now ? 0 : 800);
+  state.consultTimer = setTimeout(
+    () => saveConsult().catch(() => {}),
+    now ? 0 : 800,
+  );
 }
 async function saveConsult() {
   const C = state.consult;
   if (!C) return;
   clearTimeout(state.consultTimer);
-  const status = $("#consultSaveState");
-  try {
-    await getJSON(`/api/consults?id=${encodeURIComponent(C.id)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers: C.answers }),
-    });
-    C.unsaved = false;
-    writeLocal(`taskdash_consult_${C.id}`, { answers: C.answers, unsaved: false });
-    if (status) status.textContent = `Saved ${fmtTime(new Date())}`;
-  } catch {
-    if (status) status.textContent = "Saved on this device only";
-  }
+  return saveDraftRecord(C, {
+    snapshot: () => structuredClone(C.answers),
+    persist: (unsaved) =>
+      writeLocal(`taskdash_consult_${C.id}`, { answers: C.answers, unsaved }),
+    send: (answers) =>
+      getJSON(`/api/consults?id=${encodeURIComponent(C.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers }),
+      }),
+    status: (message) => {
+      if (state.consult === C && $("#consultSaveState"))
+        $("#consultSaveState").textContent = message;
+    },
+  });
 }
 
 // ----- The form -----
@@ -128,7 +138,7 @@ function renderConsult() {
     const fields = ConsultIntake.FIELDS.filter((f) => f.section === s.key);
     return `<section class="consult-section"><h3>${esc(s.title)}</h3><div class="consult-grid">${fields.map((f) => consultFieldHTML(f, answers[f.key])).join("")}</div></section>`;
   }).join("");
-  box.innerHTML = `<div class="profile-head"><div class="client-name"><span class="mini-avatar">${initials(C.client.name)}</span><div><span class="kicker">PT CONSULT${done ? " · COMPLETED" : ""}</span><h2>${esc(answers.name || C.client.name)}</h2><p>${done ? esc(`${CONSULT_NEXT[C.decision] || "Finished"} · ${shortDate(C.completed_at || C.created_at)}`) : "Fill this in with them. It saves as you go."}</p></div></div><div class="profile-head-actions"><span class="live-save" id="consultSaveState">${C.unsaved ? "Saved on this device only" : "Saved"}</span><button class="secondary-btn" data-consult="profile">Client profile</button><button class="primary-btn" data-consult="finish">${done ? "Update the decision" : "Finish consult"}</button></div></div>${done && C.decision === "yes" ? '<div id="consultNext"></div>' : ""}<div class="consult-form">${sections}</div><div class="consult-foot"><button class="primary-btn" data-consult="finish">${done ? "Update the decision" : "Finish consult"}</button></div>`;
+  box.innerHTML = `<div class="profile-head"><div class="client-name"><span class="mini-avatar">${initials(C.client.name)}</span><div><span class="kicker">PT CONSULT${done ? " · COMPLETED" : ""}</span><h2>${esc(answers.name || C.client.name)}</h2><p>${done ? esc(`${CONSULT_NEXT[C.decision] || "Finished"} · ${shortDate(C.completed_at || C.created_at)}`) : "Fill this in with them. It saves as you go."}</p></div></div><div class="profile-head-actions"><span class="live-save" id="consultSaveState">${esc(C.saveState || (C.unsaved ? "Saved on this device only — retry to sync" : "Saved"))}</span><button class="text-btn" data-consult="retry">Retry save</button><button class="secondary-btn" data-consult="profile">Client profile</button><button class="primary-btn" data-consult="finish">${done ? "Update the decision" : "Finish consult"}</button></div></div>${done && C.decision === "yes" ? '<div id="consultNext"></div>' : ""}<div class="consult-form">${sections}</div><div class="consult-foot"><button class="primary-btn" data-consult="finish">${done ? "Update the decision" : "Finish consult"}</button></div>`;
   if (done && C.decision === "yes") renderConsultNext();
 }
 function consultInput(e) {
@@ -186,12 +196,47 @@ function openStartTrainingDialog() {
     kicker: "PT CONSULT",
     title: `Starting ${String(C.client.name).split(/\s+/)[0]} on personal training`,
     fields: [
-      ["daysPerWeek", "Training days per week", "select", days, String(C.days_per_week || 3)],
-      ["sessionMinutes", "Session length (minutes)", "select", minutes, String(C.session_minutes || 60)],
-      ["packageSize", "Package size (sessions)", "number", "e.g. 10", C.client?.package_size ?? ""],
-      ["packagePrice", "Package price paid, before tax ($)", "number", "e.g. 630", C.client?.package_price ?? ""],
-      ["firstSession", "First session", "date", "", C.first_session ? String(C.first_session).slice(0, 10) : ""],
-      ["makePt", "Mark as a Personal training client and start the new-client checklist", "checkbox", true],
+      [
+        "daysPerWeek",
+        "Training days per week",
+        "select",
+        days,
+        String(C.days_per_week || 3),
+      ],
+      [
+        "sessionMinutes",
+        "Session length (minutes)",
+        "select",
+        minutes,
+        String(C.session_minutes || 60),
+      ],
+      [
+        "packageSize",
+        "Package size (sessions)",
+        "number",
+        "e.g. 10",
+        C.client?.package_size ?? "",
+      ],
+      [
+        "packagePrice",
+        "Package price paid, before tax ($)",
+        "number",
+        "e.g. 630",
+        C.client?.package_price ?? "",
+      ],
+      [
+        "firstSession",
+        "First session",
+        "date",
+        "",
+        C.first_session ? String(C.first_session).slice(0, 10) : "",
+      ],
+      [
+        "makePt",
+        "Mark as a Personal training client and start the new-client checklist",
+        "checkbox",
+        true,
+      ],
     ],
     submit: async (v) => {
       await completeConsult({
@@ -211,22 +256,35 @@ function openStartTrainingDialog() {
 }
 async function completeConsult(body) {
   const C = state.consult;
-  clearTimeout(state.consultTimer);
-  const out = await getJSON(
-    `/api/consults?id=${encodeURIComponent(C.id)}&action=complete`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, answers: C.answers }),
-    },
-  );
-  state.consult = { ...C, ...out.consult, client: out.client, unsaved: false };
-  writeLocal(`taskdash_consult_${C.id}`, { answers: C.answers, unsaved: false });
-  await loadClients();
-  state.consultProgram = null;
-  renderConsult();
-  if (body.decision === "yes")
-    $("#consultNext")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  $("#consultView").inert = true;
+  try {
+    await saveConsult();
+    const out = await getJSON(
+      `/api/consults?id=${encodeURIComponent(C.id)}&action=complete`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, answers: C.answers }),
+      },
+    );
+    state.consult = {
+      ...C,
+      ...out.consult,
+      client: out.client,
+      unsaved: false,
+    };
+    writeLocal(`taskdash_consult_${C.id}`, {
+      answers: C.answers,
+      unsaved: false,
+    });
+    await loadClients();
+    state.consultProgram = null;
+    renderConsult();
+    if (body.decision === "yes")
+      $("#consultNext")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  } finally {
+    $("#consultView").inert = false;
+  }
 }
 
 // ----- After Yes: program, meal plan -----
@@ -237,7 +295,9 @@ function renderConsultNext() {
   const C = state.consult,
     box = $("#consultNext");
   if (!box) return;
-  const client = state.clients.find((c) => String(c.id) === String(C.client_id)) || C.client,
+  const client =
+      state.clients.find((c) => String(c.id) === String(C.client_id)) ||
+      C.client,
     matches = ConsultProgram.rankStockPrograms(
       consultAnswers(),
       state.programs,
@@ -296,7 +356,9 @@ async function buildCustomProgram() {
     );
     state.consultProgram = out;
   } catch (err) {
-    state.consultProgram = { error: err.message || "Could not build the program" };
+    state.consultProgram = {
+      error: err.message || "Could not build the program",
+    };
   }
   renderConsultNext();
 }
@@ -316,7 +378,9 @@ async function attachProgramToConsult(program) {
 async function attachStockMatch(programId) {
   const source = state.programs.find((p) => String(p.id) === String(programId)),
     C = state.consult,
-    client = state.clients.find((c) => String(c.id) === String(C.client_id)) || C.client;
+    client =
+      state.clients.find((c) => String(c.id) === String(C.client_id)) ||
+      C.client;
   if (!source) return;
   try {
     const saved = await copyProgramForClient(
@@ -357,8 +421,13 @@ async function attachCustomProgram() {
 }
 function openConsultMealPlan() {
   const C = state.consult,
-    client = state.clients.find((c) => String(c.id) === String(C.client_id)) || C.client,
-    prefill = ConsultIntake.mealIntakeFrom(C.answers, Number(C.days_per_week) || null);
+    client =
+      state.clients.find((c) => String(c.id) === String(C.client_id)) ||
+      C.client,
+    prefill = ConsultIntake.mealIntakeFrom(
+      C.answers,
+      Number(C.days_per_week) || null,
+    );
   openMealIntakeDialog({
     ...client,
     nutrition_intake: { ...prefill, ...(client.nutrition_intake || {}) },
@@ -371,8 +440,20 @@ async function consultClick(e) {
   if (!b || !state.consult) return;
   const a = b.dataset.consult;
   if (a === "profile") {
-    await saveConsult();
+    try {
+      await saveConsult();
+    } catch (err) {
+      return toast(err.message || "Could not save; your edits are still here");
+    }
     return openClientProfile(state.consult.client_id);
+  }
+  if (a === "retry") {
+    try {
+      await saveConsult();
+    } catch (err) {
+      toast(err.message || "Could not save");
+    }
+    return;
   }
   if (a === "finish") return openFinishConsult();
   if (a === "build") return buildCustomProgram();
@@ -381,8 +462,9 @@ async function consultClick(e) {
   if (a === "meal") return openConsultMealPlan();
   if (a === "logger-row") {
     const c =
-      state.clients.find((x) => String(x.id) === String(state.consult.client_id)) ||
-      state.consult.client;
+      state.clients.find(
+        (x) => String(x.id) === String(state.consult.client_id),
+      ) || state.consult.client;
     return openLoggerRows(c.id);
   }
   if (a === "open-program") {

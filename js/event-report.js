@@ -36,7 +36,12 @@ function eventReportOf(raw) {
 }
 const reportStarted = (raw) => {
   const r = eventReportOf(raw);
-  return !!(r.actual != null || r.nps || r.description.length || r.takeaways.length);
+  return !!(
+    r.actual != null ||
+    r.nps ||
+    r.description.length ||
+    r.takeaways.length
+  );
 };
 // "Draft ready" once the write-up exists; the step is done when ticked.
 const reportReady = (raw) => {
@@ -75,7 +80,7 @@ function reportPanelHTML(raw, e) {
           : "Not started",
     seg = (field, value, label, current) =>
       `<button type="button" class="seg ${current === value ? "on" : ""}" data-report-action="${field}" data-value="${value}">${label}</button>`;
-  return `<details class="report-panel" ${state.openReports.has(id) ? "open" : ""}><summary><span>Wellbeing Strategy report</span><em data-report-status>${status}</em></summary><div class="report-body">
+  return `<details class="report-panel" ${state.openReports.has(id) ? "open" : ""}><summary><span>Wellbeing Strategy report</span><em data-report-status>${raw.unsaved ? esc(raw.saveState || "Saved on this device only — retry to sync") : status}</em></summary><div class="report-body" ${busy ? "inert" : ""}><button class="text-btn" data-report-action="retry">Retry save</button>
 <div class="report-grid">
 <label>Objective<small>participants</small><input type="number" min="0" inputmode="numeric" data-report-field="objective" value="${attr(r.objective ?? "")}"></label>
 <label>Actual attendance<small>from the badge reader</small><input type="number" min="0" inputmode="numeric" data-report-field="actual" value="${attr(r.actual ?? "")}"></label>
@@ -122,31 +127,60 @@ function refreshReportPreview(raw, card) {
   if (pre) pre.textContent = reportText(raw, normalizeEvent(raw));
   const status = card.querySelector("[data-report-status]");
   if (status && !state.reportBusy?.[raw.id])
-    status.textContent = reportReady(raw)
-      ? "Draft ready"
-      : reportStarted(raw)
-        ? "In progress"
-        : "Not started";
+    status.textContent = raw.unsaved
+      ? raw.saveState || "Saved on this device only — retry to sync"
+      : reportReady(raw)
+        ? "Draft ready"
+        : reportStarted(raw)
+          ? "In progress"
+          : "Not started";
+}
+function stageReport(raw) {
+  raw.unsaved = true;
+  pendingDrafts.add(raw);
+  raw.saveState = writeLocal(`taskdash_report_${raw.id}`, raw.report)
+    ? "Saved on this device only — retry to sync"
+    : "Not saved — keep this page open and retry";
 }
 async function saveReport(raw) {
+  stageReport(raw);
   try {
-    await getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ report: raw.report }),
+    await saveDraftRecord(raw, {
+      snapshot: () => structuredClone(raw.report),
+      persist: (unsaved) => {
+        if (!unsaved) {
+          localStorage.removeItem(`taskdash_report_${raw.id}`);
+          return true;
+        }
+        return writeLocal(`taskdash_report_${raw.id}`, raw.report);
+      },
+      send: (report) =>
+        getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ report }),
+        }),
+      status: (message) => {
+        const card = document.querySelector(
+          `.event-card[data-id="${CSS.escape(String(raw.id))}"] [data-report-status]`,
+        );
+        if (card) card.textContent = message;
+      },
     });
+    return true;
   } catch (err) {
-    writeLocal("taskdash_events", state.events);
     toast(`Report not saved — ${err.message}`);
+    return false;
   }
 }
+
 // Keeps the Met / Not met suggestion in step with the head counts until
 // William picks one himself.
 function syncGoal(r) {
   if (!r.goalManual) r.goal = EventReport.suggestGoal(r.objective, r.actual);
 }
 
-async function reportChange(e) {
+async function reportChange(e, inputOnly = false) {
   const ctx = reportContext(e.target);
   if (e.target.dataset.reportSetting) {
     writeLocal(REPORT_SETTINGS_KEY, {
@@ -172,6 +206,11 @@ async function reportChange(e) {
   if (field === "takeaways") r.takeaways = lineList(value);
   syncGoal(r);
   raw.report = r;
+  stageReport(raw);
+  if (inputOnly) {
+    refreshReportPreview(raw, card);
+    return;
+  }
   refreshReport(raw);
   await saveReport(raw);
 }
@@ -194,7 +233,9 @@ async function syncSurveyResponses(raw, responses) {
       body: JSON.stringify({ pipelineState: map }),
     });
   } catch {
-    writeLocal("taskdash_events", state.events);
+    toast(
+      "Survey response count not saved — retry by reading the results again",
+    );
   }
 }
 
@@ -205,6 +246,7 @@ async function reportClick(b) {
     action = b.dataset.reportAction,
     r = eventReportOf(raw),
     mem = memory(raw.id);
+  if (action === "retry") return saveReport(raw);
   if (action === "read") {
     const text = card.querySelector('[data-report-field="paste"]').value;
     mem.paste = text;
@@ -247,7 +289,9 @@ async function reportClick(b) {
   } else if (action === "draft") {
     if (
       (r.description.length || r.takeaways.length) &&
-      !confirm("Redraft with Claude? Your edits to the description and takeaways will be replaced.")
+      !confirm(
+        "Redraft with Claude? Your edits to the description and takeaways will be replaced.",
+      )
     )
       return;
     state.reportBusy = { ...(state.reportBusy || {}), [raw.id]: true };

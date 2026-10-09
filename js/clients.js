@@ -10,8 +10,16 @@ async function loadClients() {
     state.sessions = d.sessions || [];
     state.mealPlanIndex = plans.mealPlans || [];
   } catch {
-    state.clients = readLocal("taskdash_clients", []);
-    state.sessions = readLocal("taskdash_sessions", []);
+    state.clients = state.authRequired
+      ? []
+      : state.clients.length
+        ? state.clients
+        : readLocal("taskdash_clients", []);
+    state.sessions = state.authRequired
+      ? []
+      : state.sessions.length
+        ? state.sessions
+        : readLocal("taskdash_sessions", []);
   }
 }
 function renderClients() {

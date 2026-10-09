@@ -33,3 +33,10 @@ The remaining highest-impact weaknesses were failure handling and recovery. Fail
 ## Validation scope
 
 152 automated tests pass. These cover existing workflows plus booking overlap, retries/cancellation, export exclusions, stale program updates, production mutation rollback and draft recovery. Local browser checks cover partial-row recovery after refresh and phone search. Production smoke checks and deployment provenance are recorded in RELEASE.md. Authenticated database writes and Google event creation need an approved-account interactive session; tests simulate those boundaries.
+
+
+## Follow-up save reliability
+
+Fixed in this release: overlapping autosave acknowledgement, lost-response session-create duplication, non-transactional session completion, false-success consultation navigation/session close, report and messaging-draft recovery after reload, production preview-task fallback, and missing visibility of read outages. Explicit retry and unsynced-work exit warnings cover these drafts.
+
+Production consult/program/session save-and-resume verification succeeded on a clearly named test client. Session finish/history/wrap-up and booking/calendar/cancellation verification remain pending the browser confirmation; see RELEASE.md for exact coverage. Recoverable deletion, restore rehearsal and background calendar recovery remain separate future improvements.
