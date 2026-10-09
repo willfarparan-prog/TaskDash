@@ -651,7 +651,7 @@ async function deleteClient(c) {
       await getJSON(`/api/clients?id=${encodeURIComponent(c.id)}`, {
         method: "DELETE",
       });
-    state.clients = state.clients.filter((x) => x !== c);
+    state.clients = state.clients.filter((x) => String(x.id) !== String(c.id));
     state.sessions = state.sessions.filter(
       (s) => String(s.client_id) !== String(c.id),
     );
