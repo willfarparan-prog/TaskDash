@@ -407,7 +407,7 @@ function fakeApi() {
                 subject: "Staffing",
                 snippet: "Can you cover?",
                 received: "Oct 8",
-                link: "https://mail.google.com/mail/u/x/#all/1",
+                link: "https://mail.google.com/mail/?authuser=x%40example.com#all/1",
               },
             ],
             connections: { google: true, work: true },
@@ -472,7 +472,21 @@ function fakeApi() {
                 },
           );
         case "GET links":
-          return json(route, { links: [] });
+          return json(route, {
+            links: [
+              { id: "7", title: "Event tracker", category: "tracking", url: "https://docs.google.com/spreadsheets/d/x/edit" },
+            ],
+          });
+        case "GET sops":
+          return json(route, {
+            tabs: [{ key: "daily", label: "Daily & Weekly" }, { key: "events", label: "Events & Marketing" }],
+            sops: [
+              { id: "start", tab: "daily", title: "Start of shift", summary: "Open up.", when: "Every morning", keywords: "", links: ["7"], steps: ["Unlock", { t: "Check", sub: ["towels"] }], notes: ["Note one"], warnings: ["Careful"], templates: [{ label: "Email", text: "Hello" }], app: [{ view: "events", label: "Open Events" }] },
+              { id: "ev", tab: "events", title: "Plan an event", summary: "Events.", when: "", keywords: "", links: [], steps: ["Book room"], notes: [], warnings: [], templates: [], app: [] },
+            ],
+          });
+        case "POST hub-chat":
+          return json(route, { answer: "Start with the shift guide.", sopIds: ["start"], linkIds: ["7"] });
       }
       return json(route, { error: `fake API has no ${method} ${path}` }, 404);
     },
@@ -538,6 +552,31 @@ async function main() {
         await page.click(`.nav-item[data-view="${view}"]`);
         await page.waitForSelector(`#view-${view}.active`);
       }
+    });
+
+    await step("resource hub SOPs open in a pop-up and the chat answers", async () => {
+      await page.click('.nav-item[data-view="resources"]');
+      await page.waitForSelector("#hubTools:not([hidden]) .sop-item");
+      if (process.env.SMOKE_SHOT) await page.screenshot({ path: process.env.SMOKE_SHOT + "-hub.png" });
+      await page.click('[data-sop-tab="events"]');
+      if ((await page.locator("#sopList .sop-item").count()) !== 1)
+        throw new Error("tab did not filter");
+      await page.fill("#sopSearch", "shift");
+      await page.click('#sopList [data-sop="start"]');
+      await page.waitForSelector("#sopDialog[open] .sop-steps li");
+      const text = await page.textContent("#sopDialog");
+      for (const want of ["Unlock", "towels", "Careful", "Note one", "Event tracker"])
+        if (!text.includes(want)) throw new Error(`pop-up missing ${want}`);
+      await page.click('[data-sop-app="events"]');
+      await page.waitForSelector("#view-events.active");
+      await page.click('.nav-item[data-view="resources"]');
+      await page.fill("#hubChatInput", "where do I start my shift?");
+      await page.click("#hubChatSend");
+      await page.waitForSelector('#hubChatLog .hub-picks [data-sop="start"]');
+      await page.click('#hubChatLog [data-sop="start"]');
+      await page.waitForSelector("#sopDialog[open]");
+      if (process.env.SMOKE_SHOT) await page.screenshot({ path: process.env.SMOKE_SHOT + "-sop.png" });
+      await page.keyboard.press("Escape");
     });
 
     await step("stock library filters and previews", async () => {

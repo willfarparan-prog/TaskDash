@@ -36,6 +36,7 @@
     <link rel="stylesheet" href="/css/client-profile.css" />
     <link rel="stylesheet" href="/css/live-session.css" />
     <link rel="stylesheet" href="/css/docs.css" />
+    <link rel="stylesheet" href="/css/sops.css" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Cpath d='M14 44 31 13l19 31h-9L31 28 23 44z' fill='%23ef3123'/%3E%3C/svg%3E"
@@ -369,6 +370,36 @@
                 your source sheet—organized by task and easy to find.
               </p>
             </div>
+            <article class="panel hub-tools" id="hubTools" hidden>
+              <section class="sop-card" aria-label="SOP guides">
+                <div class="sop-head">
+                  <div>
+                    <span class="kicker">STEP-BY-STEP GUIDES</span>
+                    <h2>SOPs</h2>
+                  </div>
+                  <label class="table-search"
+                    ><span>⌕</span
+                    ><input id="sopSearch" placeholder="Search SOPs…"
+                  /></label>
+                </div>
+                <div class="sop-tabs" id="sopTabs"></div>
+                <div class="sop-list" id="sopList"></div>
+              </section>
+              <section class="hub-chat" aria-label="Ask the hub">
+                <div class="sop-head">
+                  <div>
+                    <span class="kicker">NOT SURE WHERE TO START?</span>
+                    <h2>Ask the hub</h2>
+                  </div>
+                  <button type="button" class="text-btn" id="hubChatClear">Clear</button>
+                </div>
+                <div class="hub-log" id="hubChatLog"></div>
+                <form id="hubChatForm" class="hub-form">
+                  <input id="hubChatInput" maxlength="600" autocomplete="off" placeholder="e.g. a member wants to book PT…" />
+                  <button class="primary-btn" id="hubChatSend" type="submit">Ask</button>
+                </form>
+              </section>
+            </article>
             <article
               class="panel quick-links-panel resource-hub resource-hub-full"
             >
@@ -953,6 +984,7 @@
     </div>
     <div class="live-session" id="liveSession" hidden></div>
     <dialog id="wrapUpDialog" class="modal wrapup"></dialog>
+    <dialog id="sopDialog" class="modal sop-dialog"></dialog>
     <dialog id="formDialog" class="modal">
       <form method="dialog" id="dialogForm">
         <div class="modal-head">
@@ -1000,6 +1032,8 @@
     <script src="/js/wrapup-core.js" defer></script>
     <script src="/js/wrapup.js" defer></script>
     <script src="/js/docs.js" defer></script>
+    <script src="/js/sops-core.js" defer></script>
+    <script src="/js/sops.js" defer></script>
     <script src="/js/inbox.js" defer></script>
     <script src="/js/survey-followup.js" defer></script>
     <script src="/js/event-report-core.js" defer></script>

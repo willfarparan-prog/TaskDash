@@ -105,7 +105,10 @@ function renderRoute() {
   if (state.view === "client") renderClientProfile();
   if (state.view === "calendar") renderCalendar();
   if (state.view === "scheduler") renderScheduler();
-  if (state.view === "resources") renderLinks();
+  if (state.view === "resources") {
+    renderLinks();
+    renderSops();
+  }
   if (state.view === "programs") renderPrograms();
   if (state.view === "clients") renderClients();
   if (state.view === "docs") renderDocs();
@@ -262,6 +265,7 @@ function wireControls() {
     },
     true,
   );
+  wireHubTools();
   $("#saveSettings").onclick = saveSettings;
   $("#clearLocal").onclick = clearLocal;
   $$(".link-search").forEach((input) => (input.oninput = renderLinks));
@@ -285,6 +289,7 @@ async function refreshAll() {
     loadCalendar(),
     loadConnections(),
     loadLinks(),
+    loadSops(),
     loadScheduler(),
     loadDocs(),
     loadWrapupSettings(),
@@ -294,6 +299,7 @@ async function refreshAll() {
 }
 function renderEverything() {
   renderWrapupSettings();
+  renderSops();
   renderAuthGate();
   renderDashboard();
   renderCalendar();

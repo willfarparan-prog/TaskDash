@@ -16,11 +16,13 @@ const ROUTES = {
   docs: () => require("../lib/routes/docs"),
   errors: () => require("../lib/routes/errors"),
   events: () => require("../lib/routes/events"),
+  "hub-chat": () => require("../lib/routes/hub-chat"),
   inbox: () => require("../lib/routes/inbox"),
   links: () => require("../lib/routes/links"),
   "meal-plans": () => require("../lib/routes/meal-plans"),
   programs: () => require("../lib/routes/programs"),
   settings: () => require("../lib/routes/settings"),
+  sops: () => require("../lib/routes/sops"),
   tasks: () => require("../lib/routes/tasks"),
   workouts: () => require("../lib/routes/workouts"),
 };
