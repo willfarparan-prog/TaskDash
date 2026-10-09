@@ -92,10 +92,17 @@ test("work and personal priority mail are merged, newest first", async (t) => {
     ],
   );
   assert.deepEqual(body.notices, []);
+  // The account rides in the standard authuser parameter, not a /u/<email>/ path.
   assert.equal(
     body.messages[0].link,
-    "https://mail.google.com/mail/u/william.farparan%40teamexos.com/#all/w1",
+    "https://mail.google.com/mail/?authuser=william.farparan%40teamexos.com#all/w1",
   );
+  assert.equal(
+    body.messages[1].link,
+    "https://mail.google.com/mail/?authuser=willfarparan%40gmail.com#all/p1",
+  );
+  for (const m of body.messages)
+    assert.doesNotMatch(m.link, /\/mail\/u\//, "no path-style account selector");
 });
 
 test("a work account connected for calendar only asks to reconnect", async (t) => {
