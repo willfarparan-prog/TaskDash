@@ -378,13 +378,37 @@ function renderEvents() {
           .map((e) => {
             const steps = eventSteps(e.raw),
               compressed = e.days >= 0 && e.days < 14;
-            return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done || s.skipped).length} of ${steps.length} steps complete</div></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""} ${s.skipped ? "skipped" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${stepDateLabel(s, e.date)}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div>${stepStateHTML(s)}</div>`).join("")}${surveyTrackerHTML(e, steps)}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${reportPanelHTML(e.raw, e)}${draftPanelHTML(e.raw, steps)}</article>`;
+            return `<article class="event-card" data-id="${e.raw.id}"><header><div><span class="kicker">${esc(e.raw.pillar || "WELLNESS EVENT")}</span><h2>${esc(e.name)}</h2><div class="event-meta">${fmtDate(e.date)}${eventTimeLabel(e.raw)}${e.raw.location ? ` · ${esc(e.raw.location)}` : ""} · ${steps.filter((s) => s.done || s.skipped).length} of ${steps.length} steps complete</div><button class="text-btn event-date-edit" data-event-action="change-date" aria-label="Change date for ${attr(e.name)}">Change date</button></div><div class="event-days"><strong>${Math.abs(e.days)}</strong><span>${e.days >= 0 ? "DAYS OUT" : "DAYS PAST"}</span></div></header>${compressed ? '<div class="compressed-alert"><strong>Compressed timeline.</strong> Book the room, build the flyer, and publish the initial Slack post in parallel.</div>' : ""}<div class="pipeline">${steps.map((s) => `<div class="pipeline-step ${s.done ? "done" : ""} ${s.skipped ? "skipped" : ""}"><input class="step-check" type="checkbox" data-step="${s.key}" ${s.done ? "checked" : ""}><span class="step-date">${stepDateLabel(s, e.date)}</span><div><span class="step-name">${esc(s.name)}</span><span class="step-owner"> · ${esc(s.owner)}</span></div>${stepStateHTML(s)}</div>`).join("")}${surveyTrackerHTML(e, steps)}<div style="display:flex;justify-content:flex-end;padding-top:12px"><button class="text-btn" data-event-action="delete">Delete event</button></div></div>${reportPanelHTML(e.raw, e)}${draftPanelHTML(e.raw, steps)}</article>`;
           })
           .join("")
       : state.eventsLoadError
         ? ""
         : '<div class="empty-state">No events are in motion. Add an event date and Task Dash will calculate every SOP deadline.</div>');
   renderEventPreview();
+}
+function openEventDateDialog(raw) {
+  openDialog({
+    kicker: "EVENT SOP",
+    title: "Change event date",
+    fields: [["date", "Event date", "date", String(raw.event_date || raw.date).slice(0, 10)]],
+    submit: async ({ date }) => {
+      if (!date) throw new Error("Choose the event date");
+      if (date === String(raw.event_date || raw.date).slice(0, 10)) return;
+      await getJSON(`/api/events?id=${encodeURIComponent(raw.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date }),
+      });
+      // Don't replace the record: report and message edits may still be saving.
+      const current = state.events.find((event) => String(event.id) === String(raw.id));
+      if (current) current.event_date = date;
+      writeLocal("taskdash_events", state.events);
+      renderEvents();
+      renderDashboard();
+      toast("Event date updated · SOP deadlines recalculated");
+    },
+  });
+  $("#dialogFields").insertAdjacentHTML("beforeend", `<p class="full event-date-note">${esc(raw.name)}: SOP deadlines will move to match the new date. Completed steps, survey responses, drafts and reports stay saved. Review existing messages and any room, vendor or calendar bookings for the new date.</p>`);
 }
 function openEventDialog() {
   openDialog({
@@ -724,6 +748,12 @@ async function eventAction(e) {
   }
   const draftButton = e.target.closest("[data-draft-action]");
   if (draftButton) return draftAction(draftButton);
+  const dateButton = e.target.closest('[data-event-action="change-date"]');
+  if (dateButton) {
+    const raw = state.events.find((event) => String(event.id) === dateButton.closest(".event-card")?.dataset.id);
+    if (raw) openEventDateDialog(raw);
+    return;
+  }
   const all = e.target.closest('[data-event-action="draft-all"]');
   if (all) {
     const raw = state.events.find(

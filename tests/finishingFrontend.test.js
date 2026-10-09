@@ -33,6 +33,7 @@ function frontend() {
       },
       CSS: { escape: String },
       TaskSchedule: require("../task-schedule"),
+      SurveyFollowup: require("../js/survey-followup"),
       location: { hostname: "task-dash-umber.vercel.app" },
       localStorage: {
         getItem: (k) => stored.get(k) || null,
@@ -336,4 +337,20 @@ test("failed production program deletion keeps the program and editor", async ()
   assert.equal(f.run("state.programs.length"), 1);
   assert.equal(f.node("#programEditor").hidden, false);
   assert.equal(f.context.lastToast, "Delete failed");
+});
+
+test('rescheduling preserves work and recalculates deadlines only after a successful save', async () => {
+  const f = frontend();
+  f.node('#dialogFields').insertAdjacentHTML = () => {};
+  f.run('renderEvents=()=>{};openDialog=(options)=>{globalThis.dateDialog=options};state.events=[{id:7,name:"Recovery",event_date:"2026-11-04",pipeline_state:{room:true},drafts:{slack:{text:"Unsaved edits"}},report:{notes:"Notes"}}];globalThis.beforeDue=eventSteps(state.events[0])[0].due;openEventDateDialog(state.events[0]);');
+  await assert.rejects(f.run('dateDialog.submit({date:"2026-11-11"})'), /Save failed/);
+  assert.equal(f.run('state.events[0].event_date'), '2026-11-04');
+  f.run('getJSON=async()=>({event_date:"2026-11-11",drafts:{}});');
+  await f.run('dateDialog.submit({date:"2026-11-11"})');
+  assert.equal(f.run('state.events[0].event_date'), '2026-11-11');
+  assert.equal(f.run('state.events[0].pipeline_state.room'), true);
+  assert.equal(f.run('state.events[0].drafts.slack.text'), 'Unsaved edits');
+  assert.equal(f.run('state.events[0].report.notes'), 'Notes');
+  assert.equal(f.run('(eventSteps(state.events[0])[0].due-beforeDue)/864e5'), 7);
+  assert.equal(JSON.parse(f.stored.get('taskdash_events'))[0].event_date, '2026-11-11');
 });
