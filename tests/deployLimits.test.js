@@ -63,43 +63,26 @@ test("the router answers unknown routes with 404 and passes the query on", async
   assert.deepEqual(req.query, { day: "2026-10-08" });
 });
 
-// Vercel serves every file in the repo; server-only folders (client data in
-// db/, server code in lib/) must be redirected away before that happens.
-test("server-only folders are not served as static files", () => {
-  const config = JSON.parse(
-    readFileSync(join(__dirname, "..", "vercel.json"), "utf8"),
-  );
-  const blocked = (config.redirects || []).map((r) => r.source);
+// Validate the actual generated output; Vercel omits .gitignore in remote builds.
+test("server-only files are excluded from generated static output", () => {
   const root = join(__dirname, "..");
-  const publicFiles = new Set([
-    "index.html",
-    "book.html",
-    "book.js",
-    "book.css",
-    "task-schedule.js",
-    "meal-intake.js",
-  ]);
-  // Gitignored paths (node_modules/, tmp/, .env…) are never deployed.
-  const ignored = readFileSync(join(root, ".gitignore"), "utf8")
-    .split("\n")
-    .map((l) => l.trim().replace(/\/$/, ""))
-    .filter(Boolean);
-  for (const name of readdirSync(root)) {
-    if (name.startsWith(".") || name === "api" || ignored.includes(name))
-      continue;
-    if (statSync(join(root, name)).isDirectory()) {
-      if (["js", "css"].includes(name)) continue; // browser code, public by design
-      assert.ok(
-        blocked.includes(`/${name}/:path*`),
-        `${name}/ is publicly served`,
-      );
-    } else if (
-      /\.(js|json|sql|html|css)$/.test(name) &&
-      !["package.json", "package-lock.json", "vercel.json"].includes(name)
-    )
-      assert.ok(
-        publicFiles.has(name),
-        `${name} would be public; add it to the list or move it`,
-      );
-  }
+  const config = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8"));
+  assert.equal(config.outputDirectory, "public");
+  require("../scripts/build");
+  assert.deepEqual(
+    readdirSync(join(root, "public")).sort(),
+    [
+      "book.css",
+      "book.html",
+      "book.js",
+      "css",
+      "index.html",
+      "js",
+      "meal-intake.js",
+      "task-schedule.js",
+    ].sort(),
+  );
+  const html = readFileSync(join(root, "public", "index.html"), "utf8");
+  for (const match of html.matchAll(/(?:src|href)="(\/(?:js|css)\/[^"?]+)"/g))
+    assert.ok(statSync(join(root, "public", match[1])).isFile(), match[1]);
 });

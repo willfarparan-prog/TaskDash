@@ -588,3 +588,14 @@
 [hidden] {
   display: none !important;
 }
+
+@media (max-width: 900px) {
+  .breadcrumb > span,
+  .breadcrumb > b {
+    display: none;
+  }
+  .breadcrumb strong {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+}

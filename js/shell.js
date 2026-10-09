@@ -31,6 +31,9 @@ function wireNavigation() {
     if (b) go(b.dataset.go);
   });
   window.addEventListener("hashchange", routeFromHash);
+  const railMedia = window.matchMedia("(max-width:900px)");
+  railMedia.addEventListener("change", syncRailAccessibility);
+  syncRailAccessibility();
   $("#mobileMenu").onclick = () => toggleRail(true);
   $("#mobileScrim").onclick = () => toggleRail(false);
   document.addEventListener("keydown", (e) => {
@@ -130,8 +133,15 @@ function renderRoute() {
   if (state.view === "events") renderEvents();
   if (state.view === "connections") renderConnections();
 }
+function syncRailAccessibility() {
+  const mobile = window.matchMedia("(max-width:900px)").matches;
+  const open = $("#sidebar").classList.contains("open");
+  $("#sidebar").inert = mobile && !open;
+  $("#mobileMenu").setAttribute("aria-expanded", String(open));
+}
 function toggleRail(open) {
   $("#sidebar").classList.toggle("open", open);
+  syncRailAccessibility();
   $("#mobileScrim").classList.toggle("show", open);
 }
 function wireControls() {
