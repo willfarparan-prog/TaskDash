@@ -16,6 +16,9 @@
   const TOKENS = [
     ["{date}", "session date (MM/DD/YYYY)"],
     ["{client}", "client name"],
+    ["{lastFirst}", "Last, First"],
+    ["{price}", "package price paid"],
+    ["{start}", "package purchase date"],
     ["{email}", "client email"],
     ["{phone}", "client phone"],
     ["{n}", "session number (9)"],
@@ -32,15 +35,20 @@
     defaultMinutes: 50,
     // One row per session length; 50 min is the only rate known so far.
     rates: [{ minutes: 50, pay: 44.65, override: 18.9 }],
+    // The Working Doc only needs a link (William types one number into it).
     sf: {
       url: "https://docs.google.com/spreadsheets/d/1Y-MhQ6pGTQxH8T-vFr18VHcQFC8rTL4qRUahda7Poss/edit?gid=955570286#gid=955570286",
-      columns: ["{date}", "{client}", "{session}", "{length}"],
     },
+    // The Unredeemed Personal Training Session Log. Per session, only two
+    // neighbouring cells change on the client's row: Total Used and Date of
+    // Last Session Redeemed (the green columns are formulas).
     logger: {
       url: "https://docs.google.com/spreadsheets/d/1ndaoRKjFlKdJ4QO3CXoCbaJ0XCgncOQJGEVfWOcT4Xg/edit?gid=37481941#gid=37481941",
-      columns: ["{date}", "{client}", "{session}"],
-      // The row for a brand-new personal-training client.
-      newClientColumns: ["{client}", "{email}", "{phone}", "{total}", "{date}"],
+      columns: ["{n}", "{date}"],
+      // A new package is two pastes, because a formula column sits between
+      // them: Member Name → Date of Purchase, then Total Sessions Purchased.
+      newClientColumns: ["{lastFirst}", "Valid", "{price}", "{start}"],
+      newClientSessionsColumns: ["{total}"],
     },
   };
 
@@ -55,6 +63,15 @@
     return m ? `${pad(m[2])}/${pad(m[3])}/${m[1]}` : "";
   };
   const isPtSession = (s) => s.session_type === "Personal training";
+  // "Derick Ngan" → "Ngan, Derick"; names already in that form are kept.
+  function lastFirst(name) {
+    const t = String(name ?? "").trim().replace(/\s+/g, " ");
+    if (!t || t.includes(",")) return t;
+    const parts = t.split(" ");
+    return parts.length < 2
+      ? t
+      : `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(" ")}`;
+  }
 
   // Personal-training sessions in the client's current package, oldest first.
   function packageSessions(client, sessions) {
@@ -104,6 +121,9 @@
     return {
       date: usDate(session?.session_date),
       client: client?.name || "",
+      lastFirst: lastFirst(client?.name),
+      price: money(client?.package_price) ?? "",
+      start: usDate(client?.package_start),
       email: client?.email || "",
       phone: client?.phone || "",
       n: n ?? "",
@@ -207,16 +227,17 @@
       rates: (rates.length ? rates : DEFAULTS.rates)
         .sort((a, b) => a.minutes - b.minutes)
         .slice(0, 12),
-      sf: {
-        url: url(raw.sf?.url, DEFAULTS.sf.url),
-        columns: cols(raw.sf?.columns, DEFAULTS.sf.columns),
-      },
+      sf: { url: url(raw.sf?.url, DEFAULTS.sf.url) },
       logger: {
         url: url(raw.logger?.url, DEFAULTS.logger.url),
         columns: cols(raw.logger?.columns, DEFAULTS.logger.columns),
         newClientColumns: cols(
           raw.logger?.newClientColumns,
           DEFAULTS.logger.newClientColumns,
+        ),
+        newClientSessionsColumns: cols(
+          raw.logger?.newClientSessionsColumns,
+          DEFAULTS.logger.newClientSessionsColumns,
         ),
       },
     };
@@ -231,6 +252,7 @@
     sessionNumber,
     packageInfo,
     rateFor,
+    lastFirst,
     context,
     rowText,
     workdayText,

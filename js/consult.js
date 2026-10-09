@@ -189,6 +189,7 @@ function openStartTrainingDialog() {
       ["daysPerWeek", "Training days per week", "select", days, String(C.days_per_week || 3)],
       ["sessionMinutes", "Session length (minutes)", "select", minutes, String(C.session_minutes || 60)],
       ["packageSize", "Package size (sessions)", "number", "e.g. 10", C.client?.package_size ?? ""],
+      ["packagePrice", "Package price paid, before tax ($)", "number", "e.g. 630", C.client?.package_price ?? ""],
       ["firstSession", "First session", "date", "", C.first_session ? String(C.first_session).slice(0, 10) : ""],
       ["makePt", "Mark as a Personal training client and start the new-client checklist", "checkbox", true],
     ],
@@ -199,6 +200,7 @@ function openStartTrainingDialog() {
         sessionMinutes: Number(v.sessionMinutes),
         firstSession: v.firstSession || null,
         packageSize: v.packageSize ? Number(v.packageSize) : null,
+        packagePrice: v.packagePrice ? Number(v.packagePrice) : null,
         dayKey: todayKey,
         makePersonalTraining: !!v.makePt,
       });
@@ -264,7 +266,7 @@ function renderConsultNext() {
     attached
       ? `<div class="consult-attached">✓ Program attached: <strong>${esc(attached.name)}</strong><button class="text-btn" data-consult="open-program" data-program="${attr(attached.id)}">Open it</button></div>`
       : ""
-  }<h3>Suggested program</h3><p class="muted-note">${consultDays()} days a week. Nothing is added to ${esc(client.name)} until you attach it, and you can edit it afterwards.</p><div class="match-list">${matchCards}</div><div class="custom-row"><button class="primary-btn" data-consult="build" ${cp?.busy ? "disabled" : ""}>${cp?.content ? "Rebuild a custom program" : "Build a custom program with Claude"}</button><span class="muted-note">Written around their goal, injuries and what they like.</span></div>${custom}<h3>PT Session Logger</h3><div class="custom-row"><button class="secondary-btn" data-consult="logger-row">Copy the new-client row</button><a class="step-link" href="${attr(workAccountUrl(state.wrapupSettings.logger.url))}" target="_blank" rel="noopener noreferrer">Open the logger ↗</a><span class="muted-note">Paste it into the sheet so their sessions get tracked.</span></div><h3>Meal plan</h3><div class="custom-row"><button class="secondary-btn" data-consult="meal">Open the nutrition questionnaire</button><span class="muted-note">Age, height, weight, sex, training days and their average day are filled in from the consult.</span></div></section>`;
+  }<h3>Suggested program</h3><p class="muted-note">${consultDays()} days a week. Nothing is added to ${esc(client.name)} until you attach it, and you can edit it afterwards.</p><div class="match-list">${matchCards}</div><div class="custom-row"><button class="primary-btn" data-consult="build" ${cp?.busy ? "disabled" : ""}>${cp?.content ? "Rebuild a custom program" : "Build a custom program with Claude"}</button><span class="muted-note">Written around their goal, injuries and what they like.</span></div>${custom}<h3>PT Session Logger</h3><div class="custom-row"><button class="secondary-btn" data-consult="logger-row">Row for the new package</button><a class="step-link" href="${attr(workAccountUrl(state.wrapupSettings.logger.url))}" target="_blank" rel="noopener noreferrer">Open the logger ↗</a><span class="muted-note">Two quick pastes add them to the Unredeemed PT Session Log.</span></div><h3>Meal plan</h3><div class="custom-row"><button class="secondary-btn" data-consult="meal">Open the nutrition questionnaire</button><span class="muted-note">Age, height, weight, sex, training days and their average day are filled in from the consult.</span></div></section>`;
 }
 function customProgramHTML(cp) {
   const days = (cp.content.days || [])
@@ -381,7 +383,7 @@ async function consultClick(e) {
     const c =
       state.clients.find((x) => String(x.id) === String(state.consult.client_id)) ||
       state.consult.client;
-    return copyLoggerRow(c);
+    return openLoggerRows(c.id);
   }
   if (a === "open-program") {
     go("programs");

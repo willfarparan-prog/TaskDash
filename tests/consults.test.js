@@ -121,7 +121,7 @@ test("Yes with the options ticked switches the client and starts the checklist",
   assert.match(upd.sql, /service_type='Personal training'/);
   assert.match(upd.sql, /onboarding = coalesce\(onboarding,'\{\}'::jsonb\)/);
   // client, first session, package size, today, session length (none given here)
-  assert.deepEqual(upd.params, [3, "2026-10-20", null, null, 60]);
+  assert.deepEqual(upd.params, [3, "2026-10-20", null, null, 60, null]);
 });
 
 test("unticking 'Personal training client' leaves the service alone", async () => {

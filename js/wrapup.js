@@ -47,11 +47,11 @@ function wrapupStepHTML(step, s, ctx) {
   let body = "",
     actions = "";
   if (step.key === "sf") {
-    body = Wrapup.rowText(set.sf.columns, ctx);
-    actions = `<button class="step-link" data-wu="copy" data-what="sf">Copy row</button>${open(set.sf.url, "Open the sheet")}`;
+    body = "";
+    actions = `${open(set.sf.url, "Open the Working Doc")}<span class="muted-note">Enter your number there.</span>`;
   } else if (step.key === "logger") {
     body = Wrapup.rowText(set.logger.columns, ctx);
-    actions = `<button class="step-link" data-wu="copy" data-what="logger">Copy row</button>${open(set.logger.url, "Open the logger")}`;
+    actions = `<button class="step-link" data-wu="copy" data-what="logger">Copy Total Used + Date</button>${open(set.logger.url, "Open the logger")}<span class="muted-note">Find <b>${esc(ctx.lastFirst)}</b>, then paste into <b>Total Used</b> and <b>Date of Last Session Redeemed</b>.</span>`;
   } else if (step.key === "workday") {
     body = Wrapup.workdayText(ctx);
     actions = `<button class="step-link" data-wu="copy" data-what="workday">Copy entry</button>${open(set.workdayUrl, "Open Workday")}`;
@@ -128,25 +128,34 @@ async function wrapupClick(e) {
   }
 }
 
-// ----- New-client row for the PT Session Logger -----
-function loggerNewClientRow(client, day = todayKey) {
-  const ctx = Wrapup.context({
-    client,
-    session: { session_date: day },
-    sessions: state.sessions,
-    settings: state.wrapupSettings,
-    trainer: state.settings.coach,
-  });
-  return Wrapup.rowText(state.wrapupSettings.logger.newClientColumns, ctx);
-}
-async function copyLoggerRow(client) {
-  const row = loggerNewClientRow(client, client.first_session ? String(client.first_session).slice(0, 10) : todayKey);
-  try {
-    await navigator.clipboard.writeText(row);
-    toast("New-client row copied. Paste it into the PT Session Logger.");
-  } catch {
-    prompt("Copy this row for the PT Session Logger", row);
-  }
+// ----- New package in the PT Session Logger -----
+// Two pastes, because a formula column sits between the two groups of inputs.
+function openLoggerRows(clientId) {
+  const c = state.clients.find((x) => String(x.id) === String(clientId));
+  if (!c) return toast("Couldn't find that client");
+  state.wrapupSession = null;
+  const set = state.wrapupSettings,
+    day = c.package_start
+      ? String(c.package_start).slice(0, 10)
+      : c.first_session
+        ? String(c.first_session).slice(0, 10)
+        : todayKey,
+    ctx = Wrapup.context({
+      client: { ...c, package_start: c.package_start || day },
+      session: { session_date: day },
+      sessions: state.sessions,
+      settings: set,
+      trainer: state.settings.coach,
+    }),
+    missing = [
+      !c.package_size && "package size",
+      !c.package_price && "package price",
+    ].filter(Boolean),
+    block = (key, title, hint, columns) =>
+      `<div class="wu-step"><div class="wu-check"></div><div class="wu-main"><strong>${esc(title)}</strong><small class="wu-hint">${esc(hint)}</small><pre class="wu-text" data-wu-text="${key}">${esc(Wrapup.rowText(columns, ctx))}</pre><div class="wu-actions"><button class="step-link" data-wu="copy" data-what="${key}">Copy</button></div></div></div>`;
+  $("#wrapUpDialog").innerHTML = `<div class="modal-head"><div><span class="kicker">PT SESSION LOGGER · NEW PACKAGE</span><h2>${esc(c.name)}</h2><small>Add a row, then paste in two steps</small></div><button class="icon-btn" data-wu="close" aria-label="Close">×</button></div><div class="wu-body">${missing.length ? `<div class="wu-gaps">Add the ${esc(missing.join(" and "))} in Edit client so the row is complete.</div>` : ""}${block("newA", "1. Member Name → Original Date of Purchase", "Click the empty Member Name cell on a new row, then paste.", set.logger.newClientColumns)}${block("newB", "2. Total Sessions Purchased", "Click that cell (the column after the green Expiration Date), then paste.", set.logger.newClientSessionsColumns)}<p class="muted-note">The green columns (Expiration, Fee per Session, Unused) calculate themselves, so nothing is pasted over them.</p><div class="wu-actions"><a class="step-link" href="${attr(workAccountUrl(set.logger.url))}" target="_blank" rel="noopener noreferrer">Open the logger ↗</a></div></div><div class="modal-actions"><button class="primary-btn" data-wu="close">Done</button></div>`;
+  const d = $("#wrapUpDialog");
+  if (!d.open) d.showModal();
 }
 
 // ----- On the client's profile and the dashboard -----
@@ -170,6 +179,10 @@ function wrapupSectionHTML(c) {
 }
 // Dashboard: sessions that still have wrap-up steps, newest first.
 function renderWrapupQueue() {
+  const links = $("#wrapupLinks"),
+    set = state.wrapupSettings;
+  if (links)
+    links.innerHTML = `<span>SESSION PAPERWORK</span><a href="${attr(workAccountUrl(set.sf.url))}" target="_blank" rel="noopener noreferrer">San Francisco Working Doc ↗</a><a href="${attr(workAccountUrl(set.logger.url))}" target="_blank" rel="noopener noreferrer">PT Session Logger ↗</a><a href="${attr(set.workdayUrl)}" target="_blank" rel="noopener noreferrer">Workday ↗</a>`;
   const box = $("#wrapupQueue");
   if (!box) return;
   const todo = Wrapup.pending(state.sessions).slice(0, 6);
@@ -192,7 +205,7 @@ function renderWrapupSettings() {
   // While rates are being edited, show the unsaved draft, not the saved values.
   const set = state.wrapupDraft || state.wrapupSettings,
     cols = (list) => list.join(COLUMN_SEP);
-  box.innerHTML = `<span class="kicker">AFTER EVERY SESSION</span><h2>Session wrap-up</h2><small>Used to build the rows and the Workday line. Saved for every device.</small><label>Workday task link<input data-ws="workdayUrl" value="${attr(set.workdayUrl)}"></label><label>Default session length (minutes)<input type="number" min="5" max="240" data-ws="defaultMinutes" value="${attr(set.defaultMinutes)}"></label><div class="ws-rates"><strong>Workday pay by session length</strong>${set.rates.map((r, i) => `<div class="ws-rate" data-rate="${i}"><label>Minutes<input type="number" data-rate-field="minutes" value="${attr(r.minutes)}"></label><label>Pay ($)<input type="number" step="0.01" data-rate-field="pay" value="${attr(r.pay ?? "")}"></label><label>Override rate<input type="number" step="0.01" data-rate-field="override" value="${attr(r.override ?? "")}"></label><button class="text-btn danger-text" data-ws-action="remove-rate" data-rate="${i}">Remove</button></div>`).join("")}<button class="text-btn" data-ws-action="add-rate">＋ Add a session length</button></div><label>San Francisco Working Doc link<input data-ws="sf.url" value="${attr(set.sf.url)}"></label><label>Working Doc columns<input data-ws="sf.columns" value="${attr(cols(set.sf.columns))}"></label><label>PT Session Logger link<input data-ws="logger.url" value="${attr(set.logger.url)}"></label><label>Logger columns (each session)<input data-ws="logger.columns" value="${attr(cols(set.logger.columns))}"></label><label>Logger columns (new client)<input data-ws="logger.newClientColumns" value="${attr(cols(set.logger.newClientColumns))}"></label><small>Separate columns with | and use ${Wrapup.TOKENS.map(([t]) => t).join(" ")}. Plain text works too.</small><div class="ws-actions"><button class="primary-btn" data-ws-action="save">Save wrap-up settings</button><span class="muted-note" id="wrapupSettingsState"></span></div>`;
+  box.innerHTML = `<span class="kicker">AFTER EVERY SESSION</span><h2>Session wrap-up</h2><small>Used to build the rows and the Workday line. Saved for every device.</small><label>Workday task link<input data-ws="workdayUrl" value="${attr(set.workdayUrl)}"></label><label>Default session length (minutes)<input type="number" min="5" max="240" data-ws="defaultMinutes" value="${attr(set.defaultMinutes)}"></label><div class="ws-rates"><strong>Workday pay by session length</strong>${set.rates.map((r, i) => `<div class="ws-rate" data-rate="${i}"><label>Minutes<input type="number" data-rate-field="minutes" value="${attr(r.minutes)}"></label><label>Pay ($)<input type="number" step="0.01" data-rate-field="pay" value="${attr(r.pay ?? "")}"></label><label>Override rate<input type="number" step="0.01" data-rate-field="override" value="${attr(r.override ?? "")}"></label><button class="text-btn danger-text" data-ws-action="remove-rate" data-rate="${i}">Remove</button></div>`).join("")}<button class="text-btn" data-ws-action="add-rate">＋ Add a session length</button></div><label>San Francisco Working Doc link<input data-ws="sf.url" value="${attr(set.sf.url)}"></label><label>PT Session Logger link<input data-ws="logger.url" value="${attr(set.logger.url)}"></label><label>Logger, after each session (Total Used, Date of Last Session)<input data-ws="logger.columns" value="${attr(cols(set.logger.columns))}"></label><label>Logger, new package (Member Name to Date of Purchase)<input data-ws="logger.newClientColumns" value="${attr(cols(set.logger.newClientColumns))}"></label><label>Logger, new package (Total Sessions Purchased)<input data-ws="logger.newClientSessionsColumns" value="${attr(cols(set.logger.newClientSessionsColumns))}"></label><small>Separate columns with | and use ${Wrapup.TOKENS.map(([t]) => t).join(" ")}. Plain text works too.</small><div class="ws-actions"><button class="primary-btn" data-ws-action="save">Save wrap-up settings</button><span class="muted-note" id="wrapupSettingsState"></span></div>`;
 }
 function readWrapupSettings() {
   const box = $("#wrapupSettingsCard"),
@@ -208,11 +221,12 @@ function readWrapupSettings() {
         pay: el.querySelector('[data-rate-field="pay"]').value,
         override: el.querySelector('[data-rate-field="override"]').value,
       })),
-    sf: { url: val("sf.url"), columns: cols("sf.columns") },
+    sf: { url: val("sf.url") },
     logger: {
       url: val("logger.url"),
       columns: cols("logger.columns"),
       newClientColumns: cols("logger.newClientColumns"),
+      newClientSessionsColumns: cols("logger.newClientSessionsColumns"),
     },
   };
 }

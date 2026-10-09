@@ -341,7 +341,7 @@ function onboardingStepHTML(c, step, i) {
   if (step.key === "mealPlan")
     actions = `<button class="step-link" data-profile="intake">${clientPlanCount(c) ? "New plan" : "Questionnaire + generate"}</button>`;
   if (step.key === "ptLogger")
-    actions = `<button class="step-link" data-profile="copy-logger-row">Copy new-client row</button><a class="step-link" href="${attr(workAccountUrl(state.wrapupSettings.logger.url || PT_LOGGER_URL))}" target="_blank" rel="noopener noreferrer">Open the logger ↗</a>`;
+    actions = `<button class="step-link" data-profile="copy-logger-row">New-package row</button><a class="step-link" href="${attr(workAccountUrl(state.wrapupSettings.logger.url || PT_LOGGER_URL))}" target="_blank" rel="noopener noreferrer">Open the logger ↗</a>`;
   return `<div class="onboarding-step ${step.done ? "done" : ""}"><input type="checkbox" data-step="${step.key}" aria-label="${attr(step.title)}" ${step.done ? "checked" : ""}><div><strong>${i + 1}. ${esc(step.title)}</strong>${detail ? `<small>${esc(detail)}</small>` : ""}</div><div class="step-actions">${actions}</div></div>`;
 }
 function mealPlanSectionHTML(c) {
@@ -400,7 +400,7 @@ async function clientProfileAction(e) {
   }
   if (a === "intake") openMealIntakeDialog(c);
   if (a === "wrapup") openWrapUp(b.dataset.session);
-  if (a === "copy-logger-row") copyLoggerRow(c);
+  if (a === "copy-logger-row") openLoggerRows(c.id);
   if (a === "start-consult") startConsultFor(c);
   if (a === "open-consult") location.hash = `consult/${b.dataset.consultId}`;
   if (a === "add-stock") openAttachProgramDialog(c, "stock");
@@ -544,6 +544,7 @@ function openClientEditDialog(c) {
         c.first_session ? String(c.first_session).slice(0, 10) : "",
       ],
       ["packageSize", "Package size (sessions)", "number", "e.g. 10", c.package_size ?? ""],
+      ["packagePrice", "Package price paid, before tax ($)", "number", "e.g. 630", c.package_price ?? ""],
       [
         "packageStart",
         "Package started",
@@ -572,6 +573,7 @@ function openClientEditDialog(c) {
       if (!name) throw new Error("A client needs a name");
       const body = {
         packageSize: v.packageSize ? Number(v.packageSize) : null,
+        packagePrice: v.packagePrice ? Number(v.packagePrice) : null,
         packageStart: v.packageStart || null,
         sessionMinutes: v.sessionMinutes ? Number(v.sessionMinutes) : null,
         name,

@@ -3,13 +3,13 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 const W = require("../js/wrapup-core");
 
-const client = { id: 4, name: "Derick Ngan", email: "derick@example.com", phone: "555-0100", package_size: 10, package_start: "2026-09-01" };
+const client = { id: 4, name: "Derick Ngan", email: "derick@example.com", phone: "555-0100", package_size: 10, package_start: "2026-07-10", package_price: 630 };
 let n = 0;
 const pt = (date, extra = {}) => ({ id: ++n, client_id: 4, session_type: "Personal training", session_date: date, wrapup: {}, ...extra });
 // Nine sessions in this package, plus noise that must not count.
 const sessions = [
   ...Array.from({ length: 9 }, (_, i) => pt(`2026-09-${String(i + 2).padStart(2, "0")}`)),
-  pt("2026-08-20"), // before the package started
+  pt("2026-06-20"), // before the package started
   { id: ++n, client_id: 4, session_type: "InBody scan", session_date: "2026-09-05" },
   { id: ++n, client_id: 9, session_type: "Personal training", session_date: "2026-09-05" },
 ];
@@ -36,12 +36,29 @@ test("session numbers count only this client's PT sessions in the current packag
   assert.deepEqual(W.packageInfo({ id: 4 }, sessions).size, null);
 });
 
-test("rows fill in the tokens and join with tabs for pasting into a sheet", () => {
+test("after a session the logger needs just Total Used and the date", () => {
   const ctx = W.context({ client, session: { ...ninth, length_minutes: 50 }, sessions, settings: {}, trainer: "William Farparan" });
-  assert.equal(W.rowText(["{date}", "{client}", "{session}", "{length}"], ctx), "09/10/2026\tDerick Ngan\t9/10\t50");
+  // The default columns: Total Used, Date of Last Session Redeemed.
+  assert.equal(W.rowText(W.DEFAULTS.logger.columns, ctx), "9\t09/10/2026");
   assert.equal(W.rowText(["{client}", "{email}", "{phone}", "{total}"], ctx), "Derick Ngan\tderick@example.com\t555-0100\t10");
   assert.equal(W.rowText(["Trainer: {trainer}", "{nope}", "{rate}"], ctx), "Trainer: William Farparan\t\t");
   assert.equal(W.usDate("2026-09-10T00:00:00.000Z"), "09/10/2026");
+});
+
+test("a new package is two pastes that skip the logger's formula columns", () => {
+  const ctx = W.context({ client, session: { session_date: "2026-07-10" }, sessions: [], settings: {} });
+  // Member Name (Last, First) · status · price paid · date of purchase
+  assert.equal(W.rowText(W.DEFAULTS.logger.newClientColumns, ctx), "Ngan, Derick\tValid\t630.00\t07/10/2026");
+  // Total Sessions Purchased sits after the green Expiration Date column.
+  assert.equal(W.rowText(W.DEFAULTS.logger.newClientSessionsColumns, ctx), "10");
+});
+
+test("names are turned into Last, First for the logger", () => {
+  assert.equal(W.lastFirst("Derick Ngan"), "Ngan, Derick");
+  assert.equal(W.lastFirst("Mary Ann Smith"), "Smith, Mary Ann");
+  assert.equal(W.lastFirst("Seigel, Em"), "Seigel, Em");
+  assert.equal(W.lastFirst("  Cher  "), "Cher");
+  assert.equal(W.lastFirst(""), "");
 });
 
 test("a missing package or rate shows a blank and says what to set", () => {
@@ -80,8 +97,8 @@ test("settings are cleaned: https links only, sane rates, known defaults", () =>
     workdayUrl: "javascript:alert(1)",
     defaultMinutes: "45",
     rates: [{ minutes: "60", pay: "52.5", override: "21" }, { minutes: 60, pay: 1 }, { minutes: 2, pay: 1 }, { minutes: 30, pay: -5, override: "x" }],
-    sf: { url: "http://insecure.example", columns: ["{date}", "  ", "{client}"] },
-    logger: { columns: [] },
+    sf: { url: "http://insecure.example" },
+    logger: { columns: [], newClientSessionsColumns: ["{total}", "  "] },
   });
   assert.equal(clean.workdayUrl, W.DEFAULTS.workdayUrl);
   assert.equal(clean.defaultMinutes, 45);
@@ -90,8 +107,9 @@ test("settings are cleaned: https links only, sane rates, known defaults", () =>
     { minutes: 60, pay: 52.5, override: 21 },
   ]);
   assert.equal(clean.sf.url, W.DEFAULTS.sf.url);
-  assert.deepEqual(clean.sf.columns, ["{date}", "{client}"]);
+  assert.deepEqual(clean.sf, { url: W.DEFAULTS.sf.url });
   assert.deepEqual(clean.logger.columns, W.DEFAULTS.logger.columns);
+  assert.deepEqual(clean.logger.newClientSessionsColumns, ["{total}"]);
   assert.deepEqual(W.cleanSettings({}).rates, W.DEFAULTS.rates);
 });
 
@@ -166,11 +184,13 @@ test("ticking a wrap-up step stamps the date; unticking removes it; length is se
 
 test("a client's package size, start and session length are saved with the client", async () => {
   const { handler, queries } = load("clients", (sql) => (sql.startsWith("update clients") ? { rows: [{ id: 4 }] } : null));
-  await call(handler, { method: "PATCH", query: { id: "4" }, body: { name: "Derick", packageSize: "10", packageStart: "2026-09-01", sessionMinutes: 50 } });
+  await call(handler, { method: "PATCH", query: { id: "4" }, body: { name: "Derick", packageSize: "10", packageStart: "2026-09-01", sessionMinutes: 50, packagePrice: "630" } });
   const p = queries[0].params;
-  assert.deepEqual(p.slice(-3), [10, "2026-09-01", 50]);
-  await call(handler, { method: "PATCH", query: { id: "4" }, body: { name: "Derick", packageSize: "abc", packageStart: "soon" } });
-  assert.deepEqual(queries[1].params.slice(-3), [null, null, null]);
+  assert.deepEqual(p.slice(-4), [10, "2026-09-01", 50, 630]);
+  await call(handler, { method: "PATCH", query: { id: "4" }, body: { name: "Derick", packageSize: "abc", packageStart: "soon", packagePrice: "free" } });
+  assert.deepEqual(queries[1].params.slice(-4), [null, null, null, null]);
+  await call(handler, { method: "PATCH", query: { id: "4" }, body: { name: "Derick", packagePrice: "-5" } });
+  assert.equal(queries[2].params.at(-1), null);
 });
 
 test("a manually logged session can carry its length", async () => {
@@ -188,8 +208,8 @@ test("saying Yes after a consult records the package", async () => {
     if (sql.startsWith("update client_consults")) return { rows: [{ id: 9 }] };
     if (sql.startsWith("update clients")) return { rows: [{ id: 4, package_size: 10 }] };
   });
-  await call(handler, { method: "POST", query: { id: "9", action: "complete" }, body: { decision: "yes", daysPerWeek: 3, sessionMinutes: 50, firstSession: "2026-10-20", packageSize: 10, dayKey: "2026-10-08" } });
+  await call(handler, { method: "POST", query: { id: "9", action: "complete" }, body: { decision: "yes", daysPerWeek: 3, sessionMinutes: 50, firstSession: "2026-10-20", packageSize: 10, packagePrice: "630", dayKey: "2026-10-08" } });
   const upd = queries.find((q) => q.sql.startsWith("update clients"));
-  assert.deepEqual(upd.params, [4, "2026-10-20", 10, "2026-10-08", 50]);
+  assert.deepEqual(upd.params, [4, "2026-10-20", 10, "2026-10-08", 50, 630]);
   assert.match(upd.sql, /package_size = coalesce/);
 });

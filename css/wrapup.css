@@ -138,3 +138,32 @@
     grid-template-columns: 28px minmax(0, 1fr);
   }
 }
+
+.wrapup-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+.wrapup-links span {
+  font:
+    700 10px IBM Plex Mono,
+    monospace;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.wrapup-links a {
+  color: var(--red);
+  font-weight: 700;
+  text-decoration: none;
+}
+.wrapup-links a:hover {
+  text-decoration: underline;
+}
+.wu-hint {
+  color: var(--muted) !important;
+}

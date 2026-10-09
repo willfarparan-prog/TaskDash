@@ -65,6 +65,7 @@ function fakeApi() {
         first_session: day(2),
         package_size: 10,
         package_start: day(-30),
+        package_price: 630,
       },
     ],
     sessions: [],
@@ -217,6 +218,11 @@ function fakeApi() {
             if (body.decision === "yes" && body.makePersonalTraining !== false) {
               client.service_type = "Personal training";
               client.onboarding = client.onboarding || {};
+              if (body.packageSize) {
+                client.package_size = body.packageSize;
+                client.package_price = body.packagePrice;
+                client.package_start = body.firstSession || body.dayKey;
+              }
             }
             return json(route, { consult: c, client });
           }
@@ -596,9 +602,15 @@ async function main() {
         "Jordan Lee: 10 sessions - 50min (1/10) - $44.65\n\nOverride Rate: 18.90"
       )
         throw new Error(`Workday text: ${JSON.stringify(workday)}`);
-      const sf = await page.textContent('[data-wu-text="sf"]');
-      if (!sf.includes("Jordan Lee") || !sf.includes("1/10") || !sf.includes("\t"))
-        throw new Error(`SF row: ${JSON.stringify(sf)}`);
+      // The Working Doc is just a link; the logger needs Total Used + the date.
+      if (await page.locator('[data-wu-text="sf"]').count())
+        throw new Error("the Working Doc step shouldn't build a row");
+      const logger = await page.textContent('[data-wu-text="logger"]');
+      const used = new Date();
+      const usDate = `${String(used.getMonth() + 1).padStart(2, "0")}/${String(used.getDate()).padStart(2, "0")}/${used.getFullYear()}`;
+      if (logger !== `1\t${usDate}`) throw new Error(`logger row: ${JSON.stringify(logger)}`);
+      if (!(await page.textContent(".wu-step >> nth=1")).includes("Lee, Jordan"))
+        throw new Error("the logger step doesn't say which row to find");
       // Tick two steps, close, and the dashboard still lists the session.
       await page.check('[data-wu-step="sf"]');
       await page.waitForSelector('[data-wu-step="sf"]:checked');
@@ -817,12 +829,17 @@ async function main() {
       await page.selectOption('#dialogForm [name="daysPerWeek"]', "4");
       await page.selectOption('#dialogForm [name="sessionMinutes"]', "45");
       await page.fill('#dialogForm [name="packageSize"]', "10");
+      await page.fill('#dialogForm [name="packagePrice"]', "630");
       await page.click("#dialogSubmit");
       await page.waitForSelector("#consultNext .match-card");
-      if (api.db.lastComplete.packageSize !== 10)
-        throw new Error("package size wasn't sent when saying Yes");
-      if (!(await page.locator('#consultNext [data-consult="logger-row"]').count()))
-        throw new Error("no PT Session Logger row button");
+      if (api.db.lastComplete.packageSize !== 10 || api.db.lastComplete.packagePrice !== 630)
+        throw new Error("package size and price weren't sent when saying Yes");
+      await page.click('#consultNext [data-consult="logger-row"]');
+      await page.waitForSelector('#wrapUpDialog[open] [data-wu-text="newA"]');
+      const blockB = await page.textContent('[data-wu-text="newB"]');
+      if (blockB !== "10") throw new Error(`Total Sessions block: ${blockB}`);
+      await page.keyboard.press("Escape");
+      await page.waitForSelector("#wrapUpDialog", { state: "hidden" });
       const client = api.db.clients.find((c) => c.name === "Consult Prospect");
       if (client.service_type !== "Personal training" || !client.onboarding)
         throw new Error(`client ${JSON.stringify(client)}`);
