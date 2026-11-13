@@ -171,6 +171,26 @@ test("new programs need a name and get sane days, weeks and content", async () =
   assert.equal(content.days[0].blocks[0].exercises[0].reps.length, 4);
 });
 
+test("a training day keeps blocks past H, up to Z", () => {
+  load("programs", () => ({ rows: [] }));
+  const { safeContent } = require("../lib/routes/programs.js");
+  const block = (i) => ({ exercises: [{ name: `Lift ${i}`, sets: 3, reps: ["8"] }] });
+  const kept = safeContent(
+    { days: [{ name: "Day 1", blocks: Array.from({ length: 12 }, (_, i) => block(i)) }] },
+    1,
+    4,
+  );
+  assert.equal(kept.days[0].blocks.length, 12);
+  assert.equal(kept.days[0].blocks[11].letter, "L");
+  const capped = safeContent(
+    { days: [{ name: "Day 1", blocks: Array.from({ length: 30 }, (_, i) => block(i)) }] },
+    1,
+    4,
+  );
+  assert.equal(capped.days[0].blocks.length, 26);
+  assert.equal(capped.days[0].blocks[25].letter, "Z");
+});
+
 test("public booking: name required, email optional, bad email rejected", async () => {
   const { handler, queries } = load("calendar-manual", (sql) => {
     // The flood guard answers "busy", which proves validation passed.

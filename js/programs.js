@@ -477,6 +477,7 @@ function programEditorAction(e) {
     const panel = e.target.closest("[data-day-panel]"),
       weeks = Number($('[data-meta="weeks"]', $("#programEditor")).value),
       index = $$("[data-block]", panel).length;
+    if (index >= 26) return toast("A day can have up to 26 blocks (A–Z)");
     $(".blocks-editor", panel).insertAdjacentHTML(
       "beforeend",
       blockEditorHTML(
