@@ -147,3 +147,31 @@ test("generateDraft reports a refusal instead of returning empty text", async ()
     mock.server.close();
   }
 });
+
+test("2027 programming checklist steps only apply to events created after it started", () => {
+  const vm = require("node:vm");
+  const src = readFileSync(join(__dirname, "..", "js", "events.js"), "utf8");
+  const head = src.slice(0, src.indexOf("// Messaging drafts generated"));
+  const fn = src.slice(src.indexOf("function eventSteps"), src.indexOf("function surveyStats"));
+  const ctx = {
+    today: new Date(2027, 0, 4, 12),
+    startOfDay: (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()),
+    normalizeEvent: (raw) => ({ date: new Date(2027, 2, 1, 12), days: 56 }),
+    SurveyFollowup: { sendState: () => ({ state: "waiting" }) },
+    reportReady: () => false,
+  };
+  vm.createContext(ctx);
+  vm.runInContext(`${head}\n${fn}\nthis.eventSteps = eventSteps; this.PIPE = PIPE;`, ctx);
+  const keys = (raw) => ctx.eventSteps(raw).map((s) => s.key);
+  const fresh = keys({ created_at: "2026-12-01T10:00:00Z", pipeline_state: {} });
+  const old = keys({ created_at: "2026-10-20T10:00:00Z", pipeline_state: {} });
+  for (const k of ["kickoff", "coco-pre", "prizes", "playbook", "inside-adobe", "surveys-build", "newsletter", "closeout"]) {
+    assert.ok(fresh.includes(k), `new event has ${k}`);
+    assert.ok(!old.includes(k), `old event skips ${k}`);
+  }
+  assert.ok(keys({ pipeline_state: {} }).includes("coco-pre"), "unsaved event shows the checklist");
+  assert.ok(old.includes("room") && old.includes("survey"));
+  const offsets = Array.from(ctx.PIPE, (s) => s.offset);
+  assert.equal(offsets.join(), [...offsets].sort((a, b) => b - a).join(), "steps stay in date order");
+  assert.equal(new Set(ctx.PIPE.map((s) => s.key)).size, ctx.PIPE.length);
+});

@@ -1,5 +1,30 @@
 // Events: the event SOP pipeline and AI messaging drafts.
+// Steps marked `since` come from the 2027 Programming Tasks checklist (six
+// weeks out to one week after). They only apply to events created on or
+// after that date, so older events don't suddenly show overdue work.
+const PROGRAM_CHECKLIST_SINCE = "2026-11-17";
 const PIPE = [
+  {
+    key: "kickoff",
+    name: "Copy the Programming Tasks workbook + team brainstorm",
+    offset: 42,
+    owner: "William",
+    since: PROGRAM_CHECKLIST_SINCE,
+  },
+  {
+    key: "coco-pre",
+    name: "CoCo pre-event submission",
+    offset: 42,
+    owner: "William",
+    since: PROGRAM_CHECKLIST_SINCE,
+  },
+  {
+    key: "prizes",
+    name: "Order prizes / materials",
+    offset: 42,
+    owner: "William",
+    since: PROGRAM_CHECKLIST_SINCE,
+  },
   {
     key: "vendor",
     name: "Escalate vendor + budget to Michelle",
@@ -16,6 +41,27 @@ const PIPE = [
     parallel: true,
   },
   {
+    key: "playbook",
+    name: "Complete the Program Design Playbook",
+    offset: 28,
+    owner: "William",
+    since: PROGRAM_CHECKLIST_SINCE,
+  },
+  {
+    key: "inside-adobe",
+    name: "Inside Adobe event submission + Outlook invite",
+    offset: 28,
+    owner: "William",
+    since: PROGRAM_CHECKLIST_SINCE,
+  },
+  {
+    key: "surveys-build",
+    name: "Build the sign-up and post-program surveys",
+    offset: 28,
+    owner: "William",
+    since: PROGRAM_CHECKLIST_SINCE,
+  },
+  {
     key: "flyer",
     name: "Create flyer / poster",
     offset: 21,
@@ -29,6 +75,13 @@ const PIPE = [
     offset: 18,
     owner: "William",
     parallel: true,
+  },
+  {
+    key: "newsletter",
+    name: "Add to the newsletter + link the playbook to the AOP",
+    offset: 14,
+    owner: "William",
+    since: PROGRAM_CHECKLIST_SINCE,
   },
   {
     key: "slack-2",
@@ -50,6 +103,13 @@ const PIPE = [
     offset: -3,
     owner: "William",
     survey: true,
+  },
+  {
+    key: "closeout",
+    name: "Outcomes form, update CoCo with photos, remove flyers",
+    offset: -7,
+    owner: "William",
+    since: PROGRAM_CHECKLIST_SINCE,
   },
   {
     key: "survey-2",
@@ -229,8 +289,11 @@ function eventSteps(raw) {
       map = {};
     }
   const done = Object.fromEntries(PIPE.map((s) => [s.key, !!map[s.key]]));
+  const created = raw.created_at || raw.createdAt;
   return PIPE.filter(
-    (s) => !s.vendor || raw.needs_vendor || raw.needsVendor,
+    (s) =>
+      (!s.vendor || raw.needs_vendor || raw.needsVendor) &&
+      (!s.since || !created || new Date(created) >= new Date(s.since)),
   ).map((s) => {
     const due = new Date(ev.date);
     due.setDate(due.getDate() - s.offset);
