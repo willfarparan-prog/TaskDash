@@ -20,6 +20,7 @@ const ROUTES = {
   inbox: () => require("../lib/routes/inbox"),
   links: () => require("../lib/routes/links"),
   "meal-plans": () => require("../lib/routes/meal-plans"),
+  portal: () => require("../lib/routes/portal"),
   programs: () => require("../lib/routes/programs"),
   settings: () => require("../lib/routes/settings"),
   sops: () => require("../lib/routes/sops"),

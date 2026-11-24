@@ -332,11 +332,47 @@ function renderClientProfile() {
     return;
   }
   const st = onboardingStatus(c);
-  box.innerHTML = `<div class="profile-head"><div class="client-name"><span class="mini-avatar">${initials(c.name)}</span><div><span class="kicker">CLIENT PROFILE</span><h2>${esc(c.name)}</h2><p>${esc(c.service_type || "PT consult")} · ${esc(c.email || "No email")}${c.phone ? ` · ${esc(c.phone)}` : ""}</p></div></div><div class="profile-head-actions"><button class="secondary-btn" data-profile="edit">Edit client</button></div></div>${
+  box.innerHTML = `<div class="profile-head"><div class="client-name"><span class="mini-avatar">${initials(c.name)}</span><div><span class="kicker">CLIENT PROFILE</span><h2>${esc(c.name)}</h2><p>${esc(c.service_type || "PT consult")} · ${esc(c.email || "No email")}${c.phone ? ` · ${esc(c.phone)}` : ""}</p></div></div><div class="profile-head-actions"><button class="secondary-btn" data-profile="edit">Edit client</button></div></div>${clientAppSectionHTML(c)}${
     st
       ? `<section class="onboarding"><div class="builder-label"><span>NEW-CLIENT CHECKLIST · ${st.done} OF ${st.total} DONE</span><span class="first-session ${c.first_session && String(c.first_session).slice(0, 10) <= todayKey && st.done < st.total ? "late" : ""}">${esc(firstSessionLabel(c))}</span></div><div class="onboarding-bar"><i style="width:${(st.done / st.total) * 100}%"></i></div>${st.steps.map((step, i) => onboardingStepHTML(c, step, i)).join("")}<button class="text-btn" data-profile="untrack">Stop tracking this checklist</button></section>`
       : `<section class="onboarding empty"><p>The new-client checklist isn't on for this client.</p><button class="secondary-btn" data-profile="track">Start new-client checklist</button></section>`
   }${consultSectionHTML(c)}${wrapupSectionHTML(c)}${trainingSectionHTML(c)}<section class="meal-plans"><div class="builder-label"><span>MEAL PLAN</span><button class="step-link" data-profile="intake">${state.clientMealPlans.length ? "＋ New meal plan" : "Fill in questionnaire + generate"}</button></div>${mealPlanSectionHTML(c)}</section>`;
+}
+// The client's own phone app: one private link per client. Anyone with the
+// link sees that client's plan, log and bookings, so a new link replaces the
+// old one and "Turn off" stops it working.
+const clientAppUrl = (c) =>
+  `${new URL(PUBLIC_BOOKING_URL).origin}/client.html#k=${c.portal_token}`;
+function clientAppSectionHTML(c) {
+  if (!c.portal_token)
+    return `<section class="client-app empty"><div><strong>Client app</strong><p>Give ${esc(String(c.name).split(/\s+/)[0])} their own phone app: their training plan, a weight log, progress and booking. Nothing to install from a store; they add the link to their home screen.</p></div><button class="primary-btn" data-profile="app-create">Create app link</button></section>`;
+  const used = state.clientWorkouts.filter((w) => w.source === "client").length;
+  return `<section class="client-app"><div class="builder-label"><span>CLIENT APP · LINK ON${c.portal_created_at ? ` SINCE ${esc(shortDate(c.portal_created_at).toUpperCase())}` : ""}</span><span>${used ? `${used} workout${used === 1 ? "" : "s"} logged by ${esc(String(c.name).split(/\s+/)[0])}` : "No workouts logged by them yet"}</span></div><div class="client-app-link"><code>${esc(clientAppUrl(c).replace(/#k=.+$/, "#k=••••••"))}</code><div class="step-actions"><button class="step-link" data-profile="app-copy">Copy link</button>${c.phone ? `<button class="step-link" data-profile="app-text">Text it</button>` : ""}${c.email ? `<button class="step-link" data-profile="app-email">Email it</button>` : ""}<a class="step-link" href="${attr(clientAppUrl(c))}" target="_blank" rel="noopener noreferrer">Preview ↗</a><button class="step-link" data-profile="app-create">New link</button><button class="step-link danger-text" data-profile="app-revoke">Turn off</button></div></div></section>`;
+}
+function clientAppMessage(c) {
+  const first = String(c.name).split(/\s+/)[0];
+  return `Hi ${first}! Here's your training app: your program, a log for your weights, your progress, and booking with me.\n\n${clientAppUrl(c)}\n\nOpen it on your phone and add it to your home screen (iPhone: Share → Add to Home Screen). This link is just for you, so please don't share it.`;
+}
+async function setClientApp(c, action) {
+  try {
+    const row = await getJSON(
+      `/api/clients?resource=portal&id=${encodeURIComponent(c.id)}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      },
+    );
+    Object.assign(c, {
+      portal_token: row.portal_token,
+      portal_created_at: row.portal_created_at,
+    });
+    renderClientProfile();
+    return true;
+  } catch (err) {
+    toast(err.message || "The client app link couldn't be changed");
+    return false;
+  }
 }
 function onboardingStepHTML(c, step, i) {
   const programs = clientPrograms(c);
@@ -400,6 +436,38 @@ async function clientProfileAction(e) {
       toast("Marked as sent. Untick it if you didn't send the email.");
     }
   }
+  if (a === "app-create") {
+    if (
+      c.portal_token &&
+      !confirm(
+        `Make a new link for ${c.name}?\n\nThe old link stops working, including the icon on their home screen. Send them the new one.`,
+      )
+    )
+      return;
+    if (await setClientApp(c, "create"))
+      toast("Client app link ready. Copy it or send it.");
+  }
+  if (a === "app-revoke") {
+    if (
+      !confirm(
+        `Turn off ${c.name}'s app?\n\nTheir link stops working right away. Their logged workouts are kept.`,
+      )
+    )
+      return;
+    if (await setClientApp(c, "revoke")) toast("Client app turned off");
+  }
+  if (a === "app-copy") {
+    try {
+      await navigator.clipboard.writeText(clientAppUrl(c));
+      toast("Client app link copied");
+    } catch {
+      prompt("Copy the client app link", clientAppUrl(c));
+    }
+  }
+  if (a === "app-text")
+    window.location.href = `sms:${encodeURIComponent(String(c.phone).replace(/[^\d+]/g, ""))}&body=${encodeURIComponent(clientAppMessage(c))}`;
+  if (a === "app-email")
+    window.location.href = `mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent("Your training app")}&body=${encodeURIComponent(clientAppMessage(c))}`;
   if (a === "new-program") openProgramDialog(c);
   if (a === "open-program") {
     go("programs");

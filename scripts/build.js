@@ -9,10 +9,14 @@ for (const file of [
   "book.html",
   "book.js",
   "book.css",
+  "client.html",
+  "client.js",
+  "client.css",
+  "client-manifest.json",
   "task-schedule.js",
   "meal-intake.js",
 ])
   copyFileSync(join(root, file), join(out, file));
-for (const dir of ["js", "css"])
+for (const dir of ["js", "css", "icons"])
   cpSync(join(root, dir), join(out, dir), { recursive: true });
 console.log("Built allowlisted browser assets in public/");

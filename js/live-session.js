@@ -19,7 +19,7 @@ function trainingSectionHTML(c) {
           .slice(0, 8)
           .map(
             (w) =>
-              `<button class="log-row" data-profile="resume-live" data-workout="${attr(w.id)}"><strong>${shortDate(w.started_at)}</strong><span>${esc(w.program_name || "Program")} · ${esc(w.day_name || `Day ${w.day_index + 1}`)} · Week ${w.week_index + 1}</span><em>${w.status === "finished" ? `${workoutSetCount(w)} sets` : "In progress"}</em></button>`,
+              `<button class="log-row" data-profile="resume-live" data-workout="${attr(w.id)}"><strong>${shortDate(w.started_at)}</strong><span>${esc(w.program_name || "Program")} · ${esc(w.day_name || `Day ${w.day_index + 1}`)} · Week ${w.week_index + 1}</span><em>${w.status === "finished" ? `${workoutSetCount(w)} sets${w.source === "client" ? " · logged by client" : ""}` : "In progress"}</em></button>`,
           )
           .join("")}</div>`
       : ""

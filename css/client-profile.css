@@ -537,3 +537,39 @@
     width: 34px;
   }
 }
+/* Client app link card on a client's profile. */
+.client-app {
+  margin-top: 14px;
+}
+.client-app.empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px dashed #d5d0ca;
+  border-radius: 10px;
+}
+.client-app.empty p {
+  margin: 4px 0 0;
+  color: #6b6b6b;
+  font-size: 13px;
+}
+.client-app-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid #e6e2de;
+  border-radius: 9px;
+  background: #fff;
+}
+.client-app-link code {
+  font:
+    500 12px IBM Plex Mono,
+    monospace;
+  color: #555;
+  overflow-wrap: anywhere;
+}

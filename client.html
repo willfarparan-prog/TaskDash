@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b0b0c" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Training" />
+    <title>Train with William</title>
+    <link rel="apple-touch-icon" href="/icons/client-180.png" />
+    <link rel="icon" type="image/png" href="/icons/client-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/client.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="top">
+        <div class="brand">
+          <span class="mark" aria-hidden="true"></span>
+          <div>
+            <strong>TRAIN WITH WILLIAM</strong><small>EXOS · ADOBE SF</small>
+          </div>
+        </div>
+        <span class="me" id="meBadge" hidden></span>
+      </header>
+      <main id="view" aria-live="polite">
+        <div class="loading">Loading your training…</div>
+      </main>
+      <nav class="tabs" id="tabs" hidden aria-label="Client app">
+        <button data-tab="home" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 11 12 4l9 7v9h-6v-6H9v6H3z" /></svg
+          >Home
+        </button>
+        <button data-tab="plan">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h4" /></svg
+          >Plan
+        </button>
+        <button data-tab="log">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12" /></svg
+          >Log
+        </button>
+        <button data-tab="progress">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 19h16M5 15l4-5 4 3 6-7" /></svg
+          >Progress
+        </button>
+        <button data-tab="book">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" /></svg
+          >Book
+        </button>
+      </nav>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="/js/progress.js"></script>
+    <script src="/client.js"></script>
+  </body>
+</html>
